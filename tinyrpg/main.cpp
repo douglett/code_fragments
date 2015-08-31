@@ -17,6 +17,7 @@ void draw();
 void createmap();
 int handleevents();
 int playeraction(Action action);
+int collide(int x, int y);
 
 class mob {
 public:
@@ -80,7 +81,10 @@ void createmap() {
 	for (int y = 0; y < 20; y++) {
 		map.push_back(vector<int>());
 		for (int x = 0; x < 20; x++) {
-			map[y].push_back( rand()%2 );
+			if (x == 0 || y == 0 || x == 19 || y == 19)
+				map[y].push_back( -2 );
+			else
+				map[y].push_back( rand()%2 );
 		}
 	}
 }
@@ -136,20 +140,33 @@ int playeraction(Action action) {
 	case ACT_NONE:
 		break;
 	case ACT_WEST:
-		playermob.x -= 1;
+		if (!collide(playermob.x-1, playermob.y))
+			playermob.x -= 1;
 		break;
 	case ACT_EAST:
-		playermob.x += 1;
+		if (!collide(playermob.x+1, playermob.y))
+			playermob.x += 1;
 		break;
 	case ACT_SOUTH:
-		playermob.y += 1;
+		if (!collide(playermob.x, playermob.y+1))
+			playermob.y += 1;
 		break;
 	case ACT_NORTH:
-		playermob.y -= 1;
+		if (!collide(playermob.x, playermob.y-1))
+			playermob.y -= 1;
 		break;
 	case ACT_ACTION:
 		break;
 	}
+	return 0;
+}
+
+
+int collide(int x, int y) {
+	if (y < 0 || y >= map.size() || x < 0 || x >= map[0].size())
+		return 1;
+	if (map[y][x] < 0)
+		return 1;
 	return 0;
 }
 
@@ -185,8 +202,12 @@ void draw() {
 		dst.y = y * 12 - 4;
 		for (int x = 0; x < 10; x++) {
 			dst.x = x * 12 - 4;
-			if (map[y][x] >= 1)
+			// draw block
+			int tile = abs( map[y][x] );
+			if (tile == 1)
 				SDL_SetRenderDrawColor(game::ren, 0, 255, 0, 255);
+			else if (tile == 2)
+				SDL_SetRenderDrawColor(game::ren, 100, 100, 100, 255);
 			else
 				SDL_SetRenderDrawColor(game::ren, 0, 200, 0, 255);
 			SDL_RenderFillRect(game::ren, &dst);
