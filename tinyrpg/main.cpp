@@ -4,8 +4,25 @@
 using namespace std;
 
 
-void draw();
+enum Action {
+	ACT_NONE,
+	ACT_WEST,
+	ACT_EAST,
+	ACT_NORTH,
+	ACT_SOUTH,
+	ACT_ACTION
+};
 
+void draw();
+void createmap();
+int handleevents();
+int playeraction(Action action);
+
+class mob {
+public:
+	int x = 0;
+	int y = 0;
+};
 
 SDL_Texture* sprites = NULL;
 SDL_Rect parchment = { 0, 0, 100, 28 };
@@ -16,20 +33,124 @@ SDL_Rect club = { 47, 30, 15, 16 };
 SDL_Rect diamond = { 62, 30, 14, 16 };
 SDL_Rect man = { 0, 48, 12, 12 };
 
+vector<vector<int> > map;
+int animtt = 0, animstate = 0;
+mob playermob;
+
+
 
 int main() {
 	cout << "hello world" << endl;
 	if (game::init())
 		return 1;
 
+	createmap();
+	playermob.x = 4, playermob.y = 3;
+
 	// sprite images
 	sprites = texture::get("images")->tex;
 
-	draw();
-	SDL_RenderPresent(game::ren);
-	game::waitkey();
+	while (true) {
+		animtt++;
+		if (animtt % 30 == 0) {
+			animtt = 0;
+			animstate = !animstate;
+		}
+
+		draw();
+		SDL_RenderPresent(game::ren);
+		game::waitscreen();
+		
+		// if (game::clearevents())
+		// 	break;
+		if (handleevents())
+			break;
+	}
 
 	game::quit();
+}
+
+
+
+void createmap() {
+	map.erase(map.begin(), map.end());
+
+	srand(time(NULL));
+
+	for (int y = 0; y < 20; y++) {
+		map.push_back(vector<int>());
+		for (int x = 0; x < 20; x++) {
+			map[y].push_back( rand()%2 );
+		}
+	}
+}
+
+
+int handleevents() {
+	SDL_Event event;
+
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+		case SDL_QUIT:
+			return 1;
+		case SDL_WINDOWEVENT:
+			// (int)event.window.event
+			break;
+		case SDL_KEYDOWN:
+
+			// handle key press
+			switch (event.key.keysym.sym) {
+			case SDLK_ESCAPE:
+				return 1;
+			case SDLK_a:
+			case SDLK_LEFT:
+				playeraction(ACT_WEST);
+				break;
+			case SDLK_d:
+			case SDLK_RIGHT:
+				playeraction(ACT_EAST);
+				break;
+			case SDLK_w:
+			case SDLK_UP:
+				playeraction(ACT_NORTH);
+				break;
+			case SDLK_s:
+			case SDLK_DOWN:
+				playeraction(ACT_SOUTH);
+				break;
+			case SDLK_SPACE:
+				playeraction(ACT_ACTION);
+				break;
+			}
+
+			break;
+		}  // end switch
+	}  // end while
+
+	return 0;
+}
+
+
+int playeraction(Action action) {
+	switch (action) {
+	case ACT_NONE:
+		break;
+	case ACT_WEST:
+		playermob.x -= 1;
+		break;
+	case ACT_EAST:
+		playermob.x += 1;
+		break;
+	case ACT_SOUTH:
+		playermob.y += 1;
+		break;
+	case ACT_NORTH:
+		playermob.y -= 1;
+		break;
+	case ACT_ACTION:
+		break;
+	}
+	return 0;
 }
 
 
@@ -58,31 +179,31 @@ void draw() {
 	SDL_Rect scr = { 0, 0, game::width, game::height };
 	SDL_RenderFillRect(game::ren, &scr);
 
-	// SDL_SetRenderDrawColor(game::ren, 255, 150, 150, 255);
-	// SDL_Rect r = { 10, 10, 10, 10 };
-	// for (int i = 0; i < 10; i++) {
-	// 	r.x = i * 10;
-	// 	SDL_RenderDrawRect(game::ren, &r);
-	// }
-
-	// r.x = r.y = -5;
-	// SDL_RenderDrawRect(game::ren, &r);
-
 	// draw map
 	SDL_Rect dst = { 0, 0, 13, 13 };
-	SDL_SetRenderDrawColor(game::ren, 255, 150, 150, 255);
 	for (int y = 0; y < 10; y++) {
 		dst.y = y * 12 - 4;
 		for (int x = 0; x < 10; x++) {
 			dst.x = x * 12 - 4;
+			if (map[y][x] >= 1)
+				SDL_SetRenderDrawColor(game::ren, 0, 255, 0, 255);
+			else
+				SDL_SetRenderDrawColor(game::ren, 0, 200, 0, 255);
+			SDL_RenderFillRect(game::ren, &dst);
+			// draw lines
+			SDL_SetRenderDrawColor(game::ren, 255, 150, 150, 255);
 			SDL_RenderDrawRect(game::ren, &dst);
 		}
 	}
 
+	// main character
+	SDL_Rect src = man;
 	dst = man;
-	dst.x = 12*4 - 4;
-	dst.y = 12*3 - 4;
-	SDL_RenderCopy(game::ren, sprites, &man, &dst);
+	dst.x = 12 * playermob.x - 4;
+	dst.y = 12 * playermob.y - 4;
+	if (animstate)
+		src.x += 12;
+	SDL_RenderCopy(game::ren, sprites, &src, &dst);
 
 	// draw parchment background
 	dst = parchment;
@@ -90,12 +211,13 @@ void draw() {
 	dst.y = 71;
 	SDL_RenderCopy(game::ren, sprites, &parchment, &dst);
 
-	// draw cards
+	// draw cards (staggered)
 	// drawcard(0, 22, 74);
 	// drawcard(1, 39, 78);
 	// drawcard(2, 56, 81);
 	// drawcard(3, 73, 80);
 
+	// draw cards (inline)
 	drawcard(0, 22, 77);
 	drawcard(1, 39, 77);
 	drawcard(2, 56, 77);
