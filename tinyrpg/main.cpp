@@ -18,25 +18,32 @@ void createmap();
 int handleevents();
 int playeraction(Action action);
 int collide(int x, int y);
+void centercam();
 
 class mob {
 public:
 	int x = 0;
 	int y = 0;
+	int type = 0;
 };
 
 SDL_Texture* sprites = NULL;
-SDL_Rect parchment = { 0, 0, 100, 28 };
-SDL_Rect cardback = { 0, 29, 16, 18 };
-SDL_Rect spade = { 17, 30, 14, 16 };
-SDL_Rect heart = { 31, 30, 14, 16 };
-SDL_Rect club = { 47, 30, 15, 16 };
-SDL_Rect diamond = { 62, 30, 14, 16 };
-SDL_Rect man = { 0, 48, 12, 12 };
+const SDL_Rect 
+		parchment = { 0, 0, 100, 28 },
+		cardback = { 0, 29, 16, 18 },
+		spade = { 17, 30, 14, 16 },
+		heart = { 31, 30, 14, 16 },
+		club = { 47, 30, 15, 16 },
+		diamond = { 62, 30, 14, 16 },
+		man = { 0, 48, 12, 12 },
+		scorpion = { 24, 48, 12, 12 },
+		cake = { 48, 48, 12, 12 };
 
 vector<vector<int> > map;
 int animtt = 0, animstate = 0;
 mob playermob;
+mob camera;
+vector<mob> mobs;
 
 
 
@@ -47,6 +54,7 @@ int main() {
 
 	createmap();
 	playermob.x = 4, playermob.y = 3;
+	centercam();
 
 	// sprite images
 	sprites = texture::get("images")->tex;
@@ -74,10 +82,13 @@ int main() {
 
 
 void createmap() {
+	// clear old
 	map.erase(map.begin(), map.end());
+	mobs.erase(mobs.begin(), mobs.end());
 
 	srand(time(NULL));
 
+	// create map
 	for (int y = 0; y < 20; y++) {
 		map.push_back(vector<int>());
 		for (int x = 0; x < 20; x++) {
@@ -86,6 +97,16 @@ void createmap() {
 			else
 				map[y].push_back( rand()%2 );
 		}
+	}
+
+	// make mobs
+	int mobcount = 20; //rand()%30;
+	for (int i = 0; i < mobcount; i++) {
+		mob m;
+		m.type = rand()%2 + 1;
+		m.x = rand()%17 + 1;
+		m.y = rand()%17 + 1;
+		mobs.push_back(m);
 	}
 }
 
@@ -158,6 +179,8 @@ int playeraction(Action action) {
 	case ACT_ACTION:
 		break;
 	}
+
+	centercam();
 	return 0;
 }
 
@@ -167,7 +190,16 @@ int collide(int x, int y) {
 		return 1;
 	if (map[y][x] < 0)
 		return 1;
+	for (auto m : mobs)
+		if (m.x == x && m.y == y)
+			return 1;
 	return 0;
+}
+
+
+void centercam() {
+	camera.x = playermob.x - 4;
+	camera.y = playermob.y - 3;
 }
 
 
@@ -196,14 +228,22 @@ void draw() {
 	SDL_Rect scr = { 0, 0, game::width, game::height };
 	SDL_RenderFillRect(game::ren, &scr);
 
+	SDL_Rect src, dst;
+
 	// draw map
-	SDL_Rect dst = { 0, 0, 13, 13 };
+	dst = { 0, 0, 13, 13 };
 	for (int y = 0; y < 10; y++) {
+		if (camera.y+y < 0 || camera.y+y >= map.size())
+			continue;
 		dst.y = y * 12 - 4;
+
 		for (int x = 0; x < 10; x++) {
+			if (camera.x+x < 0 || camera.x+x >= map[0].size())
+				continue;
+
 			dst.x = x * 12 - 4;
 			// draw block
-			int tile = abs( map[y][x] );
+			int tile = abs( map[camera.y+y][camera.x+x] );
 			if (tile == 1)
 				SDL_SetRenderDrawColor(game::ren, 0, 255, 0, 255);
 			else if (tile == 2)
@@ -218,13 +258,29 @@ void draw() {
 	}
 
 	// main character
-	SDL_Rect src = man;
+	src = man;
+	src.x += 12 * animstate;
 	dst = man;
-	dst.x = 12 * playermob.x - 4;
-	dst.y = 12 * playermob.y - 4;
-	if (animstate)
-		src.x += 12;
+	// dst.x = 12 * playermob.x - 4;
+	// dst.y = 12 * playermob.y - 4;
+	dst.x = 12 * 4 - 4;
+	dst.y = 12 * 3 - 4;
 	SDL_RenderCopy(game::ren, sprites, &src, &dst);
+
+	// mobs
+	for (auto m : mobs) {
+		if (m.x < camera.x || m.x >= camera.x+10 || m.y < camera.y || m.y >= camera.y+10)
+			continue;
+		if (m.type == 1)
+			src = scorpion;
+		else if (m.type == 2)
+			src = cake;
+		src.x += 12 * animstate;
+		dst = src;
+		dst.x = 12 * (m.x - camera.x) - 4;
+		dst.y = 12 * (m.y - camera.y) - 4;
+		SDL_RenderCopy(game::ren, sprites, &src, &dst);
+	}
 
 	// draw parchment background
 	dst = parchment;
