@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include "libsrc/xcengine.h"
 
 using namespace std;
@@ -13,21 +14,33 @@ enum Action {
 	ACT_ACTION
 };
 
-void draw();
-void createmap();
-int handleevents();
-int playeraction(Action action);
-int collide(int x, int y);
-void centercam();
-
 class mob {
 public:
 	int x = 0;
 	int y = 0;
 	int type = 0;
+	int hp = 3;
+	int maxhp = 3;
+	int atk = 1;
+	int def = 0;
 };
 
-SDL_Texture* sprites = NULL;
+class gtext {
+public:
+	int x = 0;
+	int y = 0;
+	string s;
+};
+
+void draw();
+void createmap();
+int  handleevents();
+int  playeraction(Action action);
+int  collide(int x, int y);
+void attackmob(mob& m);
+void cleartexts();
+void centercam();
+
 const SDL_Rect 
 		parchment = { 0, 0, 100, 28 },
 		cardback = { 0, 29, 16, 18 },
@@ -40,10 +53,13 @@ const SDL_Rect
 		cake = { 48, 48, 12, 12 };
 
 vector<vector<int> > map;
-int animtt = 0, animstate = 0;
+SDL_Texture* sprites = NULL;
 mob playermob;
 mob camera;
 vector<mob> mobs;
+vector<gtext> gtexts;
+int animtt = 0, animstate = 0;
+stringstream ss;
 
 
 
@@ -86,7 +102,8 @@ void createmap() {
 	map.erase(map.begin(), map.end());
 	mobs.erase(mobs.begin(), mobs.end());
 
-	srand(time(NULL));
+	// srand(time(NULL));
+	srand(5000);
 
 	// create map
 	for (int y = 0; y < 20; y++) {
@@ -100,7 +117,7 @@ void createmap() {
 	}
 
 	// make mobs
-	int mobcount = 20; //rand()%30;
+	int mobcount = 15 + rand()%15;
 	for (int i = 0; i < mobcount; i++) {
 		mob m;
 		m.type = rand()%2 + 1;
@@ -157,29 +174,33 @@ int handleevents() {
 
 
 int playeraction(Action action) {
+	int doaction = 0;
+
 	switch (action) {
 	case ACT_NONE:
 		break;
 	case ACT_WEST:
 		if (!collide(playermob.x-1, playermob.y))
-			playermob.x -= 1;
+			playermob.x -= 1, doaction = 1;
 		break;
 	case ACT_EAST:
 		if (!collide(playermob.x+1, playermob.y))
-			playermob.x += 1;
+			playermob.x += 1, doaction = 1;
 		break;
 	case ACT_SOUTH:
 		if (!collide(playermob.x, playermob.y+1))
-			playermob.y += 1;
+			playermob.y += 1, doaction = 1;
 		break;
 	case ACT_NORTH:
 		if (!collide(playermob.x, playermob.y-1))
-			playermob.y -= 1;
+			playermob.y -= 1, doaction = 1;
 		break;
 	case ACT_ACTION:
 		break;
 	}
 
+	if (doaction)
+		cleartexts();
 	centercam();
 	return 0;
 }
@@ -190,10 +211,45 @@ int collide(int x, int y) {
 		return 1;
 	if (map[y][x] < 0)
 		return 1;
-	for (auto m : mobs)
-		if (m.x == x && m.y == y)
+	for (auto &m : mobs)
+		if (m.x == x && m.y == y) {
+			attackmob(m);
 			return 1;
+		}
 	return 0;
+}
+
+
+void attackmob(mob& m) {
+	// do attack
+	int atk = playermob.atk - m.def;
+	m.hp -= atk;
+
+	// display attack
+	cleartexts();
+	ss.str(""), ss.clear();
+	ss << -atk;
+	gtext g;
+	g.x = m.x;
+	g.y = m.y;
+	g.s = ss.str();
+	gtexts.push_back(g);
+
+	// erase mob
+	if (m.hp <= 0) {
+		for (int i = 0; i < mobs.size(); i++) {
+			if (&mobs[i] == &m) {
+				cout << i << endl;
+				mobs.erase(mobs.begin()+i);
+				break;
+			}
+		}
+	}
+}
+
+
+void cleartexts() {
+	gtexts.erase(gtexts.begin(), gtexts.end());
 }
 
 
@@ -299,4 +355,14 @@ void draw() {
 	drawcard(1, 39, 77);
 	drawcard(2, 56, 77);
 	drawcard(3, 73, 77);
+
+	// attack text
+	for (auto g : gtexts) {
+		dst.x = 12 * (g.x - camera.x) - 4;
+		dst.y = 12 * (g.y - camera.y) - 7;
+		game::qbcolor(0, 0, 0);
+		game::qbprint(dst.x+1, dst.y+1, g.s);
+		game::qbcolor(200, 0, 0);
+		game::qbprint(dst.x, dst.y, g.s);
+	}
 }
