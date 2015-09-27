@@ -39,6 +39,8 @@ int  handleevents();
 int  playeraction(Action action);
 int  collide(int x, int y);
 void attackmob(mob& m);
+void allenemyactions();
+void enemyaction(mob& m);
 void cleartexts();
 void centercam();
 
@@ -202,8 +204,10 @@ int playeraction(Action action) {
 		break;
 	}
 
-	if (doaction)
+	if (doaction) {
 		cleartexts();
+		allenemyactions();
+	}
 	centercam();
 	return 0;
 }
@@ -248,6 +252,31 @@ void attackmob(mob& m) {
 			}
 		}
 	}
+}
+
+
+void allenemyactions() {
+	for (auto &m : mobs) {
+		int dist = sqrt(pow(playermob.x - m.x, 2) + pow(playermob.y - m.y, 2));
+		// printf("%d %d %d\n", (playermob.x - m.x), (playermob.y - m.y), dist);
+		if (dist <= 3)
+			enemyaction(m);
+	}
+}
+
+
+void enemyaction(mob& m) {
+	int diffx = playermob.x - m.x;
+	int diffy = playermob.y - m.y;
+	// cout << diffx << " " << diffy << endl;
+	if (diffy < -1)
+		m.y -= 1;
+	else if (diffy > 1)
+		m.y += 1;
+	else if (diffx < -1)
+		m.x -= 1;
+	else if (diffx > 1)
+		m.x += 1;
 }
 
 
