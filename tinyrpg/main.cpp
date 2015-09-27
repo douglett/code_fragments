@@ -372,6 +372,36 @@ void draw() {
 		drawcard(1, 39, 77);
 		drawcard(2, 56, 77);
 		drawcard(3, 73, 77);
+
+		// background
+		dst = { 58, 1, 41, 28 };
+		SDL_SetRenderDrawColor(game::ren, 0, 0, 0, 150);
+		SDL_RenderFillRect(game::ren, &dst);
+
+		// HP text
+		ss.str(""), ss.clear();
+		ss  << setfill('0') << setw(2) << playermob.hp << "/" 
+			<< setfill('0') << setw(2) << playermob.maxhp;
+		game::qbcolor(0, 0, 0);
+		game::qbprint(dst.x+2, dst.y+2, ss.str());
+		game::qbcolor(0, 200, 0);
+		game::qbprint(dst.x+1, dst.y+1, ss.str());
+
+		// ATK text
+		ss.str(""), ss.clear();
+		ss << "atk " << playermob.atk;
+		game::qbcolor(0, 0, 0);
+		game::qbprint(dst.x+2, dst.y+11, ss.str());
+		game::qbcolor(230, 230, 0);
+		game::qbprint(dst.x+1, dst.y+10, ss.str());
+
+		// DEF text
+		ss.str(""), ss.clear();
+		ss << "def " << playermob.def;
+		game::qbcolor(0, 0, 0);
+		game::qbprint(dst.x+2, dst.y+20, ss.str());
+		game::qbcolor(230, 230, 0);
+		game::qbprint(dst.x+1, dst.y+19, ss.str());
 	} 
 	// draw small info
 	else {
