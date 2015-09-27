@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 #include "libsrc/xcengine.h"
 
 using namespace std;
@@ -58,6 +59,7 @@ mob playermob;
 mob camera;
 vector<mob> mobs;
 vector<gtext> gtexts;
+int showmenu = 0;
 int animtt = 0, animstate = 0;
 stringstream ss;
 
@@ -102,10 +104,11 @@ void createmap() {
 	map.erase(map.begin(), map.end());
 	mobs.erase(mobs.begin(), mobs.end());
 
-	// srand(time(NULL));
-	srand(5000);
+	// int seed = time(NULL);
+	int seed = 5000;
 
 	// create map
+	srand(seed);
 	for (int y = 0; y < 20; y++) {
 		map.push_back(vector<int>());
 		for (int x = 0; x < 20; x++) {
@@ -117,6 +120,7 @@ void createmap() {
 	}
 
 	// make mobs
+	srand(seed);
 	int mobcount = 15 + rand()%15;
 	for (int i = 0; i < mobcount; i++) {
 		mob m;
@@ -144,24 +148,23 @@ int handleevents() {
 			switch (event.key.keysym.sym) {
 			case SDLK_ESCAPE:
 				return 1;
-			case SDLK_a:
 			case SDLK_LEFT:
 				playeraction(ACT_WEST);
 				break;
-			case SDLK_d:
 			case SDLK_RIGHT:
 				playeraction(ACT_EAST);
 				break;
-			case SDLK_w:
 			case SDLK_UP:
 				playeraction(ACT_NORTH);
 				break;
-			case SDLK_s:
 			case SDLK_DOWN:
 				playeraction(ACT_SOUTH);
 				break;
 			case SDLK_SPACE:
 				playeraction(ACT_ACTION);
+				break;
+			case SDLK_s:
+				showmenu = !showmenu;
 				break;
 			}
 
@@ -228,7 +231,7 @@ void attackmob(mob& m) {
 	// display attack
 	cleartexts();
 	ss.str(""), ss.clear();
-	ss << -atk;
+	ss << atk;
 	gtext g;
 	g.x = m.x;
 	g.y = m.y;
@@ -255,7 +258,7 @@ void cleartexts() {
 
 void centercam() {
 	camera.x = playermob.x - 4;
-	camera.y = playermob.y - 3;
+	camera.y = playermob.y - 4;
 }
 
 
@@ -319,8 +322,10 @@ void draw() {
 	dst = man;
 	// dst.x = 12 * playermob.x - 4;
 	// dst.y = 12 * playermob.y - 4;
-	dst.x = 12 * 4 - 4;
-	dst.y = 12 * 3 - 4;
+	// dst.x = 12 * 4 - 4;
+	// dst.y = 12 * 3 - 4;
+	dst.x = 12 * (playermob.x - camera.x) - 4;
+	dst.y = 12 * (playermob.y - camera.y) - 4;
 	SDL_RenderCopy(game::ren, sprites, &src, &dst);
 
 	// mobs
@@ -338,31 +343,49 @@ void draw() {
 		SDL_RenderCopy(game::ren, sprites, &src, &dst);
 	}
 
-	// draw parchment background
-	dst = parchment;
-	dst.x = 0;
-	dst.y = 71;
-	SDL_RenderCopy(game::ren, sprites, &parchment, &dst);
-
-	// draw cards (staggered)
-	// drawcard(0, 22, 74);
-	// drawcard(1, 39, 78);
-	// drawcard(2, 56, 81);
-	// drawcard(3, 73, 80);
-
-	// draw cards (inline)
-	drawcard(0, 22, 77);
-	drawcard(1, 39, 77);
-	drawcard(2, 56, 77);
-	drawcard(3, 73, 77);
-
 	// attack text
 	for (auto g : gtexts) {
-		dst.x = 12 * (g.x - camera.x) - 4;
-		dst.y = 12 * (g.y - camera.y) - 7;
+		dst.x = 12 * (g.x - camera.x) - 4 + 1;
+		dst.y = 12 * (g.y - camera.y) - 4 - 2;
 		game::qbcolor(0, 0, 0);
 		game::qbprint(dst.x+1, dst.y+1, g.s);
 		game::qbcolor(200, 0, 0);
 		game::qbprint(dst.x, dst.y, g.s);
+	}
+
+	// draw large info
+	if (showmenu) {
+		// draw parchment background
+		dst = parchment;
+		dst.x = 0;
+		dst.y = 71;
+		SDL_RenderCopy(game::ren, sprites, &parchment, &dst);
+
+		// draw cards (staggered)
+		// drawcard(0, 22, 74);
+		// drawcard(1, 39, 78);
+		// drawcard(2, 56, 81);
+		// drawcard(3, 73, 80);
+
+		// draw cards (inline)
+		drawcard(0, 22, 77);
+		drawcard(1, 39, 77);
+		drawcard(2, 56, 77);
+		drawcard(3, 73, 77);
+	} 
+	// draw small info
+	else {
+		// background
+		dst = { 82, 89, 17, 10 };
+		SDL_SetRenderDrawColor(game::ren, 0, 0, 0, 150);
+		SDL_RenderFillRect(game::ren, &dst);
+
+		// text
+		ss.str(""), ss.clear();
+		ss << setfill('0') << setw(2) << playermob.hp;
+		game::qbcolor(0, 0, 0);
+		game::qbprint(dst.x+2, dst.y+2, ss.str());
+		game::qbcolor(0, 200, 0);
+		game::qbprint(dst.x+1, dst.y+1, ss.str());
 	}
 }
