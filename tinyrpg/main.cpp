@@ -37,10 +37,11 @@ void draw();
 void createmap();
 int  handleevents();
 int  playeraction(Action action);
-int  collide(int x, int y);
-void attackmob(mob& m);
+int  playercollide(int x, int y);
+void playerattack(mob& m);
 void allenemyactions();
 void enemyaction(mob& m);
+int  mobcollide(mob& currentmob, int offsetx, int offsety);
 void cleartexts();
 void centercam();
 
@@ -185,19 +186,19 @@ int playeraction(Action action) {
 	case ACT_NONE:
 		break;
 	case ACT_WEST:
-		if (!collide(playermob.x-1, playermob.y))
+		if (!playercollide(playermob.x-1, playermob.y))
 			playermob.x -= 1, doaction = 1;
 		break;
 	case ACT_EAST:
-		if (!collide(playermob.x+1, playermob.y))
+		if (!playercollide(playermob.x+1, playermob.y))
 			playermob.x += 1, doaction = 1;
 		break;
 	case ACT_SOUTH:
-		if (!collide(playermob.x, playermob.y+1))
+		if (!playercollide(playermob.x, playermob.y+1))
 			playermob.y += 1, doaction = 1;
 		break;
 	case ACT_NORTH:
-		if (!collide(playermob.x, playermob.y-1))
+		if (!playercollide(playermob.x, playermob.y-1))
 			playermob.y -= 1, doaction = 1;
 		break;
 	case ACT_ACTION:
@@ -213,21 +214,21 @@ int playeraction(Action action) {
 }
 
 
-int collide(int x, int y) {
+int playercollide(int x, int y) {
 	if (y < 0 || y >= map.size() || x < 0 || x >= map[0].size())
 		return 1;
 	if (map[y][x] < 0)
 		return 1;
 	for (auto &m : mobs)
 		if (m.x == x && m.y == y) {
-			attackmob(m);
+			playerattack(m);
 			return 1;
 		}
 	return 0;
 }
 
 
-void attackmob(mob& m) {
+void playerattack(mob& m) {
 	// do attack
 	int atk = playermob.atk - m.def;
 	m.hp -= atk;
@@ -242,11 +243,13 @@ void attackmob(mob& m) {
 	g.s = ss.str();
 	gtexts.push_back(g);
 
+	// do counterattack
+
 	// erase mob
 	if (m.hp <= 0) {
 		for (int i = 0; i < mobs.size(); i++) {
 			if (&mobs[i] == &m) {
-				cout << i << endl;
+				cout << "killed mob: " << i << endl;
 				mobs.erase(mobs.begin()+i);
 				break;
 			}
@@ -269,14 +272,30 @@ void enemyaction(mob& m) {
 	int diffx = playermob.x - m.x;
 	int diffy = playermob.y - m.y;
 	// cout << diffx << " " << diffy << endl;
-	if (diffy < -1)
+	if (diffy <= -1 && !mobcollide(m, 0, -1))
 		m.y -= 1;
-	else if (diffy > 1)
+	else if (diffy > 1 && !mobcollide(m, 0, 1))
 		m.y += 1;
-	else if (diffx < -1)
+	else if (diffx < -1 && !mobcollide(m, -1, 0))
 		m.x -= 1;
-	else if (diffx > 1)
+	else if (diffx > 1 && !mobcollide(m, 1, 0))
 		m.x += 1;
+}
+
+
+int mobcollide(mob& currentmob, int offsetx, int offsety) {
+	int x = currentmob.x + offsetx;
+	int y = currentmob.y + offsety;
+	if (y < 0 || y >= map.size() || x < 0 || x >= map[0].size())
+		return 1;
+	if (map[y][x] < 0)
+		return 1;
+	for (auto &m : mobs)
+		if (m.x == x && m.y == y)
+			return 1;
+	if (x == playermob.x && y == playermob.y)
+		return 2;
+	return 0;
 }
 
 
