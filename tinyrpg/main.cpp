@@ -274,19 +274,12 @@ void enemyaction(mob& m) {
 	// cout << diffx << " " << diffy << endl;
 	if (diffy <= -1 && !mobcollide(m, 0, -1)) {
 		m.y -= 1;
-		return;
-	}
-	if (diffy > 1 && !mobcollide(m, 0, 1)) {
+	} else if (diffy >= 1 && !mobcollide(m, 0, 1)) {
 		m.y += 1;
-		return;
-	}
-	if (diffx < -1 && !mobcollide(m, -1, 0)) {
+	} else if (diffx <= -1 && !mobcollide(m, -1, 0)) {
 		m.x -= 1;
-		return;
-	}
-	if (diffx > 1 && !mobcollide(m, 1, 0)) {
+	} else if (diffx >= 1 && !mobcollide(m, 1, 0)) {
 		m.x += 1;
-		return;
 	}
 }
 
