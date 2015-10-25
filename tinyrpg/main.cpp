@@ -117,6 +117,8 @@ void createmap() {
 		for (int x = 0; x < 20; x++) {
 			if (x == 0 || y == 0 || x == 19 || y == 19)
 				map[y].push_back( -2 );
+			else if (rand()%15 == 0)
+				map[y].push_back( -2 );
 			else
 				map[y].push_back( rand()%2 );
 		}
