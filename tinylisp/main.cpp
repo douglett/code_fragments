@@ -223,6 +223,29 @@ namespace parser {
 
 
 
+// namespace eval {
+
+// } // end eval
+
+
+val eval(const val& v) {
+	val rval;
+	rval.type = val::T_INT;
+
+	if (v.type == val::T_INT)
+		return v;
+
+	else if (v.type == val::T_LIST)
+		switch (v.lval[0].ival) {
+		case 0:
+			for (int i = 0; i < v.lval.size(); i++)
+				rval.ival += eval(v.lval[i]).ival;
+		}
+
+	return rval;
+}
+
+
 void show_list(const val &vlist, int tablen = 0) {
 	string tabs(tablen, '\t');
 	for (const auto &v : vlist.lval) {
@@ -253,4 +276,7 @@ int main() {
 	val v = parser::parse_list(0, err);
 	show_list(v);
 	cout << endl;
+
+	v = eval(v);
+	cout << v.ival << endl;
 }
