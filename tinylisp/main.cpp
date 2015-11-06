@@ -11,6 +11,30 @@
 using namespace std;
 
 
+class val {
+public:
+	enum TYPES {
+		T_LIST,
+		T_INT,
+		T_IDENT
+	};
+	int type = 0;
+	int ival = 0;
+	vector<val> lval;
+};
+
+
+
+int strtoint(string s) {
+	static stringstream ss;
+	ss.str(s), ss.clear();
+	int i = 0;
+	ss >> i;
+	return i;
+}
+
+
+
 vector<Token> tokenlist;
 
 vector<vector<string> > token_expressions = {
@@ -20,7 +44,6 @@ vector<vector<string> > token_expressions = {
 	{ "identifier", "[A-Za-z_][A-Za-z0-9_]*" },
 	{ "symbol", "[\\+\\-\\/\\*]" }
 };
-
 
 int exprid(string name) {
 	for (int i = 0; i < token_expressions.size(); i++)
@@ -34,12 +57,10 @@ string exprname(int id) {
 	return token_expressions[id][0];
 }
 
-
 int match(string s, string e) {
 	regex expr(e);
 	return regex_match(s, expr);
 }
-
 
 int match_any(string s) {
 	for (int i = 0; i < token_expressions.size(); i++) {
@@ -48,6 +69,27 @@ int match_any(string s) {
 	}
 	return -1;
 }
+
+
+
+const int FUNC_NAMES_MAX = 200;
+string func_names[FUNC_NAMES_MAX] = {
+	"+", "-", "*", "/"
+};
+
+int func_getint(string s) {
+	for (int i = 0; i < FUNC_NAMES_MAX; i++)
+		if (func_names[i].length() && func_names[i] == s)
+			return i;
+	return -1;
+}
+
+string func_getstring(int id) {
+	if (id >= 0 && id < FUNC_NAMES_MAX && func_names[id].length() > 0)
+		return func_names[id];
+	return "undefined";
+}
+
 
 
 void parse_token_string(string tokstr, int line, int linepos) {
@@ -101,12 +143,30 @@ void parse_token_file(string fname) {
 
 
 void show_tokens() {
-	for (auto tok : tokenlist) {
+	for (const auto &tok : tokenlist) {
 		cout << left 
 			<< setw(14) << exprname(tok.type) 
 			<< setw(14) << tok.val 
 			<< tok.line << "-" << tok.pos 
 			<< endl;
+	}
+}
+
+
+void show_list(const val &vlist, int tablen = 0) {
+	string tabs(tablen, '\t');
+	for (const auto &v : vlist.lval) {
+		switch (v.type) {
+		case val::T_LIST:
+			show_list(v, tablen+1);
+			break;
+		case val::T_INT:
+			cout << tabs << v.ival << endl;
+			break;
+		case val::T_IDENT:
+			cout << tabs << func_getstring(v.ival) << endl;
+			break;
+		}
 	}
 }
 
@@ -119,63 +179,74 @@ int expect(string s, int pos) {
 }
 
 
-// int eval(int startpos) {
-// 	int pos = startpos;
-// 	expect("(", pos);
-// 	expect(")", pos);
-// 	return 0;
-// }
-
-
-class val {
-public:
-	enum TYPES {
-		T_LIST,
-		T_INT
-	};
-	int type = 0;
-	int ival = 0;
-	vector<val> lval;
-};
-
-
-val parse_list(int startpos, int* len) {
+val parse_list(int startpos, int& len) {
 	int pos = startpos;
-	val v;
-	if (!expect("(", pos))
-		return v;
-	pos++;
+	val vlist;
 
+	// find start of the list
+	if (expect("(", pos)) {
+		pos++;
+	} else {
+		cout << "error: missing start bracket" << endl;
+		len = -1;
+		return vlist;
+	}
+
+	// parse each item in the list
 	while (pos < tokenlist.size() && !expect(")", pos)) {
+		// try and parse a sub-list
 		if (expect("(", pos)) {
-			int len = 0;
-			parse_list(pos, &len);
-			pos += len;
-		} else {
-			cout << tokenlist[pos].val << endl;
+			int sublen = 0;
+			vlist.lval.push_back( parse_list(pos, sublen) );
+			if (sublen == -1) {
+				len = -1;
+				return vlist;
+			}
+			pos += sublen;
+		} 
+		// parse an integer
+		else if (expect("integer", pos)) {
+			val v;
+				v.type = val::T_INT;
+				v.ival = strtoint(tokenlist[pos].val);
+				// cout << v.ival << endl;
+			vlist.lval.push_back(v);
+			pos++;
+		}
+		// parse identifier / symbol
+		else if (expect("identifier", pos) || expect("symbol", pos)) {
+			val v;
+				v.type = val::T_IDENT;
+				v.ival = func_getint(tokenlist[pos].val);
+				// cout << v.ival << "  (" << tokenlist[pos].val << ")" << endl;
+			vlist.lval.push_back(v);
 			pos++;
 		}
 	}
 
-	if (!expect(")", pos)) {
-		cout << "error: missing end bracket" << endl;
-		if (len != NULL)
-			*len = -1;
-	} else {
+	// make sure the list has an end bracket
+	if (expect(")", pos)) {
 		pos++;
-		if (len != NULL)
-			*len = pos - startpos;
+		len = pos - startpos;
+	} else {
+		cout << "error: missing end bracket" << endl;
+		len = -1;
 	}
 
-	return v;
+	// return list
+	return vlist;
 }
 
 
 int main() {
-	cout << "hello" << endl;
+	cout << ">> tokens:" << endl;
 	parse_token_file("doug.lisp");
 	show_tokens();
 	cout << endl;
-	val v = parse_list(0, NULL);
+
+	cout << ">> program list:" << endl;
+	int err = 0;
+	val v = parse_list(0, err);
+	show_list(v);
 	cout << endl;
 }
