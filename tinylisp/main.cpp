@@ -7,24 +7,13 @@
 #include <regex>
 
 #include "token.h"
+#include "val.h"
 
 using namespace std;
 
 
-class val {
-public:
-	enum TYPES {
-		T_LIST,
-		T_INT,
-		T_IDENT
-	};
-	int type = 0;
-	int ival = 0;
-	vector<val> lval;
-};
 
-
-
+// helpers
 int strtoint(string s) {
 	static stringstream ss;
 	ss.str(s), ss.clear();
@@ -142,33 +131,6 @@ void parse_token_file(string fname) {
 }
 
 
-void show_tokens() {
-	for (const auto &tok : tokenlist) {
-		cout << left 
-			<< setw(14) << exprname(tok.type) 
-			<< setw(14) << tok.val 
-			<< tok.line << "-" << tok.pos 
-			<< endl;
-	}
-}
-
-
-void show_list(const val &vlist, int tablen = 0) {
-	string tabs(tablen, '\t');
-	for (const auto &v : vlist.lval) {
-		switch (v.type) {
-		case val::T_LIST:
-			show_list(v, tablen+1);
-			break;
-		case val::T_INT:
-			cout << tabs << v.ival << endl;
-			break;
-		case val::T_IDENT:
-			cout << tabs << func_getstring(v.ival) << endl;
-			break;
-		}
-	}
-}
 
 
 int expect(string s, int pos) {
@@ -236,6 +198,38 @@ val parse_list(int startpos, int& len) {
 	// return list
 	return vlist;
 }
+
+
+
+
+void show_tokens() {
+	for (const auto &tok : tokenlist) {
+		cout << left 
+			<< setw(14) << exprname(tok.type) 
+			<< setw(14) << tok.val 
+			<< tok.line << "-" << tok.pos 
+			<< endl;
+	}
+}
+
+void show_list(const val &vlist, int tablen = 0) {
+	string tabs(tablen, '\t');
+	for (const auto &v : vlist.lval) {
+		switch (v.type) {
+		case val::T_LIST:
+			show_list(v, tablen+1);
+			break;
+		case val::T_INT:
+			cout << tabs << v.ival << endl;
+			break;
+		case val::T_IDENT:
+			cout << tabs << func_getstring(v.ival) << endl;
+			break;
+		}
+	}
+}
+
+
 
 
 int main() {
