@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <regex>
+#include <cassert>
 
 #include "token.h"
 #include "val.h"
@@ -78,21 +79,31 @@ namespace tokens {
 
 namespace func {
 
-	const int FUNC_NAMES_MAX = 200;
-	string names[FUNC_NAMES_MAX] = {
-		"+", "-", "*", "/"
+	enum OPCODE {
+		OP_NOOP,
+		OP_ADD,
+		OP_SUB,
+		OP_MUL,
+		OP_DIV,
+		OP_DEFINE
+	};
+
+	vector<string> opnames = {
+		"nil", 
+		"+", "-", "*", "/",
+		"define"
 	};
 
 	int getint(string s) {
-		for (int i = 0; i < FUNC_NAMES_MAX; i++)
-			if (names[i].length() && names[i] == s)
+		for (int i = 0; i < opnames.size(); i++)
+			if (opnames[i].length() && opnames[i] == s)
 				return i;
 		return -1;
 	}
 
 	string getstring(int id) {
-		if (id >= 0 && id < FUNC_NAMES_MAX && names[id].length() > 0)
-			return names[id];
+		if (id >= 0 && id < opnames.size() && opnames[id].length() > 0)
+			return opnames[id];
 		return "undefined";
 	}
 
@@ -155,10 +166,11 @@ namespace parser {
 
 	int expect(string s, int pos) {
 		int id = tokens::exprid(s);
-		if (id == tokens::list[pos].type)
+		if (pos < tokens::list.size() && id == tokens::list[pos].type)
 			return 1;
 		return 0;
 	}
+
 
 	val parse_list(int startpos, int& len) {
 		int pos = startpos;
@@ -187,8 +199,7 @@ namespace parser {
 			} 
 			// parse an integer
 			else if (expect("integer", pos)) {
-				val v;
-					v.type = val::T_INT;
+				val v(val::T_INT);
 					v.ival = strtoint(tokens::list[pos].val);
 					// cout << v.ival << endl;
 				vlist.lval.push_back(v);
@@ -196,8 +207,7 @@ namespace parser {
 			}
 			// parse identifier / symbol
 			else if (expect("identifier", pos) || expect("symbol", pos)) {
-				val v;
-					v.type = val::T_IDENT;
+				val v(val::T_IDENT);
 					v.ival = func::getint(tokens::list[pos].val);
 					// cout << v.ival << "  (" << tokens::list[pos].val << ")" << endl;
 				vlist.lval.push_back(v);
@@ -218,50 +228,89 @@ namespace parser {
 		return vlist;
 	}
 
+
+	val parse_lists() {
+		val vlist(val::T_LIST);
+		int pos = 0;
+
+		while (true) {
+			int len = 0;
+			val v = parser::parse_list(pos, len);
+			if (len == -1)
+				break;
+
+			vlist.lval.push_back(v);
+			pos += len;
+			if (pos >= tokens::list.size())
+				break;
+		}
+
+		return vlist;
+	}
+
+
+	void show_list(const val &vlist, int tablen = 0) {
+		string tabs(tablen, '\t');
+		for (const auto &v : vlist.lval) {
+			switch (v.type) {
+			case val::T_LIST:
+				cout << tabs << "---" << endl;
+				show_list(v, tablen+1);
+				// cout << tabs << "---" << endl;
+				break;
+			case val::T_INT:
+				cout << tabs << v.ival << endl;
+				break;
+			case val::T_IDENT:
+				cout << tabs << func::getstring(v.ival) << endl;
+				break;
+			}
+		}
+	}
+
 } // end parser
 
 
 
 
-// namespace eval {
-
-// } // end eval
-
-
 val eval(const val& v) {
-	val rval;
-	rval.type = val::T_INT;
+	val rval(val::T_INT);
 
 	if (v.type == val::T_INT)
 		return v;
 
 	else if (v.type == val::T_LIST)
 		switch (v.lval[0].ival) {
-		case 0:
-			for (int i = 0; i < v.lval.size(); i++)
-				rval.ival += eval(v.lval[i]).ival;
+		// math functions
+		case func::OP_ADD:
+		case func::OP_SUB:
+		case func::OP_MUL:
+		case func::OP_DIV:
+			assert(v.lval.size() >= 2);
+			rval.ival = eval(v.lval[1]).ival;  // set start value
+			for (int i = 2; i < v.lval.size(); i++) {
+				int res = eval(v.lval[i]).ival;
+				switch (v.lval[0].ival) {
+				case func::OP_ADD:
+					rval.ival += res;
+					break;
+				case func::OP_SUB:
+					rval.ival -= res;
+					break;
+				case func::OP_MUL:
+					rval.ival *= res;
+					break;
+				case func::OP_DIV:
+					rval.ival /= res;
+					break;
+				}
+			}
+			break;
 		}
 
 	return rval;
 }
 
-
-void show_list(const val &vlist, int tablen = 0) {
-	string tabs(tablen, '\t');
-	for (const auto &v : vlist.lval) {
-		switch (v.type) {
-		case val::T_LIST:
-			show_list(v, tablen+1);
-			break;
-		case val::T_INT:
-			cout << tabs << v.ival << endl;
-			break;
-		case val::T_IDENT:
-			cout << tabs << func::getstring(v.ival) << endl;
-			break;
-		}
-	}
-}
 
 
 
@@ -272,11 +321,12 @@ int main() {
 	cout << endl;
 
 	cout << ">> program list:" << endl;
-	int err = 0;
-	val v = parser::parse_list(0, err);
-	show_list(v);
+	val vlist = parser::parse_lists();
+	parser::show_list(vlist);
 	cout << endl;
 
-	v = eval(v);
-	cout << v.ival << endl;
+	cout << ">> parse:" << endl;
+	for (auto v : vlist.lval)
+		cout << eval(v).ival << endl;
+	cout << endl;
 }

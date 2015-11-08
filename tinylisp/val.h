@@ -13,6 +13,10 @@ public:
 	int type = 0;
 	int ival = 0;
 	std::vector<val> lval;
+	val() { }
+	val(int type) {
+		this->type = type;
+	}
 };
 
 #endif
