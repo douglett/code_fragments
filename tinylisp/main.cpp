@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <string>
 #include <vector>
+#include <map>
 #include <fstream>
 #include <sstream>
 #include <regex>
@@ -297,6 +298,15 @@ namespace parser {
 
 
 
+namespace env {
+
+	map<string, val> def;	
+
+} // end env
+
+
+
+
 val eval(const val& v) {
 	val rval(val::T_INT);
 
@@ -329,6 +339,11 @@ val eval(const val& v) {
 					break;
 				}
 			}
+			break;
+
+		// environment operators
+		case func::OP_DEFINE:
+			env::def[ func::getstring(v.lval[1].ival) ] = v;
 			break;
 		}
 

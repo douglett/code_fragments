@@ -1,5 +1,5 @@
-(define blah 3 
-	())
+(define square (v1)
+	(* v1 v1))
 
 (+ 1 2 
 	(+ 2 2)
