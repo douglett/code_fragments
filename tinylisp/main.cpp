@@ -94,17 +94,39 @@ namespace func {
 		"define"
 	};
 
+	vector<string> defnames;
+
 	int getint(string s) {
 		for (int i = 0; i < opnames.size(); i++)
 			if (opnames[i].length() && opnames[i] == s)
 				return i;
+		for (int i = 0; i < defnames.size(); i++)
+			if (defnames[i].length() && defnames[i] == s)
+				return 100 + i;
 		return -1;
 	}
 
 	string getstring(int id) {
-		if (id >= 0 && id < opnames.size() && opnames[id].length() > 0)
-			return opnames[id];
+		if (id >= 0 && id < opnames.size())
+			if (opnames[id].length() > 0)
+				return opnames[id];
+		if (id >= 100 && id < 100 + defnames.size())
+			if (defnames[id-100].length() > 0)
+				return defnames[id-100];
 		return "undefined";
+	}
+
+	int define(string s) {
+		// check for existance
+		for (int i = 0; i < opnames.size(); i++)
+			if (opnames[i] == s)
+				return i;
+		for (int i = 0; i < defnames.size(); i++)
+			if (defnames[i] == s)
+				return 100 + i;
+		// define
+		defnames.push_back(s);
+		return 100 + defnames.size()-1;
 	}
 
 } // end func
@@ -200,16 +222,18 @@ namespace parser {
 			// parse an integer
 			else if (expect("integer", pos)) {
 				val v(val::T_INT);
-					v.ival = strtoint(tokens::list[pos].val);
-					// cout << v.ival << endl;
+				v.ival = strtoint(tokens::list[pos].val);
+				// cout << v.ival << endl;
 				vlist.lval.push_back(v);
 				pos++;
 			}
 			// parse identifier / symbol
 			else if (expect("identifier", pos) || expect("symbol", pos)) {
 				val v(val::T_IDENT);
-					v.ival = func::getint(tokens::list[pos].val);
-					// cout << v.ival << "  (" << tokens::list[pos].val << ")" << endl;
+				v.ival = func::getint(tokens::list[pos].val);
+				// cout << v.ival << "  (" << tokens::list[pos].val << ")" << endl;
+				if (v.ival == -1)
+					v.ival = func::define(tokens::list[pos].val);
 				vlist.lval.push_back(v);
 				pos++;
 			}
