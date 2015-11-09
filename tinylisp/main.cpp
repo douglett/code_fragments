@@ -242,14 +242,15 @@ namespace parser {
 
 	void show_list(const val &vlist, int tablen = 0) {
 		string tabs(tablen, '\t');
+		cout << tabs << "---" << endl;
 		for (const auto &v : vlist.lval) {
 			switch (v.type) {
 			case val::T_LIST:
-				cout << tabs << "---" << endl;
+				// cout << tabs << "---" << endl;
 				show_list(v, tablen+1);
 				break;
 			default:
-				cout << tabs << show_val(v) << endl;
+				cout << tabs << '\t' << show_val(v) << endl;
 			}
 		}
 	}
@@ -270,7 +271,8 @@ namespace env {
 	// 	OP_DEFINE
 	// };
 
-	vector<string> opnames = {
+	const val nil = val();
+	const vector<string> opnames = {
 		"nil", 
 		"+", "-", "*", "/",
 		"define"
@@ -285,6 +287,22 @@ namespace env {
 				return;
 		// set def
 		def[s] = v;
+	}
+
+	const val& get(string s) {
+		for (const auto &d : def)
+			if (d.first == s)
+				return d.second;
+		return nil;
+	}
+
+	void undef(string s) {
+		auto v = get(s);
+		if (&v != &nil) {
+			def.erase(s);
+			cout << "asdads" << endl;
+		}
+		// v invalid here!
 	}
 
 } // end env
@@ -313,9 +331,26 @@ const val& lastitem(const val& v) {
 }
 
 
+val eval(const val& v);
+
 val exec(const val& call, const val& fn) {
+	// cout << "exec:" << endl;
+	assert(fn.lval.size() >= 4);
+	// parser::show_list(call);
 	// parser::show_list(fn);
-	return val();
+
+	// define ids
+	auto &args = fn.lval[2].lval;
+	for (int i = 0; i < args.size(); i++) 
+		if (args[i].type == val::T_IDENT && i+1 < call.lval.size())
+			env::define(args[i].sval, call.lval[i+1]);
+	// run
+	// parser::show_list(fn.lval[3]);
+	val rval = eval(fn.lval[3]);
+	// undefine ids
+	for (int i = 0; i < args.size(); i++) 
+		env::undef(args[i].sval);
+	return rval;
 }
 
 
@@ -324,6 +359,9 @@ val eval(const val& v) {
 
 	if (v.type == val::T_INT)
 		return v;
+
+	else if (v.type == val::T_IDENT)
+		return env::get(v.sval);
 
 	else if (v.type == val::T_LIST) {
 		// try and run list as function
@@ -348,14 +386,15 @@ val eval(const val& v) {
 			}
 			// environment operators
 			else if (name == "define") {
-				env::def[ v.lval[1].sval ] = v;
+				env::define(v.lval[1].sval, v);
 				return lastitem(v);
 			}
 			// user defined functions
 			else {
-				auto fn = env::def.find(name);
-				if (fn != env::def.end())
-					return exec(v, fn->second);
+				cout << "calling: " << name << endl;
+				auto &fn = env::get(name);
+				if (fn.type == val::T_LIST && fn.lval.size() > 0)
+					return exec(v, fn);
 				else
 					cout << "unknown exec: " << name << endl;
 			}
@@ -373,15 +412,15 @@ val eval(const val& v) {
 
 
 int main() {
-	cout << ">> tokens:" << endl;
 	tokens::tokenize_file("doug.lisp");
-	tokens::show();
-	cout << endl;
+	// cout << ">> tokens:" << endl;
+	// tokens::show(); 
+	// cout << endl;
 
-	cout << ">> program list:" << endl;
 	val vlist = parser::parse_lists();
-	parser::show_list(vlist);
-	cout << endl;
+	// cout << ">> program list:" << endl;
+	// parser::show_list(vlist);
+	// cout << endl;
 
 	cout << ">> parse:" << endl;
 	for (auto v : vlist.lval)
