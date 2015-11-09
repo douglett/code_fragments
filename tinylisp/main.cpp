@@ -68,6 +68,54 @@ namespace tokens {
 		return -1;
 	}
 
+	void tokenize_string(string tokstr, int line, int linepos) {
+		stringstream ss(tokstr);
+		string s;
+		char c;
+		int pos = 1;
+
+		while ((c = ss.peek()) != EOF || s.length() > 0) {
+			// cout << c << endl;
+			int m = tokens::match_any(s+c);
+			if (m != -1) {
+				s += ss.get();
+			} else {
+				if (s.length() > 0) {
+					m = tokens::match_any(s);
+					list.push_back(Token(m, s, line, linepos+pos));
+					pos += s.length();
+					// cout << "\t" << s << endl;
+				} else {
+					c = ss.get();
+					list.push_back(Token(-1, string(&c, 1), line, linepos+pos));
+					pos += 1;
+					// cout << "\t" << "[" << c << "]?" << endl;
+				}
+				s = "";
+			}
+		}
+	}
+
+	void tokenize_file(string fname) {
+		fstream f(fname);
+		stringstream ss;
+		string s;
+		int line = 0;
+
+		while (getline(f, s)) {
+			line++;
+			ss.str(s), ss.clear();
+			int linepos = 1;
+			while (ss >> s) {
+				// printf("%d 	%d\n", line, linepos);
+				tokenize_string(s, line, linepos);
+				linepos = ss.tellg();
+			}
+		}
+
+		f.close();
+	}
+
 	void show() {
 		for (const auto &tok : tokens::list) {
 			cout << left 
@@ -84,55 +132,6 @@ namespace tokens {
 
 
 namespace parser {
-
-	void parse_token_string(string tokstr, int line, int linepos) {
-		stringstream ss(tokstr);
-		string s;
-		char c;
-		int pos = 1;
-
-		while ((c = ss.peek()) != EOF || s.length() > 0) {
-			// cout << c << endl;
-			int m = tokens::match_any(s+c);
-			if (m != -1) {
-				s += ss.get();
-			} else {
-				if (s.length() > 0) {
-					m = tokens::match_any(s);
-					tokens::list.push_back(Token(m, s, line, linepos+pos));
-					pos += s.length();
-					// cout << "\t" << s << endl;
-				} else {
-					c = ss.get();
-					tokens::list.push_back(Token(-1, string(&c, 1), line, linepos+pos));
-					pos += 1;
-					// cout << "\t" << "[" << c << "]?" << endl;
-				}
-				s = "";
-			}
-		}
-	}
-
-
-	void parse_token_file(string fname) {
-		fstream f(fname);
-		stringstream ss;
-		string s;
-		int line = 0;
-
-		while (getline(f, s)) {
-			line++;
-			ss.str(s), ss.clear();
-			int linepos = 1;
-			while (ss >> s) {
-				// printf("%d 	%d\n", line, linepos);
-				parse_token_string(s, line, linepos);
-				linepos = ss.tellg();
-			}
-		}
-
-		f.close();
-	}
 
 
 	int expect(string s, int pos) {
@@ -375,7 +374,7 @@ val eval(const val& v) {
 
 int main() {
 	cout << ">> tokens:" << endl;
-	parser::parse_token_file("doug.lisp");
+	tokens::tokenize_file("doug.lisp");
 	tokens::show();
 	cout << endl;
 
