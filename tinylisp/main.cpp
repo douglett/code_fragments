@@ -16,12 +16,17 @@ using namespace std;
 
 
 // helpers
+static stringstream ss; // generic stringstream
 int strtoint(string s) {
-	static stringstream ss;
 	ss.str(s), ss.clear();
 	int i = 0;
 	ss >> i;
 	return i;
+}
+string inttostr(int i) {
+	ss.str(""), ss.clear();
+	ss << i;
+	return ss.str();
 }
 
 
@@ -74,63 +79,6 @@ namespace tokens {
 	}
 
 } // end tokens
-
-
-
-
-namespace func {
-
-	enum OPCODE {
-		OP_NOOP,
-		OP_ADD,
-		OP_SUB,
-		OP_MUL,
-		OP_DIV,
-		OP_DEFINE
-	};
-
-	vector<string> opnames = {
-		"nil", 
-		"+", "-", "*", "/",
-		"define"
-	};
-
-	vector<string> defnames;
-
-	int getint(string s) {
-		for (int i = 0; i < opnames.size(); i++)
-			if (opnames[i].length() && opnames[i] == s)
-				return i;
-		for (int i = 0; i < defnames.size(); i++)
-			if (defnames[i].length() && defnames[i] == s)
-				return 100 + i;
-		return -1;
-	}
-
-	string getstring(int id) {
-		if (id >= 0 && id < opnames.size())
-			if (opnames[id].length() > 0)
-				return opnames[id];
-		if (id >= 100 && id < 100 + defnames.size())
-			if (defnames[id-100].length() > 0)
-				return defnames[id-100];
-		return "undefined";
-	}
-
-	int define(string s) {
-		// check for existance
-		for (int i = 0; i < opnames.size(); i++)
-			if (opnames[i] == s)
-				return i;
-		for (int i = 0; i < defnames.size(); i++)
-			if (defnames[i] == s)
-				return 100 + i;
-		// define
-		defnames.push_back(s);
-		return 100 + defnames.size()-1;
-	}
-
-} // end func
 
 
 
@@ -231,10 +179,8 @@ namespace parser {
 			// parse identifier / symbol
 			else if (expect("identifier", pos) || expect("symbol", pos)) {
 				val v(val::T_IDENT);
-				v.ival = func::getint(tokens::list[pos].val);
-				// cout << v.ival << "  (" << tokens::list[pos].val << ")" << endl;
-				if (v.ival == -1)
-					v.ival = func::define(tokens::list[pos].val);
+				v.sval = tokens::list[pos].val;
+				// cout << v.sval << endl;
 				vlist.lval.push_back(v);
 				pos++;
 			}
@@ -274,6 +220,27 @@ namespace parser {
 	}
 
 
+	string show_val(const val& v) {
+		ss.str(""), ss.clear();
+		switch (v.type) {
+		case val::T_LIST:
+			if (v.lval.size() == 0)
+				return "nil";
+			else {
+				ss << "[list x" << v.lval.size() << "]";
+				return ss.str();
+			}
+		case val::T_INT:
+			ss << v.ival;
+			return ss.str();
+		case val::T_IDENT:
+			return string("id:") + v.sval;
+		default:
+			return "undefined";
+		}
+	}
+
+
 	void show_list(const val &vlist, int tablen = 0) {
 		string tabs(tablen, '\t');
 		for (const auto &v : vlist.lval) {
@@ -281,14 +248,9 @@ namespace parser {
 			case val::T_LIST:
 				cout << tabs << "---" << endl;
 				show_list(v, tablen+1);
-				// cout << tabs << "---" << endl;
 				break;
-			case val::T_INT:
-				cout << tabs << v.ival << endl;
-				break;
-			case val::T_IDENT:
-				cout << tabs << func::getstring(v.ival) << endl;
-				break;
+			default:
+				cout << tabs << show_val(v) << endl;
 			}
 		}
 	}
@@ -300,52 +262,110 @@ namespace parser {
 
 namespace env {
 
-	map<string, val> def;	
+	// enum OPCODE {
+	// 	OP_NOOP,
+	// 	OP_ADD,
+	// 	OP_SUB,
+	// 	OP_MUL,
+	// 	OP_DIV,
+	// 	OP_DEFINE
+	// };
+
+	vector<string> opnames = {
+		"nil", 
+		"+", "-", "*", "/",
+		"define"
+	};
+
+	map<string, val> def;
+
+	void define(string s, val v) {
+		// don't redefine opnames
+		for (auto &n : opnames)
+			if (n == s)
+				return;
+		// set def
+		def[s] = v;
+	}
 
 } // end env
 
 
 
 
+const val& firstitem(const val& v) {
+	if (v.type == val::T_LIST && v.lval.size() > 0) {
+		if (v.lval[0].type == val::T_LIST)
+			return firstitem(v.lval[0]);
+		else
+			return v.lval[0];
+	}
+	return v;
+}
+
+const val& lastitem(const val& v) {
+	if (v.type == val::T_LIST && v.lval.size() > 0) {
+		if (v.lval.back().type == val::T_LIST)
+			return lastitem(v.lval.back());
+		else 
+			return v.lval.back();
+	}
+	return v;
+}
+
+
+val exec(const val& call, const val& fn) {
+	// parser::show_list(fn);
+	return val();
+}
+
+
 val eval(const val& v) {
-	val rval(val::T_INT);
+	val rval;
 
 	if (v.type == val::T_INT)
 		return v;
 
-	else if (v.type == val::T_LIST)
-		switch (v.lval[0].ival) {
-		// math functions
-		case func::OP_ADD:
-		case func::OP_SUB:
-		case func::OP_MUL:
-		case func::OP_DIV:
-			assert(v.lval.size() >= 2);
-			rval.ival = eval(v.lval[1]).ival;  // set start value
-			for (int i = 2; i < v.lval.size(); i++) {
-				int res = eval(v.lval[i]).ival;
-				switch (v.lval[0].ival) {
-				case func::OP_ADD:
-					rval.ival += res;
-					break;
-				case func::OP_SUB:
-					rval.ival -= res;
-					break;
-				case func::OP_MUL:
-					rval.ival *= res;
-					break;
-				case func::OP_DIV:
-					rval.ival /= res;
-					break;
+	else if (v.type == val::T_LIST) {
+		// try and run list as function
+		if (v.lval.size() > 0 && v.lval[0].type == val::T_IDENT) {
+			auto name = v.lval[0].sval;
+			// math functions
+			if (name == "+" || name == "-" || name == "*" || name == "/") {
+				assert(v.lval.size() >= 2);  // lazy error checking
+				rval.type = val::T_INT;
+				rval.ival = eval(v.lval[1]).ival;  // set start value
+				for (int i = 2; i < v.lval.size(); i++) {
+					int res = eval(v.lval[i]).ival;
+					if (name == "+")
+						rval.ival += res;
+					else if (name == "-")
+						rval.ival -= res;
+					else if (name == "*")
+						rval.ival *= res;
+					else if (name == "/")
+						rval.ival /= res;
 				}
 			}
-			break;
-
-		// environment operators
-		case func::OP_DEFINE:
-			env::def[ func::getstring(v.lval[1].ival) ] = v;
-			break;
+			// environment operators
+			else if (name == "define") {
+				env::def[ v.lval[1].sval ] = v;
+				return lastitem(v);
+			}
+			// user defined functions
+			else {
+				auto fn = env::def.find(name);
+				if (fn != env::def.end())
+					return exec(v, fn->second);
+				else
+					cout << "unknown exec: " << name << endl;
+			}
 		}
+		// return last item in list
+		else if (v.lval.size() > 0) {
+			return eval(v.lval.back());
+		}
+	}
 
 	return rval;
 }
@@ -366,6 +386,6 @@ int main() {
 
 	cout << ">> parse:" << endl;
 	for (auto v : vlist.lval)
-		cout << eval(v).ival << endl;
+		cout << parser::show_val(eval(v)) << endl;
 	cout << endl;
 }

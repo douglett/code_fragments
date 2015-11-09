@@ -12,6 +12,7 @@ public:
 	};
 	int type = 0;
 	int ival = 0;
+	std::string sval;
 	std::vector<val> lval;
 	val() { }
 	val(int type) {
