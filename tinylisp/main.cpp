@@ -280,7 +280,7 @@ namespace env {
 
 	map<string, val> def;
 
-	void define(string s, val v) {
+	void define(string s, const val& v) {
 		// don't redefine opnames
 		for (auto &n : opnames)
 			if (n == s)
@@ -297,11 +297,9 @@ namespace env {
 	}
 
 	void undef(string s) {
-		auto v = get(s);
-		if (&v != &nil) {
+		auto &v = get(s);
+		if (&v != &nil)
 			def.erase(s);
-			cout << "asdads" << endl;
-		}
 		// v invalid here!
 	}
 
@@ -330,23 +328,36 @@ const val& lastitem(const val& v) {
 	return v;
 }
 
+const val& atomize(const val& v) {
+	if (v.type == val::T_LIST && v.lval.size() == 1)
+		return atomize(v.lval[0]);
+	return v;
+}
+
+val sublist(const val& v, int start, int len) {
+	int last = start + len;
+	if (len < 1)
+		last = v.lval.size() + len;
+	val rval;
+	for (int i = start; i < last; i++)
+		rval.lval.push_back(v.lval[i]);
+	return atomize(rval);
+}
+
 
 val eval(const val& v);
 
 val exec(const val& call, const val& fn) {
-	// cout << "exec:" << endl;
-	assert(fn.lval.size() >= 4);
-	// parser::show_list(call);
-	// parser::show_list(fn);
-
+	assert(fn.lval.size() >= 2);
 	// define ids
-	auto &args = fn.lval[2].lval;
+	auto &args = fn.lval[0].lval;
 	for (int i = 0; i < args.size(); i++) 
 		if (args[i].type == val::T_IDENT && i+1 < call.lval.size())
 			env::define(args[i].sval, call.lval[i+1]);
 	// run
-	// parser::show_list(fn.lval[3]);
-	val rval = eval(fn.lval[3]);
+	val rval;
+	for (int i = 1; i < fn.lval.size(); i++)
+		rval = eval(fn.lval[i]);
 	// undefine ids
 	for (int i = 0; i < args.size(); i++) 
 		env::undef(args[i].sval);
@@ -360,8 +371,10 @@ val eval(const val& v) {
 	if (v.type == val::T_INT)
 		return v;
 
-	else if (v.type == val::T_IDENT)
+	else if (v.type == val::T_IDENT) {
+		// cout << "get " << v.sval << " " << parser::show_val(env::get(v.sval)) << endl;
 		return env::get(v.sval);
+	}
 
 	else if (v.type == val::T_LIST) {
 		// try and run list as function
@@ -386,12 +399,15 @@ val eval(const val& v) {
 			}
 			// environment operators
 			else if (name == "define") {
-				env::define(v.lval[1].sval, v);
+				assert(v.lval.size() >= 3);
+				const string &name = v.lval[1].sval;
+				val deflist = sublist(v, 2, 0);
+				env::define(name, deflist);
 				return lastitem(v);
 			}
 			// user defined functions
 			else {
-				cout << "calling: " << name << endl;
+				// cout << "calling: " << name << endl;
 				auto &fn = env::get(name);
 				if (fn.type == val::T_LIST && fn.lval.size() > 0)
 					return exec(v, fn);
