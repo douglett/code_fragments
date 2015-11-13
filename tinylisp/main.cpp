@@ -68,7 +68,7 @@ namespace tokens {
 		return -1;
 	}
 
-	void tokenize_string(string tokstr, int line, int linepos) {
+	int tokenize_string(string tokstr, int line, int linepos) {
 		stringstream ss(tokstr);
 		string s;
 		char c;
@@ -86,17 +86,19 @@ namespace tokens {
 					pos += s.length();
 					// cout << "\t" << s << endl;
 				} else {
-					c = ss.get();
-					list.push_back(Token(-1, string(&c, 1), line, linepos+pos));
-					pos += 1;
-					// cout << "\t" << "[" << c << "]?" << endl;
+					// c = ss.get();
+					// list.push_back(Token(-1, string(&c, 1), line, linepos+pos));
+					// pos += 1;
+					cerr << "tokenizer error: unknown symbol [" << c << "]" << endl;
+					return 1;
 				}
 				s = "";
 			}
 		}
+		return 0;
 	}
 
-	void tokenize_file(string fname) {
+	int tokenize_file(string fname) {
 		fstream f(fname);
 		stringstream ss;
 		string s;
@@ -108,12 +110,15 @@ namespace tokens {
 			int linepos = 1;
 			while (ss >> s) {
 				// printf("%d 	%d\n", line, linepos);
-				tokenize_string(s, line, linepos);
+				int err = tokenize_string(s, line, linepos);
+				if (err)
+					return 1;
 				linepos = ss.tellg();
 			}
 		}
 
 		f.close();
+		return 0;
 	}
 
 	void show() {
@@ -150,7 +155,7 @@ namespace parser {
 		if (expect("(", pos)) {
 			pos++;
 		} else {
-			cout << "error: missing start bracket" << endl;
+			cerr << "parser error: missing start bracket" << endl;
 			len = -1;
 			return vlist;
 		}
@@ -190,7 +195,7 @@ namespace parser {
 			pos++;
 			len = pos - startpos;
 		} else {
-			cout << "error: missing end bracket" << endl;
+			cerr << "parser error: missing end bracket" << endl;
 			len = -1;
 		}
 
@@ -199,15 +204,18 @@ namespace parser {
 	}
 
 
-	val parse_lists() {
+	val parse_lists(int &err) {
 		val vlist(val::T_LIST);
 		int pos = 0;
+		err = 0;
 
 		while (true) {
 			int len = 0;
 			val v = parser::parse_list(pos, len);
-			if (len == -1)
+			if (len == -1) {
+				err = 1;
 				break;
+			}
 
 			vlist.lval.push_back(v);
 			pos += len;
@@ -412,7 +420,7 @@ val eval(const val& v) {
 				if (fn.type == val::T_LIST && fn.lval.size() > 0)
 					return exec(v, fn);
 				else
-					cout << "unknown exec: " << name << endl;
+					cerr << "unknown exec: " << name << endl;
 			}
 		}
 		// return last item in list
@@ -428,12 +436,16 @@ val eval(const val& v) {
 
 
 int main() {
-	tokens::tokenize_file("doug.lisp");
+	int err = tokens::tokenize_file("doug.lisp");
+	if (err)
+		return 1;
 	// cout << ">> tokens:" << endl;
 	// tokens::show(); 
 	// cout << endl;
 
-	val vlist = parser::parse_lists();
+	val vlist = parser::parse_lists(err);
+	if (err)
+		return 1;
 	// cout << ">> program list:" << endl;
 	// parser::show_list(vlist);
 	// cout << endl;
