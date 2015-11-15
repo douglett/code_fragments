@@ -169,7 +169,6 @@ namespace tokens {
 
 namespace parser {
 
-
 	int expect(string s, int pos) {
 		int id = tokens::exprid(s);
 		if (pos < tokens::list.size() && id == tokens::list[pos].type)
@@ -494,7 +493,7 @@ val eval(const val& v) {
 
 
 int main() {
-	int err = tokens::tokenize_file("doug.lisp");
+	int err = tokens::tokenize_file("doug2.lisp");
 	if (err)
 		return 1;
 	// cout << ">> tokens:" << endl;
