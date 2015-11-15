@@ -18,17 +18,26 @@ using namespace std;
 
 // helpers
 static stringstream ss; // generic stringstream
-int strtoint(string s) {
+static int strtoint(string s) {
 	ss.str(s), ss.clear();
 	int i = 0;
 	ss >> i;
 	return i;
 }
-string inttostr(int i) {
-	ss.str(""), ss.clear();
-	ss << i;
-	return ss.str();
+// static string inttostr(int i) {
+// 	ss.str(""), ss.clear();
+// 	ss << i;
+// 	return ss.str();
+// }
+
+
+void lerror(string type, string err, const Token* tok) {
+	cerr << type << " error:: " << err;
+	if (tok != NULL) 
+		cerr << " [" << tok->line << ":" << tok->pos << "]";
+	cerr << endl;
 }
+
 
 
 
@@ -79,7 +88,6 @@ namespace tokens {
 		while (true) {
 			c = ss.get();
 			if (c == EOF) {
-				cerr << "string error: missing end quote" << endl;
 				err = 1;
 				break;
 			}
@@ -104,9 +112,11 @@ namespace tokens {
 			if (m == stringid) {
 				int err = 0;
 				s = get_string(ss, err);
-				if (err)
-					return 1;
 				list.push_back(Token(m, s, line, linepos+pos));
+				if (err) {
+					lerror("tokenizer", "string error: missing end quote", &list.back());
+					return 1;
+				}
 				pos += s.length();
 				s = "";
 			} else if (m != -1) {
@@ -118,10 +128,7 @@ namespace tokens {
 					pos += s.length();
 					// cout << "\t" << s << endl;
 				} else {
-					// c = ss.get();
-					// list.push_back(Token(-1, string(&c, 1), line, linepos+pos));
-					// pos += 1;
-					cerr << "tokenizer error: unknown symbol [" << c << "]" << endl;
+					lerror("tokenizer", string("unknown symbol [")+c+"]", &list.back());
 					return 1;
 				}
 				s = "";
@@ -186,7 +193,7 @@ namespace parser {
 		if (expect("(", pos)) {
 			pos++;
 		} else {
-			cerr << "parser error: missing start bracket" << endl;
+			lerror("parser", "missing start bracket", &tokens::list[pos-1]);
 			len = -1;
 			return vlist;
 		}
@@ -208,6 +215,7 @@ namespace parser {
 				val v(val::T_INT);
 				v.ival = strtoint(tokens::list[pos].val);
 				// cout << v.ival << endl;
+				v.tok = &tokens::list[pos];
 				vlist.lval.push_back(v);
 				pos++;
 			}
@@ -216,6 +224,7 @@ namespace parser {
 				val v(val::T_IDENT);
 				v.sval = tokens::list[pos].val;
 				// cout << v.sval << endl;
+				v.tok = &tokens::list[pos];
 				vlist.lval.push_back(v);
 				pos++;
 			}
@@ -223,12 +232,14 @@ namespace parser {
 			else if (expect("string", pos)) {
 				val v(val::T_STRING);
 				v.sval = tokens::list[pos].val;
+				// cout << v.sval << endl;
+				v.tok = &tokens::list[pos];
 				vlist.lval.push_back(v);
 				pos++;
 			}
 			// unknown
 			else {
-				cerr << "parser error: unknown token type: " << tokens::list[pos].val << endl;
+				lerror("parser", "unknown token type", &tokens::list[pos]);
 				len = -1;
 				return vlist;
 			}
@@ -239,7 +250,7 @@ namespace parser {
 			pos++;
 			len = pos - startpos;
 		} else {
-			cerr << "parser error: missing end bracket" << endl;
+			lerror("parser", "missing end bracket", &tokens::list[pos-1]);
 			len = -1;
 		}
 
@@ -362,130 +373,135 @@ namespace env {
 
 
 
-val eval(const val& v);
+namespace lisp {
 
-const val& firstitem(const val& v) {
-	if (v.type == val::T_LIST && v.lval.size() > 0) {
-		if (v.lval[0].type == val::T_LIST)
-			return firstitem(v.lval[0]);
-		else
-			return v.lval[0];
-	}
-	return v;
-}
+	val eval(const val& v);
 
-const val& lastitem(const val& v) {
-	if (v.type == val::T_LIST && v.lval.size() > 0) {
-		if (v.lval.back().type == val::T_LIST)
-			return lastitem(v.lval.back());
-		else 
-			return v.lval.back();
-	}
-	return v;
-}
-
-const val& atomize(const val& v) {
-	if (v.type == val::T_LIST && v.lval.size() == 1)
-		return atomize(v.lval[0]);
-	return v;
-}
-
-val sublist(const val& v, int start, int len) {
-	int last = start + len;
-	if (len < 1)
-		last = v.lval.size() + len;
-	val rval;
-	for (int i = start; i < last; i++)
-		rval.lval.push_back(v.lval[i]);
-	return atomize(rval);
-}
-
-
-val exec(const val& call, const val& fn) {
-	assert(fn.lval.size() >= 2);
-	// define ids
-	auto &args = fn.lval[0].lval;
-	for (int i = 0; i < args.size(); i++) 
-		if (args[i].type == val::T_IDENT && i+1 < call.lval.size())
-			env::define(args[i].sval, call.lval[i+1]);
-	// run
-	val rval;
-	for (int i = 1; i < fn.lval.size(); i++)
-		rval = eval(fn.lval[i]);
-	// undefine ids
-	for (int i = 0; i < args.size(); i++) 
-		env::undef(args[i].sval);
-	return rval;
-}
-
-
-val eval(const val& v) {
-	switch (v.type) {
-	case val::T_INT:
-	case val::T_STRING:
+	const val& firstitem(const val& v) {
+		if (v.type == val::T_LIST && v.lval.size() > 0) {
+			if (v.lval[0].type == val::T_LIST)
+				return firstitem(v.lval[0]);
+			else
+				return v.lval[0];
+		}
 		return v;
+	}
 
-	case val::T_IDENT:
-		// cout << "get " << v.sval << " " << parser::show_val(env::get(v.sval)) << endl;
-		return env::get(v.sval);
+	const val& lastitem(const val& v) {
+		if (v.type == val::T_LIST && v.lval.size() > 0) {
+			if (v.lval.back().type == val::T_LIST)
+				return lastitem(v.lval.back());
+			else 
+				return v.lval.back();
+		}
+		return v;
+	}
 
-	case val::T_LIST:
-		// test for nil
-		if (v.lval.size() == 0)
+	const val& atomize(const val& v) {
+		if (v.type == val::T_LIST && v.lval.size() == 1)
+			return atomize(v.lval[0]);
+		return v;
+	}
+
+	val sublist(const val& v, int start, int len) {
+		int last = start + len;
+		if (len < 1)
+			last = v.lval.size() + len;
+		val rval;
+		for (int i = start; i < last; i++)
+			rval.lval.push_back(v.lval[i]);
+		return atomize(rval);
+	}
+
+
+	val exec(const val& call, const val& fn) {
+		assert(fn.lval.size() >= 2);
+		// define ids
+		auto &args = fn.lval[0].lval;
+		for (int i = 0; i < args.size(); i++) 
+			if (args[i].type == val::T_IDENT && i+1 < call.lval.size())
+				env::define(args[i].sval, call.lval[i+1]);
+		// run
+		val rval;
+		for (int i = 1; i < fn.lval.size(); i++)
+			rval = eval(fn.lval[i]);
+		// undefine ids
+		for (int i = 0; i < args.size(); i++) 
+			env::undef(args[i].sval);
+		return rval;
+	}
+
+
+	val eval(const val& v) {
+		switch (v.type) {
+		case val::T_INT:
+		case val::T_STRING:
 			return v;
-		// not a function: return entire list
-		if (v.lval[0].type != val::T_IDENT)
-			return v;
 
-		// otherwise, try and run list as function
-		auto name = v.lval[0].sval;
+		case val::T_IDENT:
+			// cout << "get " << v.sval << " " << parser::show_val(env::get(v.sval)) << endl;
+			return env::get(v.sval);
 
-		// math functions
-		if (name == "+" || name == "-" || name == "*" || name == "/") {
-			assert(v.lval.size() >= 2);  // lazy error checking
-			val rval(val::T_INT);
-			rval.ival = eval(v.lval[1]).ival;  // set start value
-			for (int i = 2; i < v.lval.size(); i++) {
-				int res = eval(v.lval[i]).ival;
-				if (name == "+")
-					rval.ival += res;
-				else if (name == "-")
-					rval.ival -= res;
-				else if (name == "*")
-					rval.ival *= res;
-				else if (name == "/")
-					rval.ival /= res;
+		case val::T_LIST:
+			// test for nil
+			if (v.lval.size() == 0)
+				return v;
+			// not a function: return entire list
+			if (v.lval[0].type != val::T_IDENT)
+				return v;
+
+			// otherwise, try and run list as function
+			auto name = v.lval[0].sval;
+
+			// math functions
+			if (name == "+" || name == "-" || name == "*" || name == "/") {
+				assert(v.lval.size() >= 2);  // lazy error checking
+				val rval(val::T_INT);
+				rval.ival = eval(v.lval[1]).ival;  // set start value
+				for (int i = 2; i < v.lval.size(); i++) {
+					int res = eval(v.lval[i]).ival;
+					if (name == "+")
+						rval.ival += res;
+					else if (name == "-")
+						rval.ival -= res;
+					else if (name == "*")
+						rval.ival *= res;
+					else if (name == "/")
+						rval.ival /= res;
+				}
+				return rval;
 			}
-			return rval;
-		}
-		// environment: define item
-		else if (name == "define") {
-			assert(v.lval.size() >= 3);
-			const string &name = v.lval[1].sval;
-			val deflist = sublist(v, 2, 0);
-			env::define(name, deflist);
-			return lastitem(v);
-		}
-		// environment: print list
-		else if (name == "print") {
-			assert(v.lval.size() >= 2);
-			for (int i = 1; i < v.lval.size(); i++)
-				cout << parser::show_val( eval(v.lval[i]) ) << " ";
-			cout << endl;
-			return lastitem(v);
-		}
-		// user defined functions
-		else {
-			// cout << "calling: " << name << endl;
-			auto &fn = env::get(name);
-			if (fn.type == val::T_LIST && fn.lval.size() > 0)
-				return exec(v, fn);
-			// not defined
-			cerr << "unknown exec: " << name << endl;
-			return val();
-		}
-	} // end switch
+			// environment: define item
+			else if (name == "define") {
+				assert(v.lval.size() >= 3);
+				const string &name = v.lval[1].sval;
+				val deflist = sublist(v, 2, 0);
+				env::define(name, deflist);
+				return lastitem(v);
+			}
+			// environment: print list
+			else if (name == "print") {
+				assert(v.lval.size() >= 2);
+				for (int i = 1; i < v.lval.size(); i++)
+					cout << parser::show_val( eval(v.lval[i]) ) << " ";
+				cout << endl;
+				return lastitem(v);
+			}
+			// user defined functions
+			else {
+				// cout << "calling: " << name << endl;
+				auto &fn = env::get(name);
+				if (fn.type == val::T_LIST && fn.lval.size() > 0)
+					return exec(v, fn);
+				// not defined
+				lerror("runtime", string("unknown exec: ")+name, v.tok);
+				// cerr << "unknown exec: " << name << endl;
+				return val();
+			}
+		} // end switch
 
-	// should never get here
-	return val();
-}
+		// should never get here
+		return val();
+	}
+
+} // end lisp

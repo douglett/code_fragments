@@ -21,7 +21,7 @@ int main() {
 
 	cout << ">> parse:" << endl;
 	for (auto v : vlist.lval) {
-		auto rval = eval(v);
+		auto rval = lisp::eval(v);
 		// cout << parser::show_val(rval) << endl;
 	}
 	cout << endl;
