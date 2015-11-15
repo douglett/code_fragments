@@ -325,7 +325,7 @@ namespace parser {
 namespace env {
 
 	const val nil = val();
-	const vector<string> opnames = {
+	const vector<string> keywords = {
 		"nil", 
 		"+", "-", "*", "/",
 		"define", "print"
@@ -333,13 +333,16 @@ namespace env {
 
 	map<string, val> def;
 
-	void define(string s, const val& v) {
-		// don't redefine opnames
-		for (auto &n : opnames)
-			if (n == s)
-				return;
+	int define(string name, const val& v) {
+		// don't redefine keywords
+		for (auto &s : keywords)
+			if (name == s) {
+				lerror("runtime", string("tried to redefine keyword: ")+name, v.tok);
+				return 1;
+			}
 		// set def
-		def[s] = v;
+		def[name] = v;
+		return 0;
 	}
 
 	const val& get(string s) {
@@ -407,8 +410,10 @@ namespace lisp {
 		// define ids
 		auto &args = fn.lval[0].lval;
 		for (int i = 0; i < args.size(); i++) 
-			if (args[i].type == val::T_IDENT && i+1 < call.lval.size())
-				env::define(args[i].sval, call.lval[i+1]);
+			if (args[i].type == val::T_IDENT && i+1 < call.lval.size()) {
+				int err = env::define(args[i].sval, call.lval[i+1]);
+				assert(err == 0);
+			}
 		// run
 		val rval;
 		for (int i = 1; i < fn.lval.size(); i++)
@@ -428,6 +433,8 @@ namespace lisp {
 
 		case val::T_IDENT:
 			// cout << "get " << v.sval << " " << parser::show_val(env::get(v.sval)) << endl;
+			if (v.sval == "nil")
+				return val();
 			return env::get(v.sval);
 
 		case val::T_LIST:
@@ -464,7 +471,8 @@ namespace lisp {
 				assert(v.lval.size() >= 3);
 				const string &name = v.lval[1].sval;
 				val deflist = sublist(v, 2, 0);
-				env::define(name, deflist);
+				int err = env::define(name, deflist);
+				assert(err == 0);
 				return lastitem(v);
 			}
 			// environment: print list
