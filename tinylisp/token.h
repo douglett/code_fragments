@@ -1,5 +1,5 @@
-#ifndef __SYMBOL_DEF__
-	#define __SYMBOL_DEF__
+#ifndef __TOKEN_DEF__
+	#define __TOKEN_DEF__
 
 #include <string>
 
