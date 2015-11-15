@@ -3,8 +3,6 @@
 
 #include <string>
 #include <vector>
-// #include "token.h"
-// #include "val.h"
 
 // Token class - holds results of the tokenizer
 class Token {

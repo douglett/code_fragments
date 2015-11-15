@@ -9,8 +9,6 @@
 #include <cassert>
 
 #include "tinylisp.h"
-#include "token.h"
-#include "val.h"
 
 using namespace std;
 
