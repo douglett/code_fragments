@@ -40,7 +40,8 @@ namespace tokens {
 		{ ")", "\\)" },
 		{ "integer", "[0-9]+" },
 		{ "identifier", "[A-Za-z_][A-Za-z0-9_]*" },
-		{ "symbol", "[\\+\\-\\/\\*]" }
+		{ "symbol", "[\\+\\-\\/\\*]" },
+		{ "string", "\"" }
 	};
 
 	int exprid(string name) {
@@ -68,16 +69,46 @@ namespace tokens {
 		return -1;
 	}
 
+	string get_string(stringstream& ss, int &err) {
+		string s;
+		char c;
+		err = 0;
+		
+		ss.get();  // clear quote
+		while (true) {
+			c = ss.get();
+			if (c == EOF) {
+				cerr << "string error: missing end quote" << endl;
+				err = 1;
+				break;
+			}
+			if (c == '\"') 
+				break;
+			s += c;
+		}
+		// cout << "string: " << s << endl;
+		return s;
+	}
+
 	int tokenize_string(string tokstr, int line, int linepos) {
 		stringstream ss(tokstr);
 		string s;
 		char c;
+		int stringid = exprid("string");
 		int pos = 1;
 
 		while ((c = ss.peek()) != EOF || s.length() > 0) {
 			// cout << c << endl;
 			int m = tokens::match_any(s+c);
-			if (m != -1) {
+			if (m == stringid) {
+				int err = 0;
+				s = get_string(ss, err);
+				if (err)
+					return 1;
+				list.push_back(Token(m, s, line, linepos+pos));
+				pos += s.length();
+				s = "";
+			} else if (m != -1) {
 				s += ss.get();
 			} else {
 				if (s.length() > 0) {
@@ -188,6 +219,19 @@ namespace parser {
 				vlist.lval.push_back(v);
 				pos++;
 			}
+			// parse string
+			else if (expect("string", pos)) {
+				val v(val::T_STRING);
+				v.sval = tokens::list[pos].val;
+				vlist.lval.push_back(v);
+				pos++;
+			}
+			// unknown
+			else {
+				cerr << "parser error: unknown token type: " << tokens::list[pos].val << endl;
+				len = -1;
+				return vlist;
+			}
 		}
 
 		// make sure the list has an end bracket
@@ -242,6 +286,8 @@ namespace parser {
 			return ss.str();
 		case val::T_IDENT:
 			return string("id:") + v.sval;
+		case val::T_STRING:
+			return v.sval;
 		default:
 			return "undefined";
 		}
@@ -374,62 +420,74 @@ val exec(const val& call, const val& fn) {
 
 
 val eval(const val& v) {
-	val rval;
-
-	if (v.type == val::T_INT)
+	switch (v.type) {
+	case val::T_INT:
+	case val::T_STRING:
 		return v;
 
-	else if (v.type == val::T_IDENT) {
+	case val::T_IDENT:
 		// cout << "get " << v.sval << " " << parser::show_val(env::get(v.sval)) << endl;
 		return env::get(v.sval);
-	}
 
-	else if (v.type == val::T_LIST) {
-		// try and run list as function
-		if (v.lval.size() > 0 && v.lval[0].type == val::T_IDENT) {
-			auto name = v.lval[0].sval;
-			// math functions
-			if (name == "+" || name == "-" || name == "*" || name == "/") {
-				assert(v.lval.size() >= 2);  // lazy error checking
-				rval.type = val::T_INT;
-				rval.ival = eval(v.lval[1]).ival;  // set start value
-				for (int i = 2; i < v.lval.size(); i++) {
-					int res = eval(v.lval[i]).ival;
-					if (name == "+")
-						rval.ival += res;
-					else if (name == "-")
-						rval.ival -= res;
-					else if (name == "*")
-						rval.ival *= res;
-					else if (name == "/")
-						rval.ival /= res;
-				}
-			}
-			// environment operators
-			else if (name == "define") {
-				assert(v.lval.size() >= 3);
-				const string &name = v.lval[1].sval;
-				val deflist = sublist(v, 2, 0);
-				env::define(name, deflist);
-				return lastitem(v);
-			}
-			// user defined functions
-			else {
-				// cout << "calling: " << name << endl;
-				auto &fn = env::get(name);
-				if (fn.type == val::T_LIST && fn.lval.size() > 0)
-					return exec(v, fn);
-				else
-					cerr << "unknown exec: " << name << endl;
-			}
-		}
-		// return last item in list
-		else if (v.lval.size() > 0) {
-			return eval(v.lval.back());
-		}
-	}
+	case val::T_LIST:
+		// test for nil
+		if (v.lval.size() == 0)
+			return v;
+		// not a function: return entire list
+		if (v.lval[0].type != val::T_IDENT)
+			return v;
 
-	return rval;
+		// otherwise, try and run list as function
+		auto name = v.lval[0].sval;
+
+		// math functions
+		if (name == "+" || name == "-" || name == "*" || name == "/") {
+			assert(v.lval.size() >= 2);  // lazy error checking
+			val rval(val::T_INT);
+			rval.ival = eval(v.lval[1]).ival;  // set start value
+			for (int i = 2; i < v.lval.size(); i++) {
+				int res = eval(v.lval[i]).ival;
+				if (name == "+")
+					rval.ival += res;
+				else if (name == "-")
+					rval.ival -= res;
+				else if (name == "*")
+					rval.ival *= res;
+				else if (name == "/")
+					rval.ival /= res;
+			}
+			return rval;
+		}
+		// environment: define item
+		else if (name == "define") {
+			assert(v.lval.size() >= 3);
+			const string &name = v.lval[1].sval;
+			val deflist = sublist(v, 2, 0);
+			env::define(name, deflist);
+			return lastitem(v);
+		}
+		// environment: print list
+		else if (name == "print") {
+			assert(v.lval.size() >= 2);
+			for (int i = 1; i < v.lval.size(); i++)
+				cout << parser::show_val( eval(v.lval[i]) ) << " ";
+			cout << endl;
+			return lastitem(v);
+		}
+		// user defined functions
+		else {
+			// cout << "calling: " << name << endl;
+			auto &fn = env::get(name);
+			if (fn.type == val::T_LIST && fn.lval.size() > 0)
+				return exec(v, fn);
+			// not defined
+			cerr << "unknown exec: " << name << endl;
+			return val();
+		}
+	} // end switch
+
+	// should never get here
+	return val();
 }
 
 
@@ -451,7 +509,9 @@ int main() {
 	// cout << endl;
 
 	cout << ">> parse:" << endl;
-	for (auto v : vlist.lval)
-		cout << parser::show_val(eval(v)) << endl;
+	for (auto v : vlist.lval) {
+		auto rval = eval(v);
+		// cout << parser::show_val(rval) << endl;
+	}
 	cout << endl;
 }

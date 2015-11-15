@@ -8,7 +8,8 @@ public:
 	enum TYPES {
 		T_LIST,
 		T_INT,
-		T_IDENT
+		T_IDENT,
+		T_STRING
 	};
 	int type = 0;
 	int ival = 0;

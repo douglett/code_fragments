@@ -11,3 +11,6 @@
 
 (define a 10)
 (+ 10 10 a)
+
+(define b "asd")
+(print "test" b 1 12 (1 2 3))
