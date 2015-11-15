@@ -22,11 +22,11 @@ static int strtoint(string s) {
 	ss >> i;
 	return i;
 }
-// static string inttostr(int i) {
-// 	ss.str(""), ss.clear();
-// 	ss << i;
-// 	return ss.str();
-// }
+static string inttostr(int i) {
+	ss.str(""), ss.clear();
+	ss << i;
+	return ss.str();
+}
 
 
 void lerror(string type, string err, const Token* tok) {
@@ -105,8 +105,9 @@ namespace tokens {
 		int pos = 1;
 
 		while ((c = ss.peek()) != EOF || s.length() > 0) {
-			// cout << c << endl;
+			// get token ID
 			int m = tokens::match_any(s+c);
+			// check for string start
 			if (m == stringid) {
 				int err = 0;
 				s = get_string(ss, err);
@@ -117,14 +118,18 @@ namespace tokens {
 				}
 				pos += s.length();
 				s = "";
-			} else if (m != -1) {
+			}
+			// while matching, continue adding chars to the token string
+			else if (m != -1) {
 				s += ss.get();
-			} else {
+			} 
+			// add token string to list, if a valid one was found
+			else {
 				if (s.length() > 0) {
+					// cout << "\t" << s << endl;
 					m = tokens::match_any(s);
 					list.push_back(Token(m, s, line, linepos+pos));
 					pos += s.length();
-					// cout << "\t" << s << endl;
 				} else {
 					lerror("tokenizer", string("unknown symbol [")+c+"]", &list.back());
 					return 1;
@@ -281,18 +286,13 @@ namespace parser {
 
 
 	string show_val(const val& v) {
-		ss.str(""), ss.clear();
 		switch (v.type) {
 		case val::T_LIST:
 			if (v.lval.size() == 0)
 				return "nil";
-			else {
-				ss << "[list x" << v.lval.size() << "]";
-				return ss.str();
-			}
+			return string("[list x") + inttostr(v.lval.size()) + "]";
 		case val::T_INT:
-			ss << v.ival;
-			return ss.str();
+			return inttostr(v.ival);
 		case val::T_IDENT:
 			return string("id:") + v.sval;
 		case val::T_STRING:
@@ -309,7 +309,6 @@ namespace parser {
 		for (const auto &v : vlist.lval) {
 			switch (v.type) {
 			case val::T_LIST:
-				// cout << tabs << "---" << endl;
 				show_list(v, tablen+1);
 				break;
 			default:
@@ -324,15 +323,6 @@ namespace parser {
 
 
 namespace env {
-
-	// enum OPCODE {
-	// 	OP_NOOP,
-	// 	OP_ADD,
-	// 	OP_SUB,
-	// 	OP_MUL,
-	// 	OP_DIV,
-	// 	OP_DEFINE
-	// };
 
 	const val nil = val();
 	const vector<string> opnames = {
