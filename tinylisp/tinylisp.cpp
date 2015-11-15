@@ -48,7 +48,7 @@ namespace tokens {
 		{ ")", "\\)" },
 		{ "integer", "[0-9]+" },
 		{ "identifier", "[A-Za-z_][A-Za-z0-9_]*" },
-		{ "symbol", "[\\+\\-\\/\\*]" },
+		{ "symbol", "[\\+\\-\\/\\*=]" },
 		{ "string", "\"" }
 	};
 
@@ -328,6 +328,7 @@ namespace env {
 	const vector<string> keywords = {
 		"nil", 
 		"+", "-", "*", "/",
+		"=",
 		"define", "print"
 	};
 
@@ -404,6 +405,26 @@ namespace lisp {
 		return atomize(rval);
 	}
 
+	int compare(const val& v1, const val& v2) {
+		if (v1.type != v2.type)
+			return 0;
+		switch (v1.type) {
+		case val::T_INT:
+			if (v1.ival == v2.ival)
+				return 1;
+			break;
+		case val::T_STRING:
+			if (v1.sval == v2.sval)
+				return 1;
+			break;
+		case val::T_LIST:
+			if (v1.lval.size() == 0 && v2.lval.size() == 0)
+				return 1;
+			break;
+		}
+		return 0;
+	}
+
 
 	val exec(const val& call, const val& fn) {
 		assert(fn.lval.size() >= 2);
@@ -464,6 +485,26 @@ namespace lisp {
 					else if (name == "/")
 						rval.ival /= res;
 				}
+				return rval;
+			}
+			// equality (numeric)
+			else if (name == "=") {
+				assert(v.lval.size() >= 3);
+				val rval(val::T_INT);
+				val comp = eval(v.lval[1]);  // comparison value
+				// check against each comparison value
+				for (int i = 2; i < v.lval.size(); i++) {
+					val vv = eval(v.lval[i]);
+					if (!compare(comp, vv))
+						return rval;
+					// if (comp.type != vv.type)
+					// 	return rval;
+					// else if (comp.type == val::T_INT && comp.ival != vv.ival)
+					// 	return rval;
+					// else if (comp.type == val::T_STRING && comp.sval != vv.sval)
+					// 	return rval;
+				}
+				rval.ival = 1;
 				return rval;
 			}
 			// environment: define item
