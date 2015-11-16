@@ -26,4 +26,6 @@
 	endl)
 
 (print "len operator:"
-	(len balls))
+	(len balls)
+	"caps:"
+	(LEN BALLS))

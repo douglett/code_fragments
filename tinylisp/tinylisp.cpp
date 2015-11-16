@@ -27,6 +27,12 @@ static string inttostr(int i) {
 	ss << i;
 	return ss.str();
 }
+static string strtolower(const string& s) {
+	string s2 = s;
+	for (auto &c : s2)
+		c = tolower(c);
+	return s2;
+}
 
 
 void lerror(string type, string err, const Token* tok) {
@@ -81,23 +87,25 @@ namespace tokens {
 	string get_string(stringstream& ss, int &err) {
 		string s;
 		char c;
-		err = 0;
+		err = 1;
 		ss.get();  // clear quote
-		while (true) {
-			c = ss.get();
-			if (c == EOF) {
-				err = 1;
-				break;
-			} else if (c == '\"') {
+		while ((c = ss.get()) != EOF) {
+			if (c == '\"') {
+				err = 0; // exit clear
 				break;
 			} else if (c == '\\') {
+				// escape characters
 				c = ss.get();
 				if (c == 'n')
 					s += "\n";
-				else if (c == '\"')
-					s += "\"";
 				else if (c == 't')
 					s += "\t";
+				else if (c == '\"')
+					s += "\"";
+				else if (c == '\\')
+					s += "\\";
+				else
+					s += c;
 			} else {
 				s += c;
 			}
@@ -166,16 +174,17 @@ namespace tokens {
 		stringstream ss;
 		string s;
 		int line = 0;
-
+		int err = 0;
+		// do one line at a time
 		while (getline(f, s)) {
 			line++;
-			int err = tokenize_line(s, line);
+			err = tokenize_line(s, line);
 			if (err)
-				return 1;
+				break; // exit now
 		}
-
+		// cleanup
 		f.close();
-		return 0;
+		return err;
 	}
 
 	void show() {
@@ -240,7 +249,7 @@ namespace parser {
 			// parse identifier / symbol
 			else if (expect("identifier", pos) || expect("symbol", pos)) {
 				val v(val::T_IDENT);
-				v.sval = tokens::list[pos].val;
+				v.sval = strtolower(tokens::list[pos].val);
 				// cout << v.sval << endl;
 				v.tok = &tokens::list[pos];
 				vlist.lval.push_back(v);
@@ -281,22 +290,18 @@ namespace parser {
 		val vlist(val::T_LIST);
 		int pos = 0;
 		err = 0;
-
-		while (true) {
+		// parse each list on the top level one-by-one
+		while (pos < tokens::list.size()) {
 			int len = 0;
 			val v = parser::parse_list(pos, len);
-			if (len == -1) {
+			if (len == -1) {  // stop on errors
 				err = 1;
 				break;
 			}
-
 			vlist.lval.push_back(v);
 			pos += len;
-			if (pos >= tokens::list.size())
-				break;
 		}
-
-		return vlist;
+		return vlist; // return list of lists
 	}
 
 
@@ -349,11 +354,12 @@ namespace env {
 
 	map<string, val> def;
 
-	int define(string name, const val& v) {
+	int define(const string& name, const val& v) {
 		// don't redefine keywords
+		string namel = strtolower(name);
 		for (auto &s : keywords)
-			if (name == s) {
-				lerror("runtime", string("tried to redefine keyword: ")+name, v.tok);
+			if (namel == s) {
+				lerror("runtime", string("tried to redefine keyword: ")+namel, v.tok);
 				return 1;
 			}
 		// set def
@@ -361,17 +367,19 @@ namespace env {
 		return 0;
 	}
 
-	const val& get(string s) {
+	const val& get(const string& name) {
+		string namel = strtolower(name);
 		for (const auto &d : def)
-			if (d.first == s)
+			if (d.first == namel)
 				return d.second;
 		return nil;
 	}
 
-	void undef(string s) {
-		auto &v = get(s);
+	void undef(const string& name) {
+		string namel = strtolower(name);
+		auto &v = get(namel);
 		if (&v != &nil)
-			def.erase(s);
+			def.erase(namel);
 		// v invalid here!
 	}
 

@@ -24,5 +24,5 @@ int main() {
 		auto rval = lisp::eval(v);
 		// cout << parser::show_val(rval) << endl;
 	}
-	cout << endl;
+	// cout << endl;
 }
