@@ -49,7 +49,8 @@ namespace tokens {
 		{ "integer", "[0-9]+" },
 		{ "identifier", "[A-Za-z_][A-Za-z0-9_]*" },
 		{ "symbol", "[\\+\\-\\/\\*=]" },
-		{ "string", "\"" }
+		{ "string", "\"" },
+		{ "comment", ";" }
 	};
 
 	int exprid(string name) {
@@ -101,14 +102,15 @@ namespace tokens {
 		stringstream ss(tokstr);
 		string s;
 		char c;
-		int stringid = exprid("string");
+		int string_id = exprid("string");
+		int comment_id = exprid("comment");
 		int pos = 1;
 
 		while ((c = ss.peek()) != EOF || s.length() > 0) {
 			// get token ID
 			int m = tokens::match_any(s+c);
 			// check for string start
-			if (m == stringid) {
+			if (m == string_id) {
 				int err = 0;
 				s = get_string(ss, err);
 				list.push_back(Token(m, s, line, linepos+pos));
@@ -118,6 +120,11 @@ namespace tokens {
 				}
 				pos += s.length();
 				s = "";
+			}
+			// check for line comment start
+			else if (m == comment_id) {
+				cout << "here" << endl;
+				return 0;  // nothing more needed
 			}
 			// while matching, continue adding chars to the token string
 			else if (m != -1) {

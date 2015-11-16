@@ -20,3 +20,5 @@
 (print (= nil (1 2 3)))
 (print (= nil not_defined))
 (print (= nil balls))
+
+(1 2 3) ;asd
