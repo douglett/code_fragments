@@ -98,8 +98,9 @@ namespace tokens {
 		return s;
 	}
 
-	int tokenize_string(string tokstr, int line, int linepos) {
+	int tokenize_line(string tokstr, int line) {
 		stringstream ss(tokstr);
+		ss >> ws;
 		string s;
 		char c;
 		int string_id = exprid("string");
@@ -113,13 +114,15 @@ namespace tokens {
 			if (m == string_id) {
 				int err = 0;
 				s = get_string(ss, err);
-				list.push_back(Token(m, s, line, linepos+pos));
+				list.push_back(Token(m, s, line, pos));
 				if (err) {
 					lerror("tokenizer", "string error: missing end quote", &list.back());
 					return 1;
 				}
-				pos += s.length();
+				// reset
 				s = "";
+				ss >> ws;
+				pos = ss.tellg();
 			}
 			// check for line comment start
 			else if (m == comment_id) {
@@ -135,15 +138,18 @@ namespace tokens {
 				if (s.length() > 0) {
 					// cout << "\t" << s << endl;
 					m = tokens::match_any(s);
-					list.push_back(Token(m, s, line, linepos+pos));
-					pos += s.length();
+					list.push_back(Token(m, s, line, pos));
 				} else {
 					lerror("tokenizer", string("unknown symbol [")+c+"]", &list.back());
 					return 1;
 				}
+				// reset
 				s = "";
+				ss >> ws;
+				pos = ss.tellg();
 			}
 		}
+		// no errors
 		return 0;
 	}
 
@@ -155,15 +161,9 @@ namespace tokens {
 
 		while (getline(f, s)) {
 			line++;
-			ss.str(s), ss.clear();
-			int linepos = 1;
-			while (ss >> s) {
-				// printf("%d 	%d\n", line, linepos);
-				int err = tokenize_string(s, line, linepos);
-				if (err)
-					return 1;
-				linepos = ss.tellg();
-			}
+			int err = tokenize_line(s, line);
+			if (err)
+				return 1;
 		}
 
 		f.close();

@@ -8,7 +8,7 @@
 
 (print (1 2 3))
 
-(print "helloworld")
+(print "hello world")
 (print nil ())
 
 (print (= 1 1))
@@ -21,4 +21,4 @@
 (print (= nil not_defined))
 (print (= nil balls))
 
-(1 2 3) ;asd
+() ; asd asd
