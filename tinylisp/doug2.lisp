@@ -3,21 +3,21 @@
 
 (define endl "\n")
 
-(print "call test:" (balls 1 2 3) endl)
-
-(print "list" (1 2 3) endl)
-
 (print "hello world")
-(print nil ())
+(print "nil test:" nil ())
+(print "call test:" (balls 1 2 3))
+(print "show list:" (1 2 3))
 (print)
 
 (print "comparison tests:")
 (print "maths:"
+	endl
 	(= 1 1)
 	(= 1 2)
 	(= 1 1 2)
 	(= (+ 1 2) 3))
 (print "lists and nil:"
+	endl
 	(= (3 1 2) 3)
 	(= nil nil)
 	(= nil (1 2 3))
@@ -27,5 +27,31 @@
 
 (print "len operator:"
 	(len balls)
-	"caps:"
+	endl
+	"len with caps:"
 	(LEN BALLS))
+
+(print "compare:"
+	endl "greater:"
+	(> 2 1)
+	(> 1 2)
+	(> 3 1 2)
+	(> 3 1 2 3)
+	endl "less:"
+	(< 1 2)
+	(< 2 1 0)
+	endl "greater-equal"
+	(>= 2 2)
+	(>= 2 2 3)
+	(>= 2 1)
+	endl "less-equal"
+	(<= 2 2)
+	(<= 2 3)
+	(<= 2 3 1)
+	)
+
+; (define a 10)
+; (while (> a 0) (
+; 	(print a)
+; 	(- a 1)
+; 	))

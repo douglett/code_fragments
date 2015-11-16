@@ -8,9 +8,7 @@ int main() {
 	int err = tokens::tokenize_file("doug2.lisp");
 	if (err)
 		return 1;
-	// cout << ">> tokens:" << endl;
 	// tokens::show(); 
-	// cout << endl;
 
 	val vlist = parser::parse_lists(err);
 	if (err)

@@ -54,7 +54,7 @@ namespace tokens {
 		{ ")", "\\)" },
 		{ "integer", "[0-9]+" },
 		{ "identifier", "[A-Za-z_][A-Za-z0-9_]*" },
-		{ "symbol", "[\\+\\-\\/\\*=]" },
+		{ "symbol", ">=|<=|[\\+\\-\\/\\*=><]" },
 		{ "string", "\"" },
 		{ "comment", ";" }
 	};
@@ -142,7 +142,7 @@ namespace tokens {
 			}
 			// check for line comment start
 			else if (m == comment_id) {
-				cout << "here" << endl;
+				// cout << "line_comment found" << endl;
 				return 0;  // nothing more needed
 			}
 			// while matching, continue adding chars to the token string
@@ -188,6 +188,7 @@ namespace tokens {
 	}
 
 	void show() {
+		cout << ">> tokens:" << endl;
 		for (const auto &tok : tokens::list) {
 			cout << left 
 				<< setw(14) << exprname(tok.type) 
@@ -195,6 +196,7 @@ namespace tokens {
 				<< tok.line << "-" << tok.pos 
 				<< endl;
 		}
+		cout << endl;
 	}
 
 } // end tokens
@@ -267,6 +269,10 @@ namespace parser {
 			// unknown
 			else {
 				lerror("parser", "unknown token type", &tokens::list[pos]);
+				cout << tokens::list[pos].val << " " 
+					<< tokens::list[pos].type << " " 
+					<< tokens::exprname(tokens::list[pos].type) << " "
+					<< endl;
 				len = -1;
 				return vlist;
 			}
@@ -348,8 +354,8 @@ namespace env {
 	const vector<string> keywords = {
 		"nil", 
 		"+", "-", "*", "/",
-		"=",
-		"define", "print", "len"
+		"=", ">", "<", ">=", "<=",
+		"define", "print", "len", "while"
 	};
 
 	map<string, val> def;
@@ -510,7 +516,7 @@ namespace lisp {
 				}
 				return rval;
 			}
-			// equality (numeric)
+			// equality (numeric and string)
 			else if (name == "=") {
 				assert(v.lval.size() >= 3);
 				val rval(val::T_INT);
@@ -520,6 +526,27 @@ namespace lisp {
 					val vv = eval(v.lval[i]);
 					if (!compare(comp, vv))
 						return rval;
+				}
+				rval.ival = 1;
+				return rval;
+			}
+			// compare (numeric)
+			else if (name == ">" || name == "<" || name == ">=" || name == "<=") {
+				assert(v.lval.size() >= 3);
+				val rval(val::T_INT);
+				int comp = eval(v.lval[1]).ival;  // comparison value
+				// check against each comparison value
+				for (int i = 2; i < v.lval.size(); i++) {
+					int vv = eval(v.lval[i]).ival;
+					if (name == ">" && comp > vv)
+						continue;
+					else if (name == "<" && comp < vv)
+						continue;
+					else if (name == ">=" && comp >= vv)
+						continue;
+					else if (name == "<=" && comp <= vv)
+						continue;
+					return rval;
 				}
 				rval.ival = 1;
 				return rval;
@@ -549,6 +576,20 @@ namespace lisp {
 				val len(val::T_INT);
 				len.ival = arg.lval.size();
 				return len;
+			}
+			else if (name == "while") {
+				cout << "while" << endl;
+				assert(v.lval.size() == 3);
+				val rval;
+
+				val a = eval(v.lval[1]);
+				cout << parser::show_val(a) << endl;
+
+				// while (eval(v.lval[1]).ival == 1) {
+				// 	cout << "r1" << endl;
+				// 	rval = eval( v.lval[2] );
+				// }
+				return rval;  // return last result
 			}
 			// user defined functions
 			else {
