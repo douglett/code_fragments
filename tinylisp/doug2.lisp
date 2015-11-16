@@ -1,24 +1,29 @@
-(print
-	(+ 1 arse))
-
 (define balls (a b c)
 	(+ a b c))
 
-(print (balls 1 2 3))
+(define endl "\n")
 
-(print (1 2 3))
+(print "call test:" (balls 1 2 3) endl)
+
+(print "list" (1 2 3) endl)
 
 (print "hello world")
 (print nil ())
+(print)
 
-(print (= 1 1))
-(print (= 1 2))
-(print (= 1 1 2))
-(print (= (+ 1 2) 3))
-(print (= (3 1 2) 3))
-(print (= nil nil))
-(print (= nil (1 2 3)))
-(print (= nil not_defined))
-(print (= nil balls))
+(print "comparison tests:")
+(print "maths:"
+	(= 1 1)
+	(= 1 2)
+	(= 1 1 2)
+	(= (+ 1 2) 3))
+(print "lists and nil:"
+	(= (3 1 2) 3)
+	(= nil nil)
+	(= nil (1 2 3))
+	(= nil not_defined)
+	(= nil balls)
+	endl)
 
-() ; asd asd
+(print "len operator:"
+	(len balls))

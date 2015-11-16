@@ -82,17 +82,25 @@ namespace tokens {
 		string s;
 		char c;
 		err = 0;
-		
 		ss.get();  // clear quote
 		while (true) {
 			c = ss.get();
 			if (c == EOF) {
 				err = 1;
 				break;
-			}
-			if (c == '\"') 
+			} else if (c == '\"') {
 				break;
-			s += c;
+			} else if (c == '\\') {
+				c = ss.get();
+				if (c == 'n')
+					s += "\n";
+				else if (c == '\"')
+					s += "\"";
+				else if (c == 't')
+					s += "\t";
+			} else {
+				s += c;
+			}
 		}
 		// cout << "string: " << s << endl;
 		return s;
@@ -336,7 +344,7 @@ namespace env {
 		"nil", 
 		"+", "-", "*", "/",
 		"=",
-		"define", "print"
+		"define", "print", "len"
 	};
 
 	map<string, val> def;
@@ -504,12 +512,6 @@ namespace lisp {
 					val vv = eval(v.lval[i]);
 					if (!compare(comp, vv))
 						return rval;
-					// if (comp.type != vv.type)
-					// 	return rval;
-					// else if (comp.type == val::T_INT && comp.ival != vv.ival)
-					// 	return rval;
-					// else if (comp.type == val::T_STRING && comp.sval != vv.sval)
-					// 	return rval;
 				}
 				rval.ival = 1;
 				return rval;
@@ -525,11 +527,20 @@ namespace lisp {
 			}
 			// environment: print list
 			else if (name == "print") {
-				assert(v.lval.size() >= 2);
+				// assert(v.lval.size() >= 2);
 				for (int i = 1; i < v.lval.size(); i++)
 					cout << parser::show_val( eval(v.lval[i]) ) << " ";
 				cout << endl;
 				return lastitem(v);
+			}
+			// environment: list length
+			else if (name == "len") {
+				assert(v.lval.size() == 2);
+				val arg = eval(v.lval[1]);
+				assert(arg.type == val::T_LIST);
+				val len(val::T_INT);
+				len.ival = arg.lval.size();
+				return len;
 			}
 			// user defined functions
 			else {
