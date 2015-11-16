@@ -583,7 +583,7 @@ namespace lisp {
 				val rval;
 
 				val a = eval(v.lval[1]);
-				cout << parser::show_val(a) << endl;
+				cout << "val " << parser::show_val(a) << endl;
 
 				// while (eval(v.lval[1]).ival == 1) {
 				// 	cout << "r1" << endl;

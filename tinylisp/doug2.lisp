@@ -48,10 +48,11 @@
 	(<= 2 2)
 	(<= 2 3)
 	(<= 2 3 1)
-	)
+	endl)
 
-; (define a 10)
-; (while (> a 0) (
-; 	(print a)
-; 	(- a 1)
-; 	))
+(print "while test:")
+(define i 10)
+(while (> i 1) (
+	(print "i" a)
+	(define i (- i 1))
+	))
