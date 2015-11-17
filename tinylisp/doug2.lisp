@@ -53,6 +53,7 @@
 (print "while test:")
 (define i 10)
 (while (> i 1) (
-	(print "i" a)
+	(print "i" i)
 	(define i (- i 1))
+	(print "i2" i)
 	))

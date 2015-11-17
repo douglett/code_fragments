@@ -582,13 +582,14 @@ namespace lisp {
 				assert(v.lval.size() == 3);
 				val rval;
 
-				val a = eval(v.lval[1]);
-				cout << "val " << parser::show_val(a) << endl;
+				// val a = eval(v.lval[1]);
+				// cout << "val " << parser::show_val(a) << endl;
 
-				// while (eval(v.lval[1]).ival == 1) {
-				// 	cout << "r1" << endl;
-				// 	rval = eval( v.lval[2] );
-				// }
+				while (eval(v.lval[1]).ival != 0) {
+					cout << "r1" << endl;
+					for (int i = 0; i < v.lval[2].lval.size(); i++)
+						rval = eval( v.lval[2].lval[i] );
+				}
 				return rval;  // return last result
 			}
 			// user defined functions
