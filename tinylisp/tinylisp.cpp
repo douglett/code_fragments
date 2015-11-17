@@ -355,7 +355,7 @@ namespace env {
 		"nil", 
 		"+", "-", "*", "/",
 		"=", ">", "<", ">=", "<=",
-		"define", "print", "len", "while"
+		"defun", "let", "print", "len", "while"
 	};
 
 	map<string, val> def;
@@ -434,6 +434,10 @@ namespace lisp {
 		return atomize(rval);
 	}
 
+	int isnil(const val& v) {
+		return v.type == val::T_LIST && v.lval.size() == 0;
+	}
+
 	int compare(const val& v1, const val& v2) {
 		if (v1.type != v2.type)
 			return 0;
@@ -455,22 +459,23 @@ namespace lisp {
 	}
 
 
-	val exec(const val& call, const val& fn) {
-		assert(fn.lval.size() >= 2);
+	val exec(const string& name, const val& args) {
+		const val& func = env::get(name);
+		assert( func.lval.size() == 2 );
 		// define ids
-		auto &args = fn.lval[0].lval;
-		for (int i = 0; i < args.size(); i++) 
-			if (args[i].type == val::T_IDENT && i+1 < call.lval.size()) {
-				int err = env::define(args[i].sval, call.lval[i+1]);
+		auto &argnames = func.lval[0].lval;
+		for (int i = 0; i < argnames.size(); i++) 
+			if (argnames[i].type == val::T_IDENT && i < args.lval.size()) {
+				int err = env::define( argnames[i].sval, args.lval[i] );
 				assert(err == 0);
 			}
 		// run
 		val rval;
-		for (int i = 1; i < fn.lval.size(); i++)
-			rval = eval(fn.lval[i]);
+		for (int i = 0; i < func.lval[1].lval.size(); i++)
+			rval = eval(func.lval[1].lval[i]);
 		// undefine ids
-		for (int i = 0; i < args.size(); i++) 
-			env::undef(args[i].sval);
+		for (int i = 0; i < argnames.size(); i++)
+			env::undef(argnames[i].sval);
 		return rval;
 	}
 
@@ -489,7 +494,7 @@ namespace lisp {
 
 		case val::T_LIST:
 			// test for nil
-			if (v.lval.size() == 0)
+			if (isnil(v))
 				return v;
 			// not a function: return entire list
 			if (v.lval[0].type != val::T_IDENT)
@@ -552,8 +557,13 @@ namespace lisp {
 				return rval;
 			}
 			// environment: define item
-			else if (name == "define") {
-				assert(v.lval.size() >= 3);
+			else if (name == "defun") {
+				// lazy errors
+				assert(v.lval.size() == 4);
+				assert(v.lval[1].type == val::T_IDENT);
+				assert(v.lval[2].type == val::T_LIST);
+				assert(v.lval[3].type == val::T_LIST);
+				// define without
 				const string &name = v.lval[1].sval;
 				val deflist = sublist(v, 2, 0);
 				int err = env::define(name, deflist);
@@ -594,14 +604,11 @@ namespace lisp {
 			}
 			// user defined functions
 			else {
-				// cout << "calling: " << name << endl;
-				auto &fn = env::get(name);
-				if (fn.type == val::T_LIST && fn.lval.size() > 0)
-					return exec(v, fn);
-				// not defined
-				lerror("runtime", string("unknown exec: ")+name, v.tok);
-				// cerr << "unknown exec: " << name << endl;
-				return val();
+				cout << "calling: " << name << endl;
+				val args(val::T_LIST);
+				for (int i = 1; i < v.lval.size(); i++)
+					args.lval.push_back( eval(v.lval[i]) );
+				return exec(name, args);
 			}
 		} // end switch
 
