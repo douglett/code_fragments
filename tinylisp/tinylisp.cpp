@@ -355,7 +355,7 @@ namespace env {
 		"nil", 
 		"+", "-", "*", "/",
 		"=", ">", "<", ">=", "<=",
-		"defun", "let", "print", "len", "while"
+		"let", "defun", "print", "len", "while"
 	};
 
 	map<string, val> def;
@@ -539,24 +539,34 @@ namespace lisp {
 			else if (name == ">" || name == "<" || name == ">=" || name == "<=") {
 				assert(v.lval.size() >= 3);
 				val rval(val::T_INT);
-				int comp = eval(v.lval[1]).ival;  // comparison value
+				int subject = eval(v.lval[1]).ival;  // comparison value
 				// check against each comparison value
 				for (int i = 2; i < v.lval.size(); i++) {
 					int vv = eval(v.lval[i]).ival;
-					if (name == ">" && comp > vv)
+					if (name == ">" && vv > subject)
 						continue;
-					else if (name == "<" && comp < vv)
+					else if (name == "<" && vv < subject)
 						continue;
-					else if (name == ">=" && comp >= vv)
+					else if (name == ">=" && vv >= subject)
 						continue;
-					else if (name == "<=" && comp <= vv)
+					else if (name == "<=" && vv <= subject)
 						continue;
 					return rval;
 				}
 				rval.ival = 1;
 				return rval;
 			}
-			// environment: define item
+			// define value
+			else if (name == "let") {
+				assert(v.lval.size() == 3);
+				assert(v.lval[1].type == val::T_IDENT);
+				const string &name = v.lval[1].sval;
+				val rval = eval(v.lval[2]);
+				int err = env::define(name, rval);
+				assert(err == 0);
+				return rval;
+			}
+			// define function
 			else if (name == "defun") {
 				// lazy errors
 				assert(v.lval.size() == 4);
@@ -570,15 +580,14 @@ namespace lisp {
 				assert(err == 0);
 				return lastitem(v);
 			}
-			// environment: print list
+			// print evaluated list contents
 			else if (name == "print") {
-				// assert(v.lval.size() >= 2);
 				for (int i = 1; i < v.lval.size(); i++)
 					cout << parser::show_val( eval(v.lval[i]) ) << " ";
 				cout << endl;
 				return lastitem(v);
 			}
-			// environment: list length
+			// list length
 			else if (name == "len") {
 				assert(v.lval.size() == 2);
 				val arg = eval(v.lval[1]);
@@ -587,24 +596,22 @@ namespace lisp {
 				len.ival = arg.lval.size();
 				return len;
 			}
+			// while loop
 			else if (name == "while") {
-				cout << "while" << endl;
+				// cout << "while" << endl;
 				assert(v.lval.size() == 3);
 				val rval;
-
-				// val a = eval(v.lval[1]);
-				// cout << "val " << parser::show_val(a) << endl;
-
-				while (eval(v.lval[1]).ival != 0) {
-					cout << "r1" << endl;
-					for (int i = 0; i < v.lval[2].lval.size(); i++)
-						rval = eval( v.lval[2].lval[i] );
+				auto& condition = v.lval[1];
+				auto& body = v.lval[2].lval;
+				while (eval(condition).ival != 0) {
+					for (int i = 0; i < body.size(); i++)
+						rval = eval(body[i]);
 				}
 				return rval;  // return last result
 			}
 			// user defined functions
 			else {
-				cout << "calling: " << name << endl;
+				// cout << "calling: " << name << endl;
 				val args(val::T_LIST);
 				for (int i = 1; i < v.lval.size(); i++)
 					args.lval.push_back( eval(v.lval[i]) );
