@@ -35,11 +35,14 @@ static string strtolower(const string& s) {
 }
 
 
+static int lerror_count = 0;
+
 void lerror(string type, string err, const Token* tok) {
 	cerr << type << " error:: " << err;
 	if (tok != NULL) 
 		cerr << " [" << tok->line << ":" << tok->pos << "]";
 	cerr << endl;
+	lerror_count++;
 }
 
 
@@ -443,6 +446,10 @@ namespace lisp {
 		return v.type == val::T_LIST && v.lval.size() == 0;
 	}
 
+	int haserror() {
+		return lerror_count;
+	}
+
 	int compare(const val& v1, const val& v2) {
 		if (v1.type != v2.type)
 			return 0;
@@ -484,8 +491,11 @@ namespace lisp {
 			}
 		// run
 		val rval;
-		for (int i = 0; i < func.lval[1].lval.size(); i++)
+		for (int i = 0; i < func.lval[1].lval.size(); i++) {
 			rval = eval(func.lval[1].lval[i]);
+			if (haserror())
+				break;
+		}
 		// undefine ids
 		for (int i = 0; i < argnames.size(); i++)
 			env::undef(argnames[i].sval);
