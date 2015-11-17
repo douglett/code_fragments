@@ -396,8 +396,6 @@ namespace env {
 
 namespace lisp {
 
-	val eval(const val& v);
-
 	const val& firstitem(const val& v) {
 		if (v.type == val::T_LIST && v.lval.size() > 0) {
 			if (v.lval[0].type == val::T_LIST)

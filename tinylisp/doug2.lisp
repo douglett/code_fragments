@@ -1,7 +1,10 @@
-(define balls (a b c)
-	(+ a b c))
+(print "a")
+(defun balls (a b c) (
+	(+ a b c)
+	))
+(print "b")
 
-(define endl "\n")
+(let endl "\n")
 
 (print "hello world")
 (print "nil test:" nil ())
@@ -51,9 +54,8 @@
 	endl)
 
 (print "while test:")
-(define i 10)
-(while (> i 1) (
-	(print "i" i)
-	(define i (- i 1))
-	(print "i2" i)
+(let i 10)
+(while (>= 1 i) (
+	(print " i =" i)
+	(let i (- i 1))
 	))

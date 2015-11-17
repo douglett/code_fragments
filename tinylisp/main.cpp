@@ -5,7 +5,7 @@ using namespace std;
 
 
 int main() {
-	int err = tokens::tokenize_file("doug3.lisp");
+	int err = tokens::tokenize_file("doug2.lisp");
 	if (err)
 		return 1;
 	// tokens::show(); 
