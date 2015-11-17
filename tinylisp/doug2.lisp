@@ -1,8 +1,6 @@
-(print "a")
 (defun balls (a b c) (
 	(+ a b c)
 	))
-(print "b")
 
 (let endl "\n")
 

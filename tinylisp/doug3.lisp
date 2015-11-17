@@ -15,3 +15,6 @@
 	(print i)
 	(let i (+ i 1))
 	))
+
+(define)
+(print "should not see this")

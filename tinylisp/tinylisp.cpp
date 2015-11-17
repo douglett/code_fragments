@@ -373,7 +373,7 @@ namespace env {
 		return 0;
 	}
 
-	const val& get(const string& name) {
+	const val& getdef(const string& name) {
 		string namel = strtolower(name);
 		for (const auto &d : def)
 			if (d.first == namel)
@@ -381,9 +381,16 @@ namespace env {
 		return nil;
 	}
 
+	const val& getdef(const val& name) {
+		auto& v = getdef(name.sval);
+		if (&v == &nil)
+			lerror("runtime", string("unknown definition: ")+strtolower(name.sval), name.tok);
+		return v;
+	}
+
 	void undef(const string& name) {
 		string namel = strtolower(name);
-		auto &v = get(namel);
+		auto &v = getdef(namel);
 		if (&v != &nil)
 			def.erase(namel);
 		// v invalid here!
@@ -457,15 +464,23 @@ namespace lisp {
 	}
 
 
-	val exec(const string& name, const val& args) {
-		const val& func = env::get(name);
-		assert( func.lval.size() == 2 );
+	// execute a function
+	val exec(const val& name, const val& args) {
+		const val& func = env::getdef(name);
+		if (isnil(func))
+			return val();
+		// assert( func.lval.size() == 2 );
+		if (func.lval.size() != 2) {
+			lerror("runtime", "expected 2 value list", func.tok);
+			return val();
+		}
 		// define ids
 		auto &argnames = func.lval[0].lval;
 		for (int i = 0; i < argnames.size(); i++) 
 			if (argnames[i].type == val::T_IDENT && i < args.lval.size()) {
 				int err = env::define( argnames[i].sval, args.lval[i] );
-				assert(err == 0);
+				if (err)
+					return val();
 			}
 		// run
 		val rval;
@@ -478,6 +493,7 @@ namespace lisp {
 	}
 
 
+	// evaluate list
 	val eval(const val& v) {
 		switch (v.type) {
 		case val::T_INT:
@@ -488,7 +504,7 @@ namespace lisp {
 			// cout << "get " << v.sval << " " << parser::show_val(env::get(v.sval)) << endl;
 			if (v.sval == "nil")
 				return val();
-			return env::get(v.sval);
+			return env::getdef(v);
 
 		case val::T_LIST:
 			// test for nil
@@ -613,7 +629,7 @@ namespace lisp {
 				val args(val::T_LIST);
 				for (int i = 1; i < v.lval.size(); i++)
 					args.lval.push_back( eval(v.lval[i]) );
-				return exec(name, args);
+				return exec(v.lval[0], args);
 			}
 		} // end switch
 
