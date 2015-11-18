@@ -34,9 +34,10 @@ static string strtolower(const string& s) {
 	return s2;
 }
 
+
+
+// some generic things that don't have a place
 static const val nil;
-
-
 static int lerror_count = 0;
 
 void lerror(string type, string err, const Token* tok) {
