@@ -8,11 +8,11 @@
 (let b "hello")
 (print b)
 
-(let i 1)
-(print (> 2 i))
+(print (> 2 1))
 
+(let i 1)
 (while (<= 10 i) (
-	(print i)
+	(print "i" i)
 	(let i (+ i 1))
 	))
 

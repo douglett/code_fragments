@@ -22,12 +22,14 @@ public:
 // val class - hold all lisp values
 class val {
 public:
+	// static
 	enum TYPES {
 		T_LIST,
 		T_INT,
 		T_IDENT,
 		T_STRING
 	};
+	// member vars
 	int type = 0;
 	int ival = 0;
 	std::string sval;

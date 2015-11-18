@@ -34,6 +34,8 @@ static string strtolower(const string& s) {
 	return s2;
 }
 
+static const val nil;
+
 
 static int lerror_count = 0;
 
@@ -272,10 +274,10 @@ namespace parser {
 			// unknown
 			else {
 				lerror("parser", "unknown token type", &tokens::list[pos]);
-				cout << tokens::list[pos].val << " " 
-					<< tokens::list[pos].type << " " 
-					<< tokens::exprname(tokens::list[pos].type) << " "
-					<< endl;
+				// cout << tokens::list[pos].val << " " 
+				// 	<< tokens::list[pos].type << " " 
+				// 	<< tokens::exprname(tokens::list[pos].type) << " "
+				// 	<< endl;
 				len = -1;
 				return vlist;
 			}
@@ -353,7 +355,7 @@ namespace parser {
 
 namespace env {
 
-	const val nil = val();
+	// const val nil;
 	const vector<string> keywords = {
 		"nil", 
 		"+", "-", "*", "/",
@@ -474,12 +476,12 @@ namespace lisp {
 	// execute a function
 	val exec(const val& name, const val& args) {
 		const val& func = env::getdef(name);
-		if (isnil(func))
-			return val();
+		if (haserror())
+			return nil;
 		// assert( func.lval.size() == 2 );
 		if (func.lval.size() != 2) {
 			lerror("runtime", "expected 2 value list", func.tok);
-			return val();
+			return nil;
 		}
 		// define ids
 		auto &argnames = func.lval[0].lval;
@@ -487,7 +489,7 @@ namespace lisp {
 			if (argnames[i].type == val::T_IDENT && i < args.lval.size()) {
 				int err = env::define( argnames[i].sval, args.lval[i] );
 				if (err)
-					return val();
+					return nil;
 			}
 		// run
 		val rval;
@@ -513,16 +515,14 @@ namespace lisp {
 		case val::T_IDENT:
 			// cout << "get " << v.sval << " " << parser::show_val(env::get(v.sval)) << endl;
 			if (v.sval == "nil")
-				return val();
+				return nil;
 			return env::getdef(v);
 
 		case val::T_LIST:
-			// test for nil
 			if (isnil(v))
-				return v;
-			// not a function: return entire list
+				return v;  // test for nil
 			if (v.lval[0].type != val::T_IDENT)
-				return v;
+				return v;  // not a function: return entire list
 
 			// otherwise, try and run list as function
 			auto name = v.lval[0].sval;
@@ -531,10 +531,13 @@ namespace lisp {
 			if (name == "+" || name == "-" || name == "*" || name == "/") {
 				assert(v.lval.size() >= 2);  // lazy error checking
 				val rval(val::T_INT);
-				rval.ival = eval(v.lval[1]).ival;  // set start value
-				for (int i = 2; i < v.lval.size(); i++) {
+				for (int i = 1; i < v.lval.size(); i++) {
 					int res = eval(v.lval[i]).ival;
-					if (name == "+")
+					if (haserror())
+						break;  // error checking
+					else if (i == 1)
+						rval.ival = res;  // set start value
+					else if (name == "+")
 						rval.ival += res;
 					else if (name == "-")
 						rval.ival -= res;
@@ -549,11 +552,13 @@ namespace lisp {
 			else if (name == "=") {
 				assert(v.lval.size() >= 3);
 				val rval(val::T_INT);
-				val comp = eval(v.lval[1]);  // comparison value
+				val comp = eval(v.lval[1]);  // get comparison value
+				if (haserror())
+					return rval;
 				// check against each comparison value
 				for (int i = 2; i < v.lval.size(); i++) {
 					val vv = eval(v.lval[i]);
-					if (!compare(comp, vv))
+					if (haserror() || !compare(comp, vv))
 						return rval;
 				}
 				rval.ival = 1;
@@ -564,9 +569,13 @@ namespace lisp {
 				assert(v.lval.size() >= 3);
 				val rval(val::T_INT);
 				int subject = eval(v.lval[1]).ival;  // comparison value
+				if (haserror())
+					return rval;
 				// check against each comparison value
 				for (int i = 2; i < v.lval.size(); i++) {
 					int vv = eval(v.lval[i]).ival;
+					if (haserror())
+						return rval;
 					if (name == ">" && vv > subject)
 						continue;
 					else if (name == "<" && vv < subject)
@@ -585,10 +594,11 @@ namespace lisp {
 				assert(v.lval.size() == 3);
 				assert(v.lval[1].type == val::T_IDENT);
 				const string &name = v.lval[1].sval;
-				val rval = eval(v.lval[2]);
-				int err = env::define(name, rval);
-				assert(err == 0);
-				return rval;
+				val setval = eval(v.lval[2]);
+				if (haserror())
+					return setval;
+				int err = env::define(name, setval);  // haserror() is set here
+				return setval;
 			}
 			// define function
 			else if (name == "defun") {
@@ -600,23 +610,28 @@ namespace lisp {
 				// define without
 				const string &name = v.lval[1].sval;
 				val deflist = sublist(v, 2, 0);
-				int err = env::define(name, deflist);
-				assert(err == 0);
+				int err = env::define(name, deflist);  // haserror() is set here
 				return lastitem(v);
 			}
 			// print evaluated list contents
 			else if (name == "print") {
-				for (int i = 1; i < v.lval.size(); i++)
-					cout << parser::show_val( eval(v.lval[i]) ) << " ";
+				for (int i = 1; i < v.lval.size(); i++) {
+					val vv = eval(v.lval[i]);
+					if (haserror())
+						break;
+					cout << parser::show_val(vv) << " ";
+				}
 				cout << endl;
 				return lastitem(v);
 			}
 			// list length
 			else if (name == "len") {
 				assert(v.lval.size() == 2);
-				val arg = eval(v.lval[1]);
-				assert(arg.type == val::T_LIST);
 				val len(val::T_INT);
+				val arg = eval(v.lval[1]);
+				if (haserror())
+					return len;
+				assert(arg.type == val::T_LIST);
 				len.ival = arg.lval.size();
 				return len;
 			}
@@ -628,8 +643,13 @@ namespace lisp {
 				auto& condition = v.lval[1];
 				auto& body = v.lval[2].lval;
 				while (eval(condition).ival != 0) {
-					for (int i = 0; i < body.size(); i++)
+					if (haserror())
+						return nil;
+					for (int i = 0; i < body.size(); i++) {
 						rval = eval(body[i]);
+						if (haserror())
+							return nil;
+					}
 				}
 				return rval;  // return last result
 			}
@@ -637,14 +657,18 @@ namespace lisp {
 			else {
 				// cout << "calling: " << name << endl;
 				val args(val::T_LIST);
-				for (int i = 1; i < v.lval.size(); i++)
-					args.lval.push_back( eval(v.lval[i]) );
+				for (int i = 1; i < v.lval.size(); i++) {
+					val vv = eval(v.lval[i]);
+					if (haserror())
+						return nil;
+					args.lval.push_back(vv);
+				}
 				return exec(v.lval[0], args);
 			}
 		} // end switch
 
-		// should never get here
-		return val();
+		cout << "should never get here" << endl;
+		return nil;
 	}
 
 } // end lisp
