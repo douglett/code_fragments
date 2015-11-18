@@ -409,6 +409,15 @@ namespace env {
 
 namespace lisp {
 
+	// public helpers
+	int isnil(const val& v) {
+		return v.type == val::T_LIST && v.lval.size() == 0;
+	}
+	int haserror() {
+		return lerror_count;
+	}
+
+	
 	const val& firstitem(const val& v) {
 		if (v.type == val::T_LIST && v.lval.size() > 0) {
 			if (v.lval[0].type == val::T_LIST)
@@ -445,14 +454,6 @@ namespace lisp {
 		return atomize(rval);
 	}
 
-	int isnil(const val& v) {
-		return v.type == val::T_LIST && v.lval.size() == 0;
-	}
-
-	int haserror() {
-		return lerror_count;
-	}
-
 	int compare(const val& v1, const val& v2) {
 		if (v1.type != v2.type)
 			return 0;
@@ -475,7 +476,7 @@ namespace lisp {
 
 
 	// execute a function
-	val exec(const val& name, const val& args) {
+	val execute_func(const val& name, const val& args) {
 		const val& func = env::getdef(name);
 		if (haserror())
 			return nil;
@@ -506,7 +507,7 @@ namespace lisp {
 	}
 
 
-	// evaluate list
+	// public: evaluate list
 	val eval(const val& v) {
 		switch (v.type) {
 		case val::T_INT:
@@ -670,7 +671,7 @@ namespace lisp {
 					if (i >= 1)
 						args.lval.push_back(vv);
 				}
-				return exec(v.lval[0], args);
+				return execute_func(v.lval[0], args);
 			}
 		} // end switch
 
