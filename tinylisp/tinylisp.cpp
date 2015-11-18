@@ -534,7 +534,7 @@ namespace lisp {
 				for (int i = 1; i < v.lval.size(); i++) {
 					int res = eval(v.lval[i]).ival;
 					if (haserror())
-						break;  // error checking
+						return rval;  // stop on error
 					else if (i == 1)
 						rval.ival = res;  // set start value
 					else if (name == "+")
@@ -552,14 +552,16 @@ namespace lisp {
 			else if (name == "=") {
 				assert(v.lval.size() >= 3);
 				val rval(val::T_INT);
-				val comp = eval(v.lval[1]);  // get comparison value
-				if (haserror())
-					return rval;
+				val comp;
 				// check against each comparison value
-				for (int i = 2; i < v.lval.size(); i++) {
+				for (int i = 1; i < v.lval.size(); i++) {
 					val vv = eval(v.lval[i]);
-					if (haserror() || !compare(comp, vv))
-						return rval;
+					if (haserror())
+						return rval;  // stop on error
+					else if (i == 1)
+						comp = vv;  // get comparison value
+					else if (!compare(comp, vv))
+						return rval;  // not equal
 				}
 				rval.ival = 1;
 				return rval;
@@ -568,15 +570,15 @@ namespace lisp {
 			else if (name == ">" || name == "<" || name == ">=" || name == "<=") {
 				assert(v.lval.size() >= 3);
 				val rval(val::T_INT);
-				int subject = eval(v.lval[1]).ival;  // comparison value
-				if (haserror())
-					return rval;
+				int subject = 0;
 				// check against each comparison value
-				for (int i = 2; i < v.lval.size(); i++) {
+				for (int i = 1; i < v.lval.size(); i++) {
 					int vv = eval(v.lval[i]).ival;
 					if (haserror())
-						return rval;
-					if (name == ">" && vv > subject)
+						return rval;  // stop on error
+					else if (i == 1)
+						subject = vv;  // comparison value
+					else if (name == ">" && vv > subject)
 						continue;
 					else if (name == "<" && vv < subject)
 						continue;
@@ -584,8 +586,10 @@ namespace lisp {
 						continue;
 					else if (name == "<=" && vv <= subject)
 						continue;
-					return rval;
+					else
+						return rval;  // bad comparison
 				}
+				// all comparisons correct
 				rval.ival = 1;
 				return rval;
 			}
@@ -597,7 +601,7 @@ namespace lisp {
 				val setval = eval(v.lval[2]);
 				if (haserror())
 					return setval;
-				int err = env::define(name, setval);  // haserror() is set here
+				env::define(name, setval);  // haserror() is set here
 				return setval;
 			}
 			// define function
@@ -610,7 +614,7 @@ namespace lisp {
 				// define without
 				const string &name = v.lval[1].sval;
 				val deflist = sublist(v, 2, 0);
-				int err = env::define(name, deflist);  // haserror() is set here
+				env::define(name, deflist);  // haserror() is set here
 				return lastitem(v);
 			}
 			// print evaluated list contents
@@ -637,7 +641,7 @@ namespace lisp {
 			}
 			// while loop
 			else if (name == "while") {
-				// cout << "while" << endl;
+				// cout << ">> while" << endl;
 				assert(v.lval.size() == 3);
 				val rval;
 				auto& condition = v.lval[1];
@@ -655,7 +659,7 @@ namespace lisp {
 			}
 			// user defined functions
 			else {
-				// cout << "calling: " << name << endl;
+				// cout << ">> calling: " << name << endl;
 				val args(val::T_LIST);
 				for (int i = 1; i < v.lval.size(); i++) {
 					val vv = eval(v.lval[i]);
