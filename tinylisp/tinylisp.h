@@ -54,6 +54,7 @@ namespace parser {
 
 namespace lisp {
 	int isnil(const val& v);
+	int haserror();
 	val eval(const val& v);
 }
 

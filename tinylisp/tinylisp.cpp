@@ -620,13 +620,14 @@ namespace lisp {
 			}
 			// print evaluated list contents
 			else if (name == "print") {
+				stringstream ss;  // cache line output
 				for (int i = 1; i < v.lval.size(); i++) {
 					val vv = eval(v.lval[i]);
 					if (haserror())
-						break;
-					cout << parser::show_val(vv) << " ";
+						return nil;  // stop on error
+					ss << parser::show_val(vv) << " ";
 				}
-				cout << endl;
+				cout << ss.str() << endl;
 				return lastitem(v);
 			}
 			// list length
@@ -662,11 +663,12 @@ namespace lisp {
 			else {
 				// cout << ">> calling: " << name << endl;
 				val args(val::T_LIST);
-				for (int i = 1; i < v.lval.size(); i++) {
+				for (int i = 0; i < v.lval.size(); i++) {
 					val vv = eval(v.lval[i]);
 					if (haserror())
-						return nil;
-					args.lval.push_back(vv);
+						return nil;  // error check everything, including first item
+					if (i >= 1)
+						args.lval.push_back(vv);
 				}
 				return exec(v.lval[0], args);
 			}

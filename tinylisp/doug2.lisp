@@ -22,7 +22,7 @@
 	(= (3 1 2) 3)
 	(= nil nil)
 	(= nil (1 2 3))
-	(= nil not_defined)
+	; (= nil not_defined)  ; runtime error
 	(= nil balls)
 	endl)
 

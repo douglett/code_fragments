@@ -5,7 +5,7 @@ using namespace std;
 
 
 int main() {
-	int err = tokens::tokenize_file("doug3.lisp");
+	int err = tokens::tokenize_file("doug1.lisp");
 	if (err)
 		return 1;
 	// tokens::show(); 
@@ -20,6 +20,8 @@ int main() {
 	cout << ">> parse:" << endl;
 	for (auto v : vlist.lval) {
 		auto rval = lisp::eval(v);
+		if (lisp::haserror())
+			break;
 		// cout << parser::show_val(rval) << endl;
 	}
 	// cout << endl;
