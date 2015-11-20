@@ -11,50 +11,58 @@
 #include "tinylisp.h"
 
 using namespace std;
+using namespace lisp;
 
 
 
-// helpers
-static stringstream ss; // generic stringstream
-static int strtoint(string s) {
-	ss.str(s), ss.clear();
-	int i = 0;
-	ss >> i;
-	return i;
-}
-static string inttostr(int i) {
-	ss.str(""), ss.clear();
-	ss << i;
-	return ss.str();
-}
-static string strtolower(const string& s) {
-	string s2 = s;
-	for (auto &c : s2)
-		c = tolower(c);
-	return s2;
-}
+namespace lisp {
 
+	// consts
+	const val nil;
 
+	// static
+	static stringstream ss; // generic stringstream
+	static int lerror_count = 0;
 
-// some generic things that don't have a place
-static const val nil;
-static int lerror_count = 0;
+	// helper members
+	int strtoint(string s) {
+		ss.str(s), ss.clear();
+		int i = 0;
+		ss >> i;
+		return i;
+	}
+	string inttostr(int i) {
+		ss.str(""), ss.clear();
+		ss << i;
+		return ss.str();
+	}
+	string strtolower(const string& s) {
+		string s2 = s;
+		for (auto &c : s2)
+			c = tolower(c);
+		return s2;
+	}
 
-void lerror(string type, string err, const Token* tok) {
-	cerr << type << " error:: " << err;
-	if (tok != NULL) 
-		cerr << " [" << tok->line << ":" << tok->pos << "]";
-	cerr << endl;
-	lerror_count++;
-}
+	// error handling
+	void lerror(string type, string err, const Token* tok) {
+		cerr << type << " error:: " << err;
+		if (tok != NULL) 
+			cerr << " [" << tok->line << ":" << tok->pos << "]";
+		cerr << endl;
+		lerror_count++;
+	}
+	int haserror() {
+		return lerror_count;
+	}
+
+} // end tinylisp helpers
 
 
 
 
 namespace tokens {
 
-	vector<Token> list;
-
+	// consts
 	const vector<vector<string> > expressions = {
 		{ "(", "\\(" },
 		{ ")", "\\)" },
@@ -64,25 +72,26 @@ namespace tokens {
 		{ "string", "\"" },
 		{ "comment", ";" }
 	};
+	// member vars
+	vector<Token> list;
 
-	int exprid(string name) {
+	// helpers
+	static int exprid(string name) {
 		for (int i = 0; i < expressions.size(); i++)
 			if (expressions[i][0] == name)
 				return i;
 		return -1;
 	}
-	string exprname(int id) {
+	static string exprname(int id) {
 		if (id < 0 || id >= expressions.size())
 			return "undefined";
 		return expressions[id][0];
 	}
-
-	int match(string s, string e) {
+	static int match(string s, string e) {
 		regex expr(e);
 		return regex_match(s, expr);
 	}
-
-	int match_any(string s) {
+	static int match_any(string s) {
 		for (int i = 0; i < expressions.size(); i++) {
 			if (match(s, expressions[i][1]))
 				return i;
@@ -90,7 +99,8 @@ namespace tokens {
 		return -1;
 	}
 
-	string get_string(stringstream& ss, int &err) {
+	// parse string literal
+	static string get_string(stringstream& ss, int &err) {
 		string s;
 		char c;
 		err = 1;
@@ -120,6 +130,7 @@ namespace tokens {
 		return s;
 	}
 
+	// tokenize
 	int tokenize_line(string tokstr, int line) {
 		stringstream ss(tokstr);
 		ss >> ws;
@@ -171,10 +182,10 @@ namespace tokens {
 				pos = ss.tellg();
 			}
 		}
-		// no errors
-		return 0;
+		return 0;  // no errors
 	}
 
+	// tokenize
 	int tokenize_file(string fname) {
 		fstream f(fname);
 		stringstream ss;
@@ -193,6 +204,7 @@ namespace tokens {
 		return err;
 	}
 
+	// show all tokens (debugging)
 	void show() {
 		cout << ">> tokens:" << endl;
 		for (const auto &tok : tokens::list) {
@@ -212,15 +224,16 @@ namespace tokens {
 
 namespace parser {
 
-	int expect(string s, int pos) {
+	// helpers
+	static int expect(string s, int pos) {
 		int id = tokens::exprid(s);
 		if (pos < tokens::list.size() && id == tokens::list[pos].type)
 			return 1;
 		return 0;
 	}
 
-
-	val parse_list(int startpos, int& len) {
+	// single list
+	static val parse_list(int startpos, int& len) {
 		int pos = startpos;
 		val vlist;
 
@@ -297,7 +310,7 @@ namespace parser {
 		return vlist;
 	}
 
-
+	// all lists
 	val parse_lists(int &err) {
 		val vlist(val::T_LIST);
 		int pos = 0;
@@ -316,7 +329,7 @@ namespace parser {
 		return vlist; // return list of lists
 	}
 
-
+	// show
 	string show_val(const val& v) {
 		switch (v.type) {
 		case val::T_LIST:
@@ -333,7 +346,6 @@ namespace parser {
 			return "undefined";
 		}
 	}
-
 
 	void show_list(const val &vlist, int tablen) {
 		string tabs(tablen, '\t');
@@ -413,10 +425,6 @@ namespace lisp {
 	int isnil(const val& v) {
 		return v.type == val::T_LIST && v.lval.size() == 0;
 	}
-	int haserror() {
-		return lerror_count;
-	}
-
 	
 	const val& firstitem(const val& v) {
 		if (v.type == val::T_LIST && v.lval.size() > 0) {

@@ -53,8 +53,16 @@ namespace parser {
 }
 
 namespace lisp {
-	int isnil(const val& v);
+	// consts
+	extern const val nil;
+	// helpers
+	int strtoint(std::string s);
+	std::string inttostr(int i);
+	std::string strtolower(const std::string& s);
+	void lerror(std::string type, std::string err, const Token* tok);
 	int haserror();
+	// member vars
+	int isnil(const val& v);
 	val eval(const val& v);
 }
 
