@@ -1,11 +1,8 @@
 #include <iostream>
-#include <iomanip>
 #include <string>
 #include <vector>
 #include <map>
-#include <fstream>
 #include <sstream>
-#include <regex>
 #include <cassert>
 
 #include "tinylisp.h"

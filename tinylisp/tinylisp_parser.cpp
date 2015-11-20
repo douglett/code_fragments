@@ -2,61 +2,14 @@
 #include <iomanip>
 #include <string>
 #include <vector>
-#include <map>
 #include <fstream>
 #include <sstream>
 #include <regex>
-#include <cassert>
 
 #include "tinylisp.h"
 
 using namespace std;
 using namespace lisp;
-
-
-
-namespace lisp {
-
-	// consts
-	const val nil;
-
-	// static
-	static stringstream ss; // generic stringstream
-	static int lerror_count = 0;
-
-	// helper members
-	int strtoint(string s) {
-		ss.str(s), ss.clear();
-		int i = 0;
-		ss >> i;
-		return i;
-	}
-	string inttostr(int i) {
-		ss.str(""), ss.clear();
-		ss << i;
-		return ss.str();
-	}
-	string strtolower(const string& s) {
-		string s2 = s;
-		for (auto &c : s2)
-			c = tolower(c);
-		return s2;
-	}
-
-	// error handling
-	void lerror(string type, string err, const Token* tok) {
-		cerr << type << " error:: " << err;
-		if (tok != NULL) 
-			cerr << " [" << tok->line << ":" << tok->pos << "]";
-		cerr << endl;
-		lerror_count++;
-	}
-	int haserror() {
-		return lerror_count;
-	}
-
-} // end tinylisp helpers
-
 
 
 

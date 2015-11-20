@@ -11,12 +11,7 @@ public:
 	std::string val;
 	int line = 0;
 	int pos = 0;
-	Token(int type, std::string val, int line, int pos) {
-		this->type = type;
-		this->val = val;
-		this->line = line;
-		this->pos = pos;
-	}
+	Token(int type, std::string val, int line, int pos);
 };
 
 // val class - hold all lisp values
@@ -35,10 +30,8 @@ public:
 	std::string sval;
 	std::vector<val> lval;
 	const Token* tok = NULL;
-	val() { }
-	val(int type) {
-		this->type = type;
-	}
+	val();
+	val(int type);
 };
 
 namespace tokens {
