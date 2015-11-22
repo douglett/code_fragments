@@ -118,7 +118,6 @@ namespace lisp {
 		const val& func = env::getdef(name);
 		if (haserror())
 			return nil;
-		// assert( func.lval.size() == 2 );
 		if (func.lval.size() != 2) {
 			lerror("runtime", "expected 2 value list", func.tok);
 			return nil;
@@ -133,8 +132,9 @@ namespace lisp {
 			}
 		// run
 		val rval;
-		for (int i = 0; i < func.lval[1].lval.size(); i++) {
-			rval = eval(func.lval[1].lval[i]);
+		auto &funcbody = func.lval[1].lval;
+		for (int i = 0; i < funcbody.size(); i++) {
+			rval = eval(funcbody[i]);
 			if (haserror())
 				break;
 		}
