@@ -59,7 +59,7 @@ const SDL_Rect
 vector<vector<int> > map;
 SDL_Texture* sprites = NULL;
 mob playermob;
-mob camera;
+SDL_Rect camera = { 0, 0, 10, 10 };
 vector<mob> mobs;
 vector<gtext> gtexts;
 int showmenu = 0;
@@ -74,7 +74,12 @@ int main() {
 		return 1;
 
 	createmap();
-	playermob.x = 4, playermob.y = 3;
+	playermob.x = 4;
+	playermob.y = 3;
+	camera.w = ceil(game::width/12.0);
+	camera.h = ceil(game::height/12.0);
+	// camera.w = 14;
+	// camera.h = 10;
 	centercam();
 
 	// sprite images
@@ -308,8 +313,8 @@ void cleartexts() {
 
 
 void centercam() {
-	camera.x = playermob.x - 4;
-	camera.y = playermob.y - 4;
+	camera.x = playermob.x - floor((camera.w-0.5)/2);
+	camera.y = playermob.y - floor((camera.h-0.5)/2);
 }
 
 
@@ -334,24 +339,28 @@ void draw() {
 	SDL_RenderClear(game::ren);
 
 	// game background
-	SDL_SetRenderDrawColor(game::ren, 50, 50, 50, 255);
-	SDL_Rect scr = { 0, 0, game::width, game::height };
-	SDL_RenderFillRect(game::ren, &scr);
+	// SDL_SetRenderDrawColor(game::ren, 50, 50, 50, 255);
+	// SDL_Rect scr = { 0, 0, game::width, game::height };
+	// SDL_RenderFillRect(game::ren, &scr);
 
 	SDL_Rect src, dst;
 
+	const int 
+		offsety = 0,
+		offsetx = 0;
+
 	// draw map
 	dst = { 0, 0, 13, 13 };
-	for (int y = 0; y < 10; y++) {
+	for (int y = 0; y < camera.h; y++) {
 		if (camera.y+y < 0 || camera.y+y >= map.size())
 			continue;
-		dst.y = y * 12 - 4;
+		dst.y = y * 12 + offsety;
 
-		for (int x = 0; x < 10; x++) {
+		for (int x = 0; x < camera.w; x++) {
 			if (camera.x+x < 0 || camera.x+x >= map[0].size())
 				continue;
 
-			dst.x = x * 12 - 4;
+			dst.x = x * 12 + offsetx;
 			// draw block
 			int tile = abs( map[camera.y+y][camera.x+x] );
 			if (tile == 1)
@@ -362,8 +371,8 @@ void draw() {
 				SDL_SetRenderDrawColor(game::ren, 0, 200, 0, 255);
 			SDL_RenderFillRect(game::ren, &dst);
 			// draw lines
-			SDL_SetRenderDrawColor(game::ren, 255, 150, 150, 255);
-			SDL_RenderDrawRect(game::ren, &dst);
+			// SDL_SetRenderDrawColor(game::ren, 255, 150, 150, 255);
+			// SDL_RenderDrawRect(game::ren, &dst);
 		}
 	}
 
@@ -375,13 +384,13 @@ void draw() {
 	// dst.y = 12 * playermob.y - 4;
 	// dst.x = 12 * 4 - 4;
 	// dst.y = 12 * 3 - 4;
-	dst.x = 12 * (playermob.x - camera.x) - 4;
-	dst.y = 12 * (playermob.y - camera.y) - 4;
+	dst.x = 12 * (playermob.x - camera.x) + offsetx;
+	dst.y = 12 * (playermob.y - camera.y) + offsety;
 	SDL_RenderCopy(game::ren, sprites, &src, &dst);
 
 	// mobs
 	for (auto m : mobs) {
-		if (m.x < camera.x || m.x >= camera.x+10 || m.y < camera.y || m.y >= camera.y+10)
+		if (m.x < camera.x || m.x >= camera.x+camera.w || m.y < camera.y || m.y >= camera.y+camera.h)
 			continue;
 		if (m.type == 1)
 			src = scorpion;
@@ -389,15 +398,15 @@ void draw() {
 			src = cake;
 		src.x += 12 * animstate;
 		dst = src;
-		dst.x = 12 * (m.x - camera.x) - 4;
-		dst.y = 12 * (m.y - camera.y) - 4;
+		dst.x = 12 * (m.x - camera.x) + offsetx;
+		dst.y = 12 * (m.y - camera.y) + offsety;
 		SDL_RenderCopy(game::ren, sprites, &src, &dst);
 	}
 
 	// attack text
 	for (auto g : gtexts) {
-		dst.x = 12 * (g.x - camera.x) - 4 + 1;
-		dst.y = 12 * (g.y - camera.y) - 4 - 2;
+		dst.x = 12 * (g.x - camera.x) + offsetx + 1;
+		dst.y = 12 * (g.y - camera.y) + offsety - 2;
 		game::qbcolor(0, 0, 0);
 		game::qbprint(dst.x+1, dst.y+1, g.s);
 		game::qbcolor(200, 0, 0);
@@ -407,10 +416,10 @@ void draw() {
 	// draw large info
 	if (showmenu) {
 		// draw parchment background
-		dst = parchment;
-		dst.x = 0;
-		dst.y = 71;
-		SDL_RenderCopy(game::ren, sprites, &parchment, &dst);
+		auto parchment_pos = parchment;
+		parchment_pos.x = (game::width - parchment_pos.w) / 2;
+		parchment_pos.y = game::height - parchment_pos.h - 1;
+		SDL_RenderCopy(game::ren, sprites, &parchment, &parchment_pos);
 
 		// draw cards (staggered)
 		// drawcard(0, 22, 74);
@@ -419,54 +428,58 @@ void draw() {
 		// drawcard(3, 73, 80);
 
 		// draw cards (inline)
-		drawcard(0, 22, 77);
-		drawcard(1, 39, 77);
-		drawcard(2, 56, 77);
-		drawcard(3, 73, 77);
+		drawcard(0, parchment_pos.x+22, parchment_pos.y+6);
+		drawcard(1, parchment_pos.x+39, parchment_pos.y+6);
+		drawcard(2, parchment_pos.x+56, parchment_pos.y+6);
+		drawcard(3, parchment_pos.x+73, parchment_pos.y+6);
 
 		// background
-		dst = { 58, 1, 41, 28 };
+		SDL_Rect textbox = { 0, 1, 41, 28 };
+		textbox.x = game::width - textbox.w - 1;
 		SDL_SetRenderDrawColor(game::ren, 0, 0, 0, 150);
-		SDL_RenderFillRect(game::ren, &dst);
+		SDL_RenderFillRect(game::ren, &textbox);
 
 		// HP text
 		ss.str(""), ss.clear();
 		ss  << setfill('0') << setw(2) << playermob.hp << "/" 
 			<< setfill('0') << setw(2) << playermob.maxhp;
 		game::qbcolor(0, 0, 0);
-		game::qbprint(dst.x+2, dst.y+2, ss.str());
+		game::qbprint(textbox.x+2, textbox.y+2, ss.str());
 		game::qbcolor(0, 200, 0);
-		game::qbprint(dst.x+1, dst.y+1, ss.str());
+		game::qbprint(textbox.x+1, textbox.y+1, ss.str());
 
 		// ATK text
 		ss.str(""), ss.clear();
 		ss << "atk " << playermob.atk;
 		game::qbcolor(0, 0, 0);
-		game::qbprint(dst.x+2, dst.y+11, ss.str());
+		game::qbprint(textbox.x+2, textbox.y+11, ss.str());
 		game::qbcolor(230, 230, 0);
-		game::qbprint(dst.x+1, dst.y+10, ss.str());
+		game::qbprint(textbox.x+1, textbox.y+10, ss.str());
 
 		// DEF text
 		ss.str(""), ss.clear();
 		ss << "def " << playermob.def;
 		game::qbcolor(0, 0, 0);
-		game::qbprint(dst.x+2, dst.y+20, ss.str());
+		game::qbprint(textbox.x+2, textbox.y+20, ss.str());
 		game::qbcolor(230, 230, 0);
-		game::qbprint(dst.x+1, dst.y+19, ss.str());
+		game::qbprint(textbox.x+1, textbox.y+19, ss.str());
 	} 
 	// draw small info
 	else {
-		// background
-		dst = { 82, 89, 17, 10 };
-		SDL_SetRenderDrawColor(game::ren, 0, 0, 0, 150);
-		SDL_RenderFillRect(game::ren, &dst);
-
-		// text
+		// HP text
 		ss.str(""), ss.clear();
-		ss << setfill('0') << setw(2) << playermob.hp;
+		ss << playermob.hp << "/" << playermob.maxhp;
+		string s = ss.str();
+
+		// background
+		SDL_Rect textbox = { 0, 1, int(s.length())*8 + 1, 10 };
+		textbox.x = game::width - textbox.w - 1;
+		SDL_SetRenderDrawColor(game::ren, 0, 0, 0, 150);
+		SDL_RenderFillRect(game::ren, &textbox);
+
 		game::qbcolor(0, 0, 0);
-		game::qbprint(dst.x+2, dst.y+2, ss.str());
+		game::qbprint(textbox.x+2, textbox.y+2, ss.str());
 		game::qbcolor(0, 200, 0);
-		game::qbprint(dst.x+1, dst.y+1, ss.str());
+		game::qbprint(textbox.x+1, textbox.y+1, ss.str());
 	}
 }
