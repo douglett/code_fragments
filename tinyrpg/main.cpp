@@ -53,6 +53,7 @@ void playerattack(mob& m);
 void allenemyactions();
 void enemyaction(mob& m);
 int  mobcollide(mob& currentmob, int offsetx, int offsety);
+void mobattack(mob& m);
 void cleartexts();
 void centercam();
 void combatlog(const string& s);
@@ -86,6 +87,7 @@ int main() {
 		return 1;
 
 	createmap();
+	playermob.hp = playermob.maxhp = 20;
 	playermob.x = 4;
 	playermob.y = 3;
 	camera.w = ceil(game::width/12.0);
@@ -199,32 +201,36 @@ int handleevents() {
 
 
 int playeraction(Action action) {
-	int doaction = 0;
+	int collide = 0;
 
 	switch (action) {
 	case ACT_NONE:
 		break;
 	case ACT_WEST:
-		if (!playercollide(playermob.x-1, playermob.y))
-			playermob.x -= 1, doaction = 1;
+		collide = playercollide(playermob.x-1, playermob.y);
+		if (!collide)
+			playermob.x -= 1;
 		break;
 	case ACT_EAST:
-		if (!playercollide(playermob.x+1, playermob.y))
-			playermob.x += 1, doaction = 1;
+		collide = playercollide(playermob.x+1, playermob.y);
+		if (!collide)
+			playermob.x += 1;
 		break;
 	case ACT_SOUTH:
-		if (!playercollide(playermob.x, playermob.y+1))
-			playermob.y += 1, doaction = 1;
+		collide = playercollide(playermob.x, playermob.y+1);
+		if (!collide)
+			playermob.y += 1;
 		break;
 	case ACT_NORTH:
-		if (!playercollide(playermob.x, playermob.y-1))
-			playermob.y -= 1, doaction = 1;
+		collide = playercollide(playermob.x, playermob.y-1);
+		if (!collide)
+			playermob.y -= 1;
 		break;
 	case ACT_ACTION:
 		break;
 	}
 
-	if (doaction) {
+	if (collide == 0 || collide == 2) {
 		cleartexts();
 		allenemyactions();
 	}
@@ -241,7 +247,7 @@ int playercollide(int x, int y) {
 	for (auto &m : mobs)
 		if (m.x == x && m.y == y) {
 			playerattack(m);
-			return 1;
+			return 2;
 		}
 	return 0;
 }
@@ -253,7 +259,6 @@ void playerattack(mob& m) {
 	m.hp -= atk;
 
 	// display attack
-	cleartexts();
 	ss.str(""), ss.clear();
 	ss << atk;
 	gtext g;
@@ -264,7 +269,7 @@ void playerattack(mob& m) {
 
 	// add player log
 	ss.str(""), ss.clear();
-	ss << m.name() << " < -" << atk;
+	ss << "-> " << m.name() << " (-" << atk << ")";
 	combatlog(ss.str());
 
 	// do counterattack
@@ -273,7 +278,10 @@ void playerattack(mob& m) {
 	if (m.hp <= 0) {
 		for (int i = 0; i < mobs.size(); i++) {
 			if (&mobs[i] == &m) {
-				cout << "killed mob: " << i << endl;
+				ss.str(""), ss.clear();
+				ss << mobs[i].name() << " died";
+				combatlog(ss.str());
+				// cout << "killed mob: " << i << endl;
 				mobs.erase(mobs.begin()+i);
 				break;
 			}
@@ -301,14 +309,30 @@ void enemyaction(mob& m) {
 	int diffx = playermob.x - m.x;
 	int diffy = playermob.y - m.y;
 	// cout << diffx << " " << diffy << endl;
-	if (diffy <= -1 && !mobcollide(m, 0, -1)) {
-		m.y -= 1;
-	} else if (diffy >= 1 && !mobcollide(m, 0, 1)) {
-		m.y += 1;
-	} else if (diffx <= -1 && !mobcollide(m, -1, 0)) {
-		m.x -= 1;
-	} else if (diffx >= 1 && !mobcollide(m, 1, 0)) {
-		m.x += 1;
+	if (diffy <= -1) {
+		int collide = mobcollide(m, 0, -1);
+		if (collide == 0)
+			m.y -= 1;
+		else if (collide == 2)
+			mobattack(m);
+	} else if (diffy >= 1) {
+		int collide = mobcollide(m, 0, 1);
+		if (collide == 0)
+			m.y += 1;
+		else if (collide == 2)
+			mobattack(m);
+	} else if (diffx <= -1) {
+		int collide = mobcollide(m, -1, 0);
+		if (collide == 0)
+			m.x -= 1;
+		else if (collide == 2)
+			mobattack(m);
+	} else if (diffx >= 1) {
+		int collide = mobcollide(m, 1, 0);
+		if (collide == 0)
+			m.x += 1;
+		else if (collide == 2)
+			mobattack(m);
 	}
 }
 
@@ -326,6 +350,27 @@ int mobcollide(mob& currentmob, int offsetx, int offsety) {
 	if (x == playermob.x && y == playermob.y)
 		return 2;
 	return 0;
+}
+
+
+void mobattack(mob& m) {
+	// do attack
+	int atk = m.atk - playermob.def;
+	playermob.hp -= atk;
+
+	// display attack
+	ss.str(""), ss.clear();
+	ss << atk;
+	gtext g;
+		g.x = playermob.x;
+		g.y = playermob.y;
+		g.s = ss.str();
+	gtexts.push_back(g);
+
+	// add player log
+	ss.str(""), ss.clear();
+	ss << "<- " << m.name() << " (-" << atk << ")";
+	combatlog(ss.str());
 }
 
 
