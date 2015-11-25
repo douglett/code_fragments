@@ -15,6 +15,14 @@ enum Action {
 	ACT_ACTION
 };
 
+const vector<string> mob_names = {
+	"???",
+	"scorp",
+	"cakey"
+};
+
+vector <string> combat_log;
+
 class mob {
 public:
 	int x = 0;
@@ -24,6 +32,9 @@ public:
 	int maxhp = 3;
 	int atk = 1;
 	int def = 0;
+	const string& name() {
+		return mob_names[type];
+	}
 };
 
 class gtext {
@@ -44,6 +55,7 @@ void enemyaction(mob& m);
 int  mobcollide(mob& currentmob, int offsetx, int offsety);
 void cleartexts();
 void centercam();
+void combatlog(const string& s);
 
 const SDL_Rect 
 		parchment = { 0, 0, 100, 28 },
@@ -245,10 +257,15 @@ void playerattack(mob& m) {
 	ss.str(""), ss.clear();
 	ss << atk;
 	gtext g;
-	g.x = m.x;
-	g.y = m.y;
-	g.s = ss.str();
+		g.x = m.x;
+		g.y = m.y;
+		g.s = ss.str();
 	gtexts.push_back(g);
+
+	// add player log
+	ss.str(""), ss.clear();
+	ss << m.name() << " < -" << atk;
+	combatlog(ss.str());
 
 	// do counterattack
 
@@ -262,6 +279,11 @@ void playerattack(mob& m) {
 			}
 		}
 	}
+}
+
+
+void combatlog(const string& s) {
+	combat_log.push_back(s);
 }
 
 
@@ -417,8 +439,10 @@ void draw() {
 	if (showmenu) {
 		// draw parchment background
 		auto parchment_pos = parchment;
-		parchment_pos.x = (game::width - parchment_pos.w) / 2;
-		parchment_pos.y = game::height - parchment_pos.h - 1;
+		// parchment_pos.x = (game::width - parchment_pos.w) - 1;
+		// parchment_pos.y = game::height - parchment_pos.h - 1;
+		parchment_pos.x = 1;
+		parchment_pos.y = 1;
 		SDL_RenderCopy(game::ren, sprites, &parchment, &parchment_pos);
 
 		// draw cards (staggered)
@@ -463,6 +487,20 @@ void draw() {
 		game::qbprint(textbox.x+2, textbox.y+20, ss.str());
 		game::qbcolor(230, 230, 0);
 		game::qbprint(textbox.x+1, textbox.y+19, ss.str());
+
+		// combat log
+		for (int i = 0; i < 5; i++) {
+			if (i >= combat_log.size())
+				break;
+			int x = 1;
+			int y = game::height - 10 - 8*i;
+			auto s = *(combat_log.end() - (1+i));
+			game::qbcolor(0, 0, 0);
+			game::qbprint(x+1, y+1, s);
+			// game::qbcolor(255, 255, 255);
+			game::qbcolor(230, 230, 0);
+			game::qbprint(x, y, s);
+		}
 	} 
 	// draw small info
 	else {
