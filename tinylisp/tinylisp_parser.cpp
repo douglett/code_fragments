@@ -140,7 +140,13 @@ namespace tokens {
 
 	// tokenize
 	int tokenize_file(string fname) {
-		fstream f(fname);
+		// open check
+		fstream f(fname, fstream::in);
+		if (!f.is_open()) {
+			lerror("tokenizer", string("file not found: ") + fname, NULL);
+			return 1;
+		}
+		// setup
 		stringstream ss;
 		string s;
 		int line = 0;
