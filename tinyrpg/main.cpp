@@ -39,7 +39,6 @@ void createmap();
 int  handleevents();
 void centercam();
 void combatlog(const string& s);
-void cleartexts();
 void draw();
 // 
 namespace action {
@@ -165,7 +164,6 @@ int handleevents() {
 			// (int)event.window.event
 			break;
 		case SDL_KEYDOWN:
-
 			// handle key press
 			switch (event.key.keysym.sym) {
 			case SDLK_ESCAPE:
@@ -189,7 +187,6 @@ int handleevents() {
 				showmenu = !showmenu;
 				break;
 			}
-
 			break;
 		}  // end switch
 	}  // end while
@@ -205,16 +202,13 @@ void centercam() {
 void combatlog(const string& s) {
 	combat_log.push_back(s);
 }
-void cleartexts() {
-	gtexts.erase(gtexts.begin(), gtexts.end());
-}
 
 
 
 namespace action {
 
 	int  playercollide(int x, int y);
-	void playerattack(mob& m);
+	void playerattack(int x, int y);
 	void allenemyactions();
 	void enemyaction(mob& m);
 	int  mobcollide(mob& currentmob, int offsetx, int offsety);
@@ -222,40 +216,51 @@ namespace action {
 
 
 	int playeraction(Action action) {
-		int collide = 0;
+		int x = 0, y = 0;
+		int collide = -1;  // default, no movement
 
 		switch (action) {
 		case ACT_NONE:
 			break;
 		case ACT_WEST:
-			collide = playercollide(playermob.x-1, playermob.y);
-			if (!collide)
-				playermob.x -= 1;
+			x = -1;
+			collide = playercollide(playermob.x + x, playermob.y + y);
 			break;
 		case ACT_EAST:
-			collide = playercollide(playermob.x+1, playermob.y);
-			if (!collide)
-				playermob.x += 1;
+			x = +1;
+			collide = playercollide(playermob.x + x, playermob.y + y);
 			break;
 		case ACT_SOUTH:
-			collide = playercollide(playermob.x, playermob.y+1);
-			if (!collide)
-				playermob.y += 1;
+			y = +1;
+			collide = playercollide(playermob.x + x, playermob.y + y);
 			break;
 		case ACT_NORTH:
-			collide = playercollide(playermob.x, playermob.y-1);
-			if (!collide)
-				playermob.y -= 1;
+			y = -1;
+			collide = playercollide(playermob.x + x, playermob.y + y);
 			break;
 		case ACT_ACTION:
 			break;
 		}
 
+		// do movement actions
 		if (collide == 0 || collide == 2) {
-			cleartexts();
+			gtexts.erase(gtexts.begin(), gtexts.end());
+			// player action
+			if (collide == 0) {
+				playermob.x += x;
+				playermob.y += y;
+				centercam();
+			} else if (collide == 2) {
+				playerattack(playermob.x + x, playermob.y + y);
+			}
+			// enemy actions
 			allenemyactions();
+			if (playermob.hp <= 0) {
+				cout << "you died" << endl;
+				exit(0);
+			}
 		}
-		centercam();
+
 		return 0;
 	}
 
@@ -266,39 +271,44 @@ namespace action {
 		if (map[y][x] < 0)
 			return 1;
 		for (auto &m : mobs)
-			if (m.x == x && m.y == y) {
-				playerattack(m);
+			if (m.x == x && m.y == y)
 				return 2;
-			}
 		return 0;
 	}
 
 
-	void playerattack(mob& m) {
+	void playerattack(int x, int y) {
+		// find mob
+		mob* m = NULL;
+		for (auto& mm : mobs)
+			if (mm.x == x && mm.y == y) {
+				m = &mm;
+				break;
+			}
+		assert(m != NULL);
+
 		// do attack
-		int atk = playermob.atk - m.def;
-		m.hp -= atk;
+		int atk = playermob.atk - m->def;
+		m->hp -= atk;
 
 		// display attack
 		ss.str(""), ss.clear();
 		ss << atk;
 		gtext g;
-			g.x = m.x;
-			g.y = m.y;
+			g.x = m->x;
+			g.y = m->y;
 			g.s = ss.str();
 		gtexts.push_back(g);
 
 		// add player log
 		ss.str(""), ss.clear();
-		ss << "-> " << m.name() << " (-" << atk << ")";
+		ss << "-> " << m->name() << " (-" << atk << ")";
 		combatlog(ss.str());
 
-		// do counterattack
-
 		// erase mob
-		if (m.hp <= 0) {
+		if (m->hp <= 0) {
 			for (int i = 0; i < mobs.size(); i++) {
-				if (&mobs[i] == &m) {
+				if (&mobs[i] == m) {
 					ss.str(""), ss.clear();
 					ss << mobs[i].name() << " died";
 					combatlog(ss.str());
