@@ -7,12 +7,6 @@ using namespace std;
 
 
 
-const vector<string> mob_names = {
-	"???",
-	"scorp",
-	"cakey"
-};
-
 class mob {
 public:
 	int x = 0;
@@ -22,9 +16,7 @@ public:
 	int maxhp = 3;
 	int atk = 1;
 	int def = 0;
-	const string& name() {
-		return mob_names[type];
-	}
+	string name;
 };
 
 class gtext {
@@ -66,6 +58,12 @@ const SDL_Rect
 		scorpion = { 24, 48, 12, 12 },
 		cake = { 48, 48, 12, 12 };
 
+const vector<string> mob_names = {
+	"???",
+	"scorp",
+	"cakey"
+};
+
 vector<vector<int> > map;
 SDL_Texture* sprites = NULL;
 mob playermob;
@@ -88,10 +86,9 @@ int main() {
 	playermob.hp = playermob.maxhp = 20;
 	playermob.x = 4;
 	playermob.y = 3;
+	playermob.name = "player";
 	camera.w = ceil(game::width/12.0);
 	camera.h = ceil(game::height/12.0);
-	// camera.w = 14;
-	// camera.h = 10;
 	centercam();
 
 	// sprite images
@@ -150,6 +147,7 @@ void createmap() {
 	for (int i = 0; i < mobcount; i++) {
 		mob m;
 		m.type = rand()%2 + 1;
+		m.name = mob_names[m.type];
 		m.x = rand()%17 + 1;
 		m.y = rand()%17 + 1;
 		mobs.push_back(m);
@@ -203,7 +201,7 @@ void cleardead() {
 	for (int i = 0; i < mobs.size(); i++)
 		if (mobs[i].hp <= 0) {
 			ss.str(""), ss.clear();
-			ss << mobs[i].name() << " died";
+			ss << mobs[i].name << " died";
 			combatlog(ss.str());
 			mobs.erase(mobs.begin()+i);
 			i--;
@@ -222,10 +220,10 @@ void combatlog(const string& s) {
 namespace action {
 
 	int  collision(int x, int y);
-	void playerattack(int x, int y);
+	mob* findmob(int x, int y);
+	void doattack(mob* attacker, mob* defender);
 	void allenemyactions();
 	void enemyaction(mob& m);
-	void mobattack(mob& m);
 
 
 	int playeraction(Action action) {
@@ -265,7 +263,7 @@ namespace action {
 				playermob.y += y;
 				centercam();
 			} else if (collide == 2) {
-				playerattack(playermob.x + x, playermob.y + y);
+				doattack(&playermob, findmob(playermob.x + x, playermob.y + y));
 				cleardead();
 			}
 			// enemy actions
@@ -290,32 +288,35 @@ namespace action {
 	}
 
 
-	void playerattack(int x, int y) {
-		// find mob
-		mob* m = NULL;
-		for (auto& mm : mobs)
-			if (mm.x == x && mm.y == y) {
-				m = &mm;
-				break;
-			}
-		assert(m != NULL);
+	mob* findmob(int x, int y) {
+		for (auto& m : mobs)
+			if (m.x == x && m.y == y)
+				return &m;
+		if (playermob.x == x && playermob.y == y)
+			return &playermob;
+		return NULL;
+	}
+
+
+	void doattack(mob* attacker, mob* defender) {
+		assert(attacker != NULL && defender != NULL);
 
 		// do attack
-		int atk = playermob.atk - m->def;
-		m->hp -= atk;
+		int atk = attacker->atk - defender->def;
+		defender->hp -= atk;
 
 		// display attack
 		ss.str(""), ss.clear();
 		ss << atk;
 		gtext g;
-			g.x = m->x;
-			g.y = m->y;
+			g.x = defender->x;
+			g.y = defender->y;
 			g.s = ss.str();
 		gtexts.push_back(g);
 
 		// add player log
 		ss.str(""), ss.clear();
-		ss << "-> " << m->name() << " (-" << atk << ")";
+		ss << "-> " << defender->name << " (-" << atk << ")";
 		combatlog(ss.str());
 	}
 
@@ -339,47 +340,26 @@ namespace action {
 			if (collide == 0)
 				m.y -= 1;
 			else if (collide == 3)
-				mobattack(m);
+				doattack(&m, &playermob);
 		} else if (diffy >= 1) {
 			int collide = collision(m.x, m.y + 1);
 			if (collide == 0)
 				m.y += 1;
 			else if (collide == 3)
-				mobattack(m);
+				doattack(&m, &playermob);
 		} else if (diffx <= -1) {
 			int collide = collision(m.x - 1, m.y);
 			if (collide == 0)
 				m.x -= 1;
 			else if (collide == 3)
-				mobattack(m);
+				doattack(&m, &playermob);
 		} else if (diffx >= 1) {
 			int collide = collision(m.x + 1, m.y);
 			if (collide == 0)
 				m.x += 1;
 			else if (collide == 3)
-				mobattack(m);
+				doattack(&m, &playermob);
 		}
-	}
-
-
-	void mobattack(mob& m) {
-		// do attack
-		int atk = m.atk - playermob.def;
-		playermob.hp -= atk;
-
-		// display attack
-		ss.str(""), ss.clear();
-		ss << atk;
-		gtext g;
-			g.x = playermob.x;
-			g.y = playermob.y;
-			g.s = ss.str();
-		gtexts.push_back(g);
-
-		// add player log
-		ss.str(""), ss.clear();
-		ss << "<- " << m.name() << " (-" << atk << ")";
-		combatlog(ss.str());
 	}
 
 } // end actions
