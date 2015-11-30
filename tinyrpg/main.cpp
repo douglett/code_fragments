@@ -36,7 +36,8 @@ public:
 
 
 void createmap();
-int  handleevents();
+int  handle_player_actions();
+void cleardead();
 void centercam();
 void combatlog(const string& s);
 void draw();
@@ -50,7 +51,7 @@ namespace action {
 		ACT_SOUTH,
 		ACT_ACTION
 	};
-	int playeraction(Action action);
+	int  playeraction(Action action);
 }
 
 
@@ -107,10 +108,13 @@ int main() {
 		SDL_RenderPresent(game::ren);
 		game::waitscreen();
 		
-		// if (game::clearevents())
-		// 	break;
-		if (handleevents())
+		if (handle_player_actions())
 			break;
+		game::clearevents();  // clear remaining events
+		if (playermob.hp <= 0) {
+			cout << "you died" << endl;
+			break;
+		}
 	}
 
 	game::quit();
@@ -153,7 +157,7 @@ void createmap() {
 }
 
 
-int handleevents() {
+int handle_player_actions() {
 	SDL_Event event;
 
 	while (SDL_PollEvent(&event)) {
@@ -170,22 +174,22 @@ int handleevents() {
 				return 1;
 			case SDLK_LEFT:
 				action::playeraction(action::ACT_WEST);
-				break;
+				return 0;
 			case SDLK_RIGHT:
 				action::playeraction(action::ACT_EAST);
-				break;
+				return 0;
 			case SDLK_UP:
 				action::playeraction(action::ACT_NORTH);
-				break;
+				return 0;
 			case SDLK_DOWN:
 				action::playeraction(action::ACT_SOUTH);
-				break;
+				return 0;
 			case SDLK_SPACE:
 				action::playeraction(action::ACT_ACTION);
-				break;
+				return 0;
 			case SDLK_s:
 				showmenu = !showmenu;
-				break;
+				return 0;
 			}
 			break;
 		}  // end switch
@@ -195,6 +199,16 @@ int handleevents() {
 }
 
 
+void cleardead() {
+	for (int i = 0; i < mobs.size(); i++)
+		if (mobs[i].hp <= 0) {
+			ss.str(""), ss.clear();
+			ss << mobs[i].name() << " died";
+			combatlog(ss.str());
+			mobs.erase(mobs.begin()+i);
+			i--;
+		}
+}
 void centercam() {
 	camera.x = playermob.x - floor((camera.w-0.5)/2);
 	camera.y = playermob.y - floor((camera.h-0.5)/2);
@@ -207,11 +221,10 @@ void combatlog(const string& s) {
 
 namespace action {
 
-	int  playercollide(int x, int y);
+	int  collision(int x, int y);
 	void playerattack(int x, int y);
 	void allenemyactions();
 	void enemyaction(mob& m);
-	int  mobcollide(mob& currentmob, int offsetx, int offsety);
 	void mobattack(mob& m);
 
 
@@ -224,21 +237,22 @@ namespace action {
 			break;
 		case ACT_WEST:
 			x = -1;
-			collide = playercollide(playermob.x + x, playermob.y + y);
+			collide = collision(playermob.x + x, playermob.y + y);
 			break;
 		case ACT_EAST:
 			x = +1;
-			collide = playercollide(playermob.x + x, playermob.y + y);
+			collide = collision(playermob.x + x, playermob.y + y);
 			break;
 		case ACT_SOUTH:
 			y = +1;
-			collide = playercollide(playermob.x + x, playermob.y + y);
+			collide = collision(playermob.x + x, playermob.y + y);
 			break;
 		case ACT_NORTH:
 			y = -1;
-			collide = playercollide(playermob.x + x, playermob.y + y);
+			collide = collision(playermob.x + x, playermob.y + y);
 			break;
 		case ACT_ACTION:
+			collide = 0; // no-op
 			break;
 		}
 
@@ -252,20 +266,17 @@ namespace action {
 				centercam();
 			} else if (collide == 2) {
 				playerattack(playermob.x + x, playermob.y + y);
+				cleardead();
 			}
 			// enemy actions
 			allenemyactions();
-			if (playermob.hp <= 0) {
-				cout << "you died" << endl;
-				exit(0);
-			}
 		}
 
 		return 0;
 	}
 
 
-	int playercollide(int x, int y) {
+	int collision(int x, int y) {
 		if (y < 0 || y >= map.size() || x < 0 || x >= map[0].size())
 			return 1;
 		if (map[y][x] < 0)
@@ -273,6 +284,8 @@ namespace action {
 		for (auto &m : mobs)
 			if (m.x == x && m.y == y)
 				return 2;
+		if (playermob.x == x && playermob.y == y)
+			return 3;
 		return 0;
 	}
 
@@ -304,20 +317,6 @@ namespace action {
 		ss.str(""), ss.clear();
 		ss << "-> " << m->name() << " (-" << atk << ")";
 		combatlog(ss.str());
-
-		// erase mob
-		if (m->hp <= 0) {
-			for (int i = 0; i < mobs.size(); i++) {
-				if (&mobs[i] == m) {
-					ss.str(""), ss.clear();
-					ss << mobs[i].name() << " died";
-					combatlog(ss.str());
-					// cout << "killed mob: " << i << endl;
-					mobs.erase(mobs.begin()+i);
-					break;
-				}
-			}
-		}
 	}
 
 
@@ -336,46 +335,30 @@ namespace action {
 		int diffy = playermob.y - m.y;
 		// cout << diffx << " " << diffy << endl;
 		if (diffy <= -1) {
-			int collide = mobcollide(m, 0, -1);
+			int collide = collision(m.x, m.y - 1);
 			if (collide == 0)
 				m.y -= 1;
-			else if (collide == 2)
+			else if (collide == 3)
 				mobattack(m);
 		} else if (diffy >= 1) {
-			int collide = mobcollide(m, 0, 1);
+			int collide = collision(m.x, m.y + 1);
 			if (collide == 0)
 				m.y += 1;
-			else if (collide == 2)
+			else if (collide == 3)
 				mobattack(m);
 		} else if (diffx <= -1) {
-			int collide = mobcollide(m, -1, 0);
+			int collide = collision(m.x - 1, m.y);
 			if (collide == 0)
 				m.x -= 1;
-			else if (collide == 2)
+			else if (collide == 3)
 				mobattack(m);
 		} else if (diffx >= 1) {
-			int collide = mobcollide(m, 1, 0);
+			int collide = collision(m.x + 1, m.y);
 			if (collide == 0)
 				m.x += 1;
-			else if (collide == 2)
+			else if (collide == 3)
 				mobattack(m);
 		}
-	}
-
-
-	int mobcollide(mob& currentmob, int offsetx, int offsety) {
-		int x = currentmob.x + offsetx;
-		int y = currentmob.y + offsety;
-		if (y < 0 || y >= map.size() || x < 0 || x >= map[0].size())
-			return 1;
-		if (map[y][x] < 0)
-			return 1;
-		for (auto &m : mobs)
-			if (m.x == x && m.y == y)
-				return 1;
-		if (x == playermob.x && y == playermob.y)
-			return 2;
-		return 0;
 	}
 
 
