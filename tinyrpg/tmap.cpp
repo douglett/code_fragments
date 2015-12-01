@@ -255,147 +255,150 @@ LevelGrid lg;
 
 
 
-// main
-int buildmap(int seed) {
-	
-	srand(seed);
+namespace tmap {
 
-	lg = LevelGrid();
-	int startx = rand() % (MAPWIDTH/2);
-	int starty = rand() % (MAPHEIGHT/2)+20;
-	space s;
-	Exit e;
+	// main
+	int buildmap(int seed) {
+		
+		srand(seed);
 
-	s = lg.getAvailableSize(startx, starty);
-	BuildSectorTiles(startx, starty, lg, s, dir_east);
+		lg = LevelGrid();
+		int startx = rand() % (MAPWIDTH/2);
+		int starty = rand() % (MAPHEIGHT/2)+20;
+		space s;
+		Exit e;
 
-	//Loop through the exits and add more
-	int i = 0;
-	while (lg.getOpenExitCount() > 0) {
-		//std::cout<<"Iteration "<<i<<"\n";
-		e = lg.exits[i];
-		if (e.open) {
-			switch (e.dir) {
-				case dir_north:
-					s = lg.getAvailableSize(e.x, e.y-1);
-					if (s.n > 2 && s.e > 2) {	
-						BuildSectorTiles(e.x, e.y-1, lg, s, e.dir); 
-						//std::cout << "Going north\n";
-						lg.lockExit(i);
-					} else {
-						//std::cout << "Not enough room; closing exit\n";
+		s = lg.getAvailableSize(startx, starty);
+		BuildSectorTiles(startx, starty, lg, s, dir_east);
+
+		//Loop through the exits and add more
+		int i = 0;
+		while (lg.getOpenExitCount() > 0) {
+			//std::cout<<"Iteration "<<i<<"\n";
+			e = lg.exits[i];
+			if (e.open) {
+				switch (e.dir) {
+					case dir_north:
+						s = lg.getAvailableSize(e.x, e.y-1);
+						if (s.n > 2 && s.e > 2) {	
+							BuildSectorTiles(e.x, e.y-1, lg, s, e.dir); 
+							//std::cout << "Going north\n";
+							lg.lockExit(i);
+						} else {
+							//std::cout << "Not enough room; closing exit\n";
+							lg.closeExit(i);
+						}
+						break;
+					case dir_east:
+						s = lg.getAvailableSize(e.x+1, e.y);
+						if (s.s > 2 && s.e > 2) {
+							BuildSectorTiles(e.x+1, e.y, lg, s, e.dir); 
+							//std::cout << "Going east\n";
+							lg.lockExit(i);
+						} else {
+							//std::cout << "Not enough room; closing exit\n";
+							lg.closeExit(i);
+						}
+						break;
+					case dir_south:
+						s = lg.getAvailableSize(e.x, e.y+1);
+						if (s.s > 2 && s.e > 2) {
+							BuildSectorTiles(e.x, e.y+1, lg, s, e.dir);
+							//std::cout << "Going south\n";
+							lg.lockExit(i);
+						} else {
+							//std::cout << "Not enough room; closing exit\n";
+							lg.closeExit(i);
+						}
+						break;
+					case dir_west:
 						lg.closeExit(i);
-					}
-					break;
-				case dir_east:
-					s = lg.getAvailableSize(e.x+1, e.y);
-					if (s.s > 2 && s.e > 2) {
-						BuildSectorTiles(e.x+1, e.y, lg, s, e.dir); 
-						//std::cout << "Going east\n";
-						lg.lockExit(i);
-					} else {
-						//std::cout << "Not enough room; closing exit\n";
-						lg.closeExit(i);
-					}
-					break;
-				case dir_south:
-					s = lg.getAvailableSize(e.x, e.y+1);
-					if (s.s > 2 && s.e > 2) {
-						BuildSectorTiles(e.x, e.y+1, lg, s, e.dir);
-						//std::cout << "Going south\n";
-						lg.lockExit(i);
-					} else {
-						//std::cout << "Not enough room; closing exit\n";
-						lg.closeExit(i);
-					}
-					break;
-				case dir_west:
-					lg.closeExit(i);
-					//std::cout << "West not implemented; closing\n";
-					break;
-				default:
-					//std::cout << "This is an error!\n";
-					break;
+						//std::cout << "West not implemented; closing\n";
+						break;
+					default:
+						//std::cout << "This is an error!\n";
+						break;
+				}
+			} else {
+				//std::cout << "Skipping; closed " << i << ": " << lg.exits[i].open << "\n";
 			}
-		} else {
-			//std::cout << "Skipping; closed " << i << ": " << lg.exits[i].open << "\n";
+			++i;
+			//lg.showexits();
+			//if (i == lg.getOpenExitCount()) i = 0;
+			//std::cout << lg.getOpenExitCount() << "\n";
+			//std::cout << "Closed exit " << i << "\n";
+			// std::cin.get();
+
+			// for (int y=0; y<MAPHEIGHT; ++y) {
+			// 	for (int x=0; x<MAPWIDTH; ++x) {
+			// 		switch (lg.getTileType(x, y)) {
+			// 			case tile_empty: std::cout << " "; break;
+			// 			case tile_floor: std::cout << "."; break;
+			// 			case tile_wall: std::cout << "#"; break;
+			// 			default: std::cout << "/"; break;
+			// 		}
+			// 		//std::cout << lg.getTileType(x, y);
+			// 	}
+			// 	std::cout << "\n";
+			// }
+
 		}
-		++i;
-		//lg.showexits();
-		//if (i == lg.getOpenExitCount()) i = 0;
-		//std::cout << lg.getOpenExitCount() << "\n";
-		//std::cout << "Closed exit " << i << "\n";
-		// std::cin.get();
+		// Clear exit list
+		lg.exits.clear();
 
-		// for (int y=0; y<MAPHEIGHT; ++y) {
-		// 	for (int x=0; x<MAPWIDTH; ++x) {
-		// 		switch (lg.getTileType(x, y)) {
-		// 			case tile_empty: std::cout << " "; break;
-		// 			case tile_floor: std::cout << "."; break;
-		// 			case tile_wall: std::cout << "#"; break;
-		// 			default: std::cout << "/"; break;
-		// 		}
-		// 		//std::cout << lg.getTileType(x, y);
-		// 	}
-		// 	std::cout << "\n";
-		// }
 
+		// show map
+		if (false) {
+			for (int y=0; y<MAPHEIGHT; ++y) {
+				for (int x=0; x<MAPWIDTH; ++x) {
+					switch (lg.getTileType(x, y)) {
+						case tile_empty: std::cout << " "; break;
+						case tile_floor: std::cout << "."; break;
+						case tile_wall: std::cout << "#"; break;
+						default: std::cout << "/"; break;
+					}
+					//std::cout << lg.getTileType(x, y);
+				}
+				std::cout << "\n";
+			}
+		}
+
+		return 0;
 	}
-	// Clear exit list
-	lg.exits.clear();
 
 
-	// show map
-	if (false) {
+
+	// transform to map string
+	vector<string>& getmap() {
+		mapcache.erase(mapcache.begin(), mapcache.end());
+
 		for (int y=0; y<MAPHEIGHT; ++y) {
+			string s;
 			for (int x=0; x<MAPWIDTH; ++x) {
 				switch (lg.getTileType(x, y)) {
-					case tile_empty: std::cout << " "; break;
-					case tile_floor: std::cout << "."; break;
-					case tile_wall: std::cout << "#"; break;
-					default: std::cout << "/"; break;
+					case tile_empty: 
+						s += ' '; 
+						break;
+					case tile_floor: 
+						s += '.'; 
+						break;
+					case tile_wall: 
+						s += '#'; 
+						break;
+					case tile_exit_north:
+					case tile_exit_east:
+					case tile_exit_south:
+					case tile_exit_west:
+						s += '/'; 
+						break;
+					default:
+						s += '?';
+						break;
 				}
-				//std::cout << lg.getTileType(x, y);
 			}
-			std::cout << "\n";
+			mapcache.push_back(s);
 		}
+
+		return mapcache;
 	}
-
-	return 0;
-}
-
-
-
-// transform to map string
-vector<string>& getmap() {
-	mapcache.erase(mapcache.begin(), mapcache.end());
-
-	for (int y=0; y<MAPHEIGHT; ++y) {
-		string s;
-		for (int x=0; x<MAPWIDTH; ++x) {
-			switch (lg.getTileType(x, y)) {
-				case tile_empty: 
-					s += " "; 
-					break;
-				case tile_floor: 
-					s += "."; 
-					break;
-				case tile_wall: 
-					s += "#"; 
-					break;
-				case tile_exit_north:
-				case tile_exit_east:
-				case tile_exit_south:
-				case tile_exit_west:
-					s += "/"; 
-					break;
-				default:
-					s += "?";
-					break;
-			}
-		}
-		mapcache.push_back(s);
-	}
-
-	return mapcache;
-}
+} // end tmap

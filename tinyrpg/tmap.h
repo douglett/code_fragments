@@ -4,7 +4,9 @@
 #include <string>
 #include <vector>
 
-int buildmap(int seed);
-std::vector<std::string>& getmap();
+namespace tmap {
+	int buildmap(int seed);
+	std::vector<std::string>& getmap();
+}
 
 #endif

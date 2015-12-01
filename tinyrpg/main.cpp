@@ -65,16 +65,16 @@ const vector<string> mob_names = {
 	"cakey"
 };
 
-vector<vector<int> > map;
-SDL_Texture* sprites = NULL;
-mob playermob;
-SDL_Rect camera = { 0, 0, 10, 10 };
-vector<mob> mobs;
-vector<gtext> gtexts;
+stringstream ss;
 int showmenu = 0;
 int animtt = 0, animstate = 0;
-stringstream ss;
+SDL_Rect camera = { 0, 0, 10, 10 };
+SDL_Texture* sprites = NULL;
+vector<vector<int> > map;
+vector<mob> mobs;
+mob playermob;
 vector <string> combat_log;
+vector<gtext> gtexts;
 
 
 
@@ -83,7 +83,7 @@ int main() {
 	if (game::init())
 		return 1;
 
-	createmap();
+	// createmap();
 	playermob.hp = playermob.maxhp = 20;
 	playermob.x = 4;
 	playermob.y = 3;
@@ -116,43 +116,6 @@ int main() {
 	}
 
 	game::quit();
-}
-
-
-
-void createmap() {
-	// clear old
-	map.erase(map.begin(), map.end());
-	mobs.erase(mobs.begin(), mobs.end());
-
-	// int seed = time(NULL);
-	int seed = 6000;
-
-	// create map
-	srand(seed);
-	for (int y = 0; y < 20; y++) {
-		map.push_back(vector<int>());
-		for (int x = 0; x < 20; x++) {
-			if (x == 0 || y == 0 || x == 19 || y == 19)
-				map[y].push_back( -2 );
-			else if (rand()%15 == 0)
-				map[y].push_back( -2 );
-			else
-				map[y].push_back( rand()%2 );
-		}
-	}
-
-	// make mobs
-	srand(seed);
-	int mobcount = 15 + rand()%15;
-	for (int i = 0; i < mobcount; i++) {
-		mob m;
-		m.type = rand()%2 + 1;
-		m.name = mob_names[m.type];
-		m.x = rand()%17 + 1;
-		m.y = rand()%17 + 1;
-		mobs.push_back(m);
-	}
 }
 
 
