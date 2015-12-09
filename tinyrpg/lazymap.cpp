@@ -1,6 +1,7 @@
-#include <vector>
-#include <string>
 #include <stdlib.h>
+#include <string>
+#include <vector>
+#include <map>
 #include "lazymap.h"
 
 using namespace std;
@@ -9,32 +10,28 @@ using namespace std;
 const int 
 	MAP_WIDTH = 20, 
 	MAP_HEIGHT = 20;
-static vector<string> map;
-
 
 
 namespace lazymap {
 
-	
-	vector<string>& getmap() {
-		return map;
-	}
+	vector<string> gmap;
+	vector<map<string, int> > gmobs;
 
 
 	int buildmap(int seed) {
 		// clear old
-		map.erase(map.begin(), map.end());
-		// mobs.erase(mobs.begin(), mobs.end());
+		gmap.erase(gmap.begin(), gmap.end());
+		gmobs.erase(gmobs.begin(), gmobs.end());
 
 		// int seed = time(NULL);
-		seed = 6000;
+		// seed = 6000;
 
 		// create map
 		srand(seed);
-		for (int y = 0; y < 20; y++) {
+		for (int y = 0; y < MAP_HEIGHT; y++) {
 			string s;
-			for (int x = 0; x < 20; x++) {
-				if (x == 0 || y == 0 || x == 19 || y == 19)
+			for (int x = 0; x < MAP_WIDTH; x++) {
+				if (x == 0 || y == 0 || x == MAP_WIDTH-1 || y == MAP_HEIGHT-1)
 					s += '#';
 				else if (rand()%15 == 0)
 					s += '#';
@@ -44,19 +41,19 @@ namespace lazymap {
 					s += '.';
 				}
 			}
+			gmap.push_back(s);
 		}
 
 		// make mobs
-		// srand(seed);
-		// int mobcount = 15 + rand()%15;
-		// for (int i = 0; i < mobcount; i++) {
-		// 	mob m;
-		// 	m.type = rand()%2 + 1;
-		// 	m.name = mob_names[m.type];
-		// 	m.x = rand()%17 + 1;
-		// 	m.y = rand()%17 + 1;
-		// 	mobs.push_back(m);
-		// }
+		srand(seed);
+		int mobcount = 15 + rand()%15;
+		for (int i = 0; i < mobcount; i++) {
+			map<string, int> mob;
+			mob["x"] = rand()%17 + 1;
+			mob["y"] = rand()%17 + 1;
+			mob["type"] = rand()%2 + 1;
+			gmobs.push_back(mob);
+		}
 
 		return 0;
 	}

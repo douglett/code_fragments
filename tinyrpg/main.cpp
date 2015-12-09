@@ -2,7 +2,8 @@
 #include <sstream>
 #include <iomanip>
 #include "libsrc/xcengine.h"
-#include "tmap.h"
+// #include "tmap.h"
+#include "lazymap.h"
 
 using namespace std;
 
@@ -70,8 +71,8 @@ int showmenu = 0;
 int animtt = 0, animstate = 0;
 SDL_Rect camera = { 0, 0, 10, 10 };
 SDL_Texture* sprites = NULL;
-vector<vector<int> > map;
-vector<mob> mobs;
+vector<string> gmap;
+vector<mob> gmobs;
 mob playermob;
 vector <string> combat_log;
 vector<gtext> gtexts;
@@ -84,6 +85,17 @@ int main() {
 		return 1;
 
 	// createmap();
+	lazymap::buildmap(6000);
+	gmap = lazymap::gmap;
+	for (auto& mm : lazymap::gmobs) {
+		mob m;
+		m.x = mm["x"];
+		m.y = mm["y"];
+		m.type = mm["type"];
+		m.name = mob_names[m.type];
+		gmobs.push_back(m);
+	}
+
 	playermob.hp = playermob.maxhp = 20;
 	playermob.x = 4;
 	playermob.y = 3;
@@ -162,12 +174,12 @@ int handle_player_actions() {
 
 
 void cleardead() {
-	for (int i = 0; i < mobs.size(); i++)
-		if (mobs[i].hp <= 0) {
+	for (int i = 0; i < gmobs.size(); i++)
+		if (gmobs[i].hp <= 0) {
 			ss.str(""), ss.clear();
-			ss << mobs[i].name << " died";
+			ss << gmobs[i].name << " died";
 			combatlog(ss.str());
-			mobs.erase(mobs.begin()+i);
+			gmobs.erase(gmobs.begin()+i);
 			i--;
 		}
 }
@@ -239,11 +251,11 @@ namespace action {
 
 
 	int collision(int x, int y) {
-		if (y < 0 || y >= map.size() || x < 0 || x >= map[0].size())
+		if (y < 0 || y >= gmap.size() || x < 0 || x >= gmap[0].size())
 			return 1;
-		if (map[y][x] < 0)
+		if (gmap[y][x] != '.')
 			return 1;
-		for (auto &m : mobs)
+		for (auto &m : gmobs)
 			if (m.x == x && m.y == y)
 				return 2;
 		if (playermob.x == x && playermob.y == y)
@@ -253,7 +265,7 @@ namespace action {
 
 
 	mob* findmob(int x, int y) {
-		for (auto& m : mobs)
+		for (auto& m : gmobs)
 			if (m.x == x && m.y == y)
 				return &m;
 		if (playermob.x == x && playermob.y == y)
@@ -286,7 +298,7 @@ namespace action {
 
 
 	void allenemyactions() {
-		for (auto &m : mobs) {
+		for (auto &m : gmobs) {
 			int dist = sqrt(pow(playermob.x - m.x, 2) + pow(playermob.y - m.y, 2));
 			// printf("%d %d %d\n", (playermob.x - m.x), (playermob.y - m.y), dist);
 			if (dist <= 3)
@@ -365,23 +377,26 @@ void draw() {
 	// draw map
 	dst = { 0, 0, 13, 13 };
 	for (int y = 0; y < camera.h; y++) {
-		if (camera.y+y < 0 || camera.y+y >= map.size())
+		if (camera.y+y < 0 || camera.y+y >= gmap.size())
 			continue;
 		dst.y = y * 12 + offsety;
 
 		for (int x = 0; x < camera.w; x++) {
-			if (camera.x+x < 0 || camera.x+x >= map[0].size())
+			if (camera.x+x < 0 || camera.x+x >= gmap[0].size())
 				continue;
 
 			dst.x = x * 12 + offsetx;
 			// draw block
-			int tile = abs( map[camera.y+y][camera.x+x] );
-			if (tile == 1)
-				SDL_SetRenderDrawColor(game::ren, 0, 255, 0, 255);
-			else if (tile == 2)
-				SDL_SetRenderDrawColor(game::ren, 100, 100, 100, 255);
-			else
-				SDL_SetRenderDrawColor(game::ren, 0, 200, 0, 255);
+			switch ( gmap[camera.y+y][camera.x+x] ) {
+				case '#':
+					SDL_SetRenderDrawColor(game::ren, 100, 100, 100, 255);
+					break;
+				case '.':
+					SDL_SetRenderDrawColor(game::ren, 0, 200, 0, 255);
+					break;
+				default:
+					SDL_SetRenderDrawColor(game::ren, 0, 255, 255, 255);  // unknown - hot pink
+			}
 			SDL_RenderFillRect(game::ren, &dst);
 			// draw lines
 			// SDL_SetRenderDrawColor(game::ren, 255, 150, 150, 255);
@@ -402,7 +417,7 @@ void draw() {
 	SDL_RenderCopy(game::ren, sprites, &src, &dst);
 
 	// mobs
-	for (auto m : mobs) {
+	for (auto m : gmobs) {
 		if (m.x < camera.x || m.x >= camera.x+camera.w || m.y < camera.y || m.y >= camera.y+camera.h)
 			continue;
 		if (m.type == 1)
