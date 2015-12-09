@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include "tmap.h"
 
 using namespace std;
 
@@ -60,7 +61,7 @@ struct Exit {
 class LevelGrid {
 public:
 	void setTileType(int x, int y, tiletype tile);
-	tiletype getTileType(int x, int y);
+	tiletype getTileType(int x, int y) const;
 	void setWall(int x, int y, int wall);
 	int getWall(int x, int y);
 	space getAvailableSize(int startx, int starty);
@@ -83,7 +84,7 @@ void LevelGrid::setTileType(int x, int y, tiletype tile) {
 	tileplane[x][y] = tile;
 }
 
-tiletype LevelGrid::getTileType(int x, int y) {
+tiletype LevelGrid::getTileType(int x, int y) const {
 	if (x < 0 || x > MAPWIDTH || y < 0 || y > MAPHEIGHT) {
 		return tile_outofbounds;
 	}
@@ -249,24 +250,65 @@ void BuildSectorTiles(int startx, int starty, LevelGrid& lg, space s, direction 
 
 
 
-// globals
-vector<string> mapcache;
-LevelGrid lg;
+// transform to map string
+int make_map_string(const LevelGrid& lg) {
+	auto& gmap = tmap::gmap;
+	gmap.erase(gmap.begin(), gmap.end());
+
+	for (int y=0; y<MAPHEIGHT; ++y) {
+		string s;
+		for (int x=0; x<MAPWIDTH; ++x) {
+			switch (lg.getTileType(x, y)) {
+				case tile_empty: 
+					s += ' '; 
+					break;
+				case tile_floor: 
+					s += '.'; 
+					break;
+				case tile_wall: 
+					s += '#'; 
+					break;
+				case tile_exit_north:
+				case tile_exit_east:
+				case tile_exit_south:
+				case tile_exit_west:
+					s += '/'; 
+					break;
+				default:
+					s += '?';
+					break;
+			}
+		}
+		gmap.push_back(s);
+	}
+
+	return 0;
+}
 
 
 
 namespace tmap {
+
+	vector<string> gmap;
+	vector<map<string, int> > gmobs;
+
 
 	// main
 	int buildmap(int seed) {
 		
 		srand(seed);
 
-		lg = LevelGrid();
+		LevelGrid lg = LevelGrid();
 		int startx = rand() % (MAPWIDTH/2);
 		int starty = rand() % (MAPHEIGHT/2)+20;
 		space s;
 		Exit e;
+
+		map<string, int> player;
+		player["x"] = startx;
+		player["y"] = starty;
+		player["type"] = -1;
+		gmobs.push_back(player);
 
 		s = lg.getAvailableSize(startx, starty);
 		BuildSectorTiles(startx, starty, lg, s, dir_east);
@@ -348,57 +390,24 @@ namespace tmap {
 
 
 		// show map
-		if (false) {
-			for (int y=0; y<MAPHEIGHT; ++y) {
-				for (int x=0; x<MAPWIDTH; ++x) {
-					switch (lg.getTileType(x, y)) {
-						case tile_empty: std::cout << " "; break;
-						case tile_floor: std::cout << "."; break;
-						case tile_wall: std::cout << "#"; break;
-						default: std::cout << "/"; break;
-					}
-					//std::cout << lg.getTileType(x, y);
-				}
-				std::cout << "\n";
-			}
-		}
+		// if (false) {
+		// 	for (int y=0; y<MAPHEIGHT; ++y) {
+		// 		for (int x=0; x<MAPWIDTH; ++x) {
+		// 			switch (lg.getTileType(x, y)) {
+		// 				case tile_empty: std::cout << " "; break;
+		// 				case tile_floor: std::cout << "."; break;
+		// 				case tile_wall: std::cout << "#"; break;
+		// 				default: std::cout << "/"; break;
+		// 			}
+		// 			//std::cout << lg.getTileType(x, y);
+		// 		}
+		// 		std::cout << "\n";
+		// 	}
+		// }
+
+		make_map_string(lg);
 
 		return 0;
 	}
 
-
-
-	// transform to map string
-	vector<string>& getmap() {
-		mapcache.erase(mapcache.begin(), mapcache.end());
-
-		for (int y=0; y<MAPHEIGHT; ++y) {
-			string s;
-			for (int x=0; x<MAPWIDTH; ++x) {
-				switch (lg.getTileType(x, y)) {
-					case tile_empty: 
-						s += ' '; 
-						break;
-					case tile_floor: 
-						s += '.'; 
-						break;
-					case tile_wall: 
-						s += '#'; 
-						break;
-					case tile_exit_north:
-					case tile_exit_east:
-					case tile_exit_south:
-					case tile_exit_west:
-						s += '/'; 
-						break;
-					default:
-						s += '?';
-						break;
-				}
-			}
-			mapcache.push_back(s);
-		}
-
-		return mapcache;
-	}
 } // end tmap

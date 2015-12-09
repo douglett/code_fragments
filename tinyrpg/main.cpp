@@ -1,9 +1,11 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <vector>
+#include <map>
 #include "libsrc/xcengine.h"
-// #include "tmap.h"
-#include "lazymap.h"
+#include "tmap.h"
+// #include "lazymap.h"
 
 using namespace std;
 
@@ -29,7 +31,7 @@ public:
 };
 
 
-void createmap();
+mob  create_mob(map<string, int>& mm);
 int  handle_player_actions();
 void cleardead();
 void centercam();
@@ -66,6 +68,11 @@ const vector<string> mob_names = {
 	"cakey"
 };
 
+const vector<char> walkable = {
+	' ', '.', '/'
+};
+
+
 stringstream ss;
 int showmenu = 0;
 int animtt = 0, animstate = 0;
@@ -84,25 +91,34 @@ int main() {
 	if (game::init())
 		return 1;
 
-	// createmap();
-	lazymap::buildmap(6000);
-	gmap = lazymap::gmap;
-	for (auto& mm : lazymap::gmobs) {
-		mob m;
-		m.x = mm["x"];
-		m.y = mm["y"];
-		m.type = mm["type"];
-		m.name = mob_names[m.type];
-		gmobs.push_back(m);
-	}
+	// build maps
+	tmap::buildmap(6000);
+	gmap = tmap::gmap;
+	auto& mobcache = tmap::gmobs;
 
+	// dump map in console
+	for (auto& s : gmap)
+		cout << s << endl;
+
+	// make main player
+	camera.w = ceil(game::width/12.0);
+	camera.h = ceil(game::height/12.0);
 	playermob.hp = playermob.maxhp = 20;
 	playermob.x = 4;
 	playermob.y = 3;
 	playermob.name = "player";
-	camera.w = ceil(game::width/12.0);
-	camera.h = ceil(game::height/12.0);
+	// see if the map creator sent us some start coordinates
+	if (mobcache.size() > 0 && mobcache[0]["type"] == -1) {
+		playermob.x = mobcache[0]["x"];
+		playermob.y = mobcache[0]["y"];
+		mobcache.erase(mobcache.begin());
+	}
+	// recenter cam
 	centercam();
+
+	// make mobs
+	for (auto& mm : mobcache)
+		gmobs.push_back(create_mob(mm));
 
 	// sprite images
 	sprites = texture::get("images")->tex;
@@ -128,6 +144,16 @@ int main() {
 	}
 
 	game::quit();
+}
+
+
+mob create_mob(map<string, int>& mm) {
+	mob m;
+	m.x = mm["x"];
+	m.y = mm["y"];
+	m.type = mm["type"];
+	m.name = mob_names[m.type];
+	return m;
 }
 
 
@@ -253,7 +279,7 @@ namespace action {
 	int collision(int x, int y) {
 		if (y < 0 || y >= gmap.size() || x < 0 || x >= gmap[0].size())
 			return 1;
-		if (gmap[y][x] != '.')
+		if ( find(walkable.begin(), walkable.end(), gmap[y][x]) == walkable.end() )
 			return 1;
 		for (auto &m : gmobs)
 			if (m.x == x && m.y == y)
@@ -388,14 +414,19 @@ void draw() {
 			dst.x = x * 12 + offsetx;
 			// draw block
 			switch ( gmap[camera.y+y][camera.x+x] ) {
+				case ' ':
+					continue;  // use background
 				case '#':
 					SDL_SetRenderDrawColor(game::ren, 100, 100, 100, 255);
 					break;
 				case '.':
 					SDL_SetRenderDrawColor(game::ren, 0, 200, 0, 255);
 					break;
+				case '/':
+					SDL_SetRenderDrawColor(game::ren, 160, 100, 100, 255);
+					break;
 				default:
-					SDL_SetRenderDrawColor(game::ren, 0, 255, 255, 255);  // unknown - hot pink
+					SDL_SetRenderDrawColor(game::ren, 255, 0, 255, 255);  // unknown - hot pink
 			}
 			SDL_RenderFillRect(game::ren, &dst);
 			// draw lines
