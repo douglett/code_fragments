@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <vector>
 #include <map>
+#include <algorithm>
 #include "libsrc/xcengine.h"
 #include "tmap.h"
 // #include "lazymap.h"
