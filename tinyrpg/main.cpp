@@ -5,8 +5,8 @@
 #include <map>
 #include <algorithm>
 #include "libsrc/xcengine.h"
-#include "tmap.h"
-// #include "lazymap.h"
+// #include "tmap.h"
+#include "lazymap.h"
 
 using namespace std;
 
@@ -34,11 +34,21 @@ public:
 
 mob  create_mob(map<string, int>& mm);
 int  handle_player_actions();
+int  handle_menu_actions();
 void cleardead();
 void centercam();
 void combatlog(const string& s);
 void draw();
-// 
+// game modes
+namespace gamemode {
+	enum mode {
+		NONE,
+		GAME,
+		GAME_MENU
+	};
+	int mode = GAME;
+}
+// attack actions
 namespace action {
 	enum Action {
 		ACT_NONE,
@@ -50,9 +60,15 @@ namespace action {
 	};
 	int  playeraction(Action action);
 }
+// menu actions 
+namespace menu {
+	int HANDPOS_MAX = 3;
+	int handpos = 0;
+	void move_hand(int direction);
+}
 
 
-const SDL_Rect 
+const SDL_Rect
 		parchment = { 0, 0, 100, 28 },
 		cardback = { 0, 29, 16, 18 },
 		spade = { 17, 30, 14, 16 },
@@ -75,7 +91,7 @@ const vector<char> walkable = {
 
 
 stringstream ss;
-int showmenu = 0;
+int showmenu = 1;
 int animtt = 0, animstate = 0;
 SDL_Rect camera = { 0, 0, 10, 10 };
 SDL_Texture* sprites = NULL;
@@ -93,9 +109,9 @@ int main() {
 		return 1;
 
 	// build maps
-	tmap::buildmap(6000);
-	gmap = tmap::gmap;
-	auto& mobcache = tmap::gmobs;
+	lazymap::buildmap(6000);
+	gmap = lazymap::gmap;
+	auto& mobcache = lazymap::gmobs;
 
 	// dump map in console
 	for (auto& s : gmap)
@@ -135,8 +151,13 @@ int main() {
 		SDL_RenderPresent(game::ren);
 		game::waitscreen();
 		
-		if (handle_player_actions())
-			break;
+		if (gamemode::mode == gamemode::GAME) {
+			if (handle_player_actions())
+				break;
+		} else if (gamemode::mode == gamemode::GAME_MENU) {
+			if (handle_menu_actions())
+				break;
+		}
 		game::clearevents();  // clear remaining events
 		if (playermob.hp <= 0) {
 			cout << "you died" << endl;
@@ -189,7 +210,48 @@ int handle_player_actions() {
 				action::playeraction(action::ACT_ACTION);
 				return 0;
 			case SDLK_s:
+				showmenu = 1;
+				gamemode::mode = gamemode::GAME_MENU;
+				return 0;
+			case SDLK_a:
 				showmenu = !showmenu;
+				return 0;
+			}
+			break;
+		}  // end switch
+	}  // end while
+
+	return 0;
+}
+
+
+int handle_menu_actions() {
+	SDL_Event event;
+
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+		case SDL_QUIT:
+			return 1;
+		case SDL_WINDOWEVENT:
+			// (int)event.window.event
+			break;
+		case SDL_KEYDOWN:
+			// handle key press
+			switch (event.key.keysym.sym) {
+			case SDLK_ESCAPE:
+				return 1;
+			case SDLK_LEFT:
+				menu::move_hand(-1);
+				return 0;
+			case SDLK_RIGHT:
+				menu::move_hand(1);
+				return 0;
+			case SDLK_x:
+				// 
+				return 0;
+			case SDLK_s:
+				// showmenu = 1;
+				gamemode::mode = gamemode::GAME;
 				return 0;
 			}
 			break;
@@ -369,6 +431,20 @@ namespace action {
 
 
 
+namespace menu {
+
+	void move_hand(int direction) {
+		handpos += direction;
+		if (handpos < 0)
+			handpos = 0;
+		else if (handpos > HANDPOS_MAX)
+			handpos = HANDPOS_MAX;
+	}
+
+} // end menu
+
+
+
 void drawcard(int type, int x, int y) {
 	static SDL_Rect cards[] = { spade, heart, club, diamond };
 
@@ -397,7 +473,7 @@ void draw() {
 
 	SDL_Rect src, dst;
 
-	const int 
+	const int
 		offsety = 0,
 		offsetx = 0;
 
@@ -490,10 +566,19 @@ void draw() {
 		// drawcard(3, 73, 80);
 
 		// draw cards (inline)
-		drawcard(0, parchment_pos.x+22, parchment_pos.y+6);
-		drawcard(1, parchment_pos.x+39, parchment_pos.y+6);
-		drawcard(2, parchment_pos.x+56, parchment_pos.y+6);
-		drawcard(3, parchment_pos.x+73, parchment_pos.y+6);
+		for (int i = 0; i < 4; i++)
+			drawcard(i, parchment_pos.x+22+(i*17), parchment_pos.y+6);
+		
+		// menu markers
+		if (gamemode::mode == gamemode::GAME_MENU) {
+			int x = parchment_pos.x + 22 + 5 + (menu::handpos*17);
+			int y = parchment_pos.y + 26;
+			string s = string()+char(24);
+			game::qbcolor(70, 70, 70);
+			game::qbprint(x+1, y+1, s);
+			game::qbcolor(255, 0, 0);
+			game::qbprint(x, y, s);
+		}
 
 		// background
 		SDL_Rect textbox = { 0, 1, 41, 28 };
@@ -503,7 +588,7 @@ void draw() {
 
 		// HP text
 		ss.str(""), ss.clear();
-		ss  << setfill('0') << setw(2) << playermob.hp << "/" 
+		ss  << setfill('0') << setw(2) << playermob.hp << "/"
 			<< setfill('0') << setw(2) << playermob.maxhp;
 		game::qbcolor(0, 0, 0);
 		game::qbprint(textbox.x+2, textbox.y+2, ss.str());
@@ -539,7 +624,7 @@ void draw() {
 			game::qbcolor(230, 230, 0);
 			game::qbprint(x, y, s);
 		}
-	} 
+	}
 	// draw small info
 	else {
 		// HP text
