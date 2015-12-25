@@ -5,6 +5,7 @@
 #include <map>
 #include <algorithm>
 #include "libsrc/xcengine.h"
+#include "globals.h"
 // #include "tmap.h"
 #include "lazymap.h"
 
@@ -33,7 +34,7 @@ public:
 
 
 mob  create_mob(map<string, int>& mm);
-int  handle_player_actions();
+int  get_action();
 int  handle_menu_actions();
 void cleardead();
 void centercam();
@@ -52,19 +53,17 @@ namespace gamemode {
 namespace action {
 	enum Action {
 		ACT_NONE,
+		ACT_KILL,
 		ACT_WEST,
 		ACT_EAST,
 		ACT_NORTH,
 		ACT_SOUTH,
-		ACT_ACTION
+		ACT_ACTION,
+		ACT_CANCEL,
+		ACT_MENU,
+		ACT_SELECT
 	};
-	int  playeraction(Action action);
-}
-// menu actions 
-namespace menu {
-	int HANDPOS_MAX = 3;
-	int handpos = 0;
-	void move_hand(int direction);
+	int  playeraction(int action);
 }
 
 
@@ -152,7 +151,7 @@ int main() {
 		game::waitscreen();
 		
 		if (gamemode::mode == gamemode::GAME) {
-			if (handle_player_actions())
+			if (action::playeraction( get_action() ))
 				break;
 		} else if (gamemode::mode == gamemode::GAME_MENU) {
 			if (handle_menu_actions())
@@ -179,50 +178,54 @@ mob create_mob(map<string, int>& mm) {
 }
 
 
-int handle_player_actions() {
+
+int get_action_inner() {
 	SDL_Event event;
 
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
-		case SDL_QUIT:
-			return 1;
-		case SDL_WINDOWEVENT:
+		 case SDL_QUIT:
+			return action::ACT_KILL;
+		 case SDL_WINDOWEVENT:
 			// (int)event.window.event
 			break;
-		case SDL_KEYDOWN:
+		 case SDL_KEYDOWN:
 			// handle key press
 			switch (event.key.keysym.sym) {
-			case SDLK_ESCAPE:
-				return 1;
-			case SDLK_LEFT:
-				action::playeraction(action::ACT_WEST);
-				return 0;
-			case SDLK_RIGHT:
-				action::playeraction(action::ACT_EAST);
-				return 0;
-			case SDLK_UP:
-				action::playeraction(action::ACT_NORTH);
-				return 0;
-			case SDLK_DOWN:
-				action::playeraction(action::ACT_SOUTH);
-				return 0;
-			case SDLK_SPACE:
-				action::playeraction(action::ACT_ACTION);
-				return 0;
-			case SDLK_s:
-				showmenu = 1;
-				gamemode::mode = gamemode::GAME_MENU;
-				return 0;
-			case SDLK_a:
-				showmenu = !showmenu;
-				return 0;
+			 case SDLK_ESCAPE:
+				return action::ACT_KILL;
+			 case SDLK_LEFT:
+				return action::ACT_WEST;
+			 case SDLK_RIGHT:
+				return action::ACT_EAST;
+			 case SDLK_UP:
+				return action::ACT_NORTH;
+			 case SDLK_DOWN:
+				return action::ACT_SOUTH;
+			 case SDLK_SPACE:
+			 case SDLK_x:
+				return action::ACT_ACTION;
+			 case SDLK_z:
+				return action::ACT_CANCEL;
+			 case SDLK_s:
+				return action::ACT_MENU;
+			 case SDLK_a:
+				return action::ACT_SELECT;
 			}
 			break;
 		}  // end switch
 	}  // end while
 
-	return 0;
+	return action::ACT_NONE;
 }
+
+int get_action() {
+	int event = get_action_inner();
+	if (game::clearevents())
+		return action::ACT_KILL;
+	return event;
+}
+
 
 
 int handle_menu_actions() {
@@ -291,7 +294,7 @@ namespace action {
 	void enemyaction(mob& m);
 
 
-	int playeraction(Action action) {
+	int playeraction(int action) {
 		int x = 0, y = 0;
 		int collide = -1;  // default, no movement
 
@@ -316,6 +319,8 @@ namespace action {
 			break;
 		case ACT_ACTION:
 			collide = 0; // no-op
+			break;
+		default:
 			break;
 		}
 
@@ -428,20 +433,6 @@ namespace action {
 	}
 
 } // end actions
-
-
-
-namespace menu {
-
-	void move_hand(int direction) {
-		handpos += direction;
-		if (handpos < 0)
-			handpos = 0;
-		else if (handpos > HANDPOS_MAX)
-			handpos = HANDPOS_MAX;
-	}
-
-} // end menu
 
 
 
