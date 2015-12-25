@@ -32,39 +32,17 @@ public:
 	string s;
 };
 
+namespace gamemode {
+	int mode = gamemode::MODE_GAME;
+}
+
 
 mob  create_mob(map<string, int>& mm);
 int  get_action();
-int  handle_menu_actions();
 void cleardead();
 void centercam();
 void combatlog(const string& s);
 void draw();
-// game modes
-namespace gamemode {
-	enum mode {
-		NONE,
-		GAME,
-		GAME_MENU
-	};
-	int mode = GAME;
-}
-// attack actions
-namespace action {
-	enum Action {
-		ACT_NONE,
-		ACT_KILL,
-		ACT_WEST,
-		ACT_EAST,
-		ACT_NORTH,
-		ACT_SOUTH,
-		ACT_ACTION,
-		ACT_CANCEL,
-		ACT_MENU,
-		ACT_SELECT
-	};
-	int  playeraction(int action);
-}
 
 
 const SDL_Rect
@@ -83,12 +61,12 @@ const vector<string> mob_names = {
 	"scorp",
 	"cakey"
 };
-
 const vector<char> walkable = {
 	' ', '.', '/'
 };
 
 
+// main.cpp globals
 stringstream ss;
 int showmenu = 1;
 int animtt = 0, animstate = 0;
@@ -150,14 +128,15 @@ int main() {
 		SDL_RenderPresent(game::ren);
 		game::waitscreen();
 		
-		if (gamemode::mode == gamemode::GAME) {
-			if (action::playeraction( get_action() ))
-				break;
-		} else if (gamemode::mode == gamemode::GAME_MENU) {
-			if (handle_menu_actions())
-				break;
+		int action = get_action();
+		if (action == action::ACT_KILL) {
+			break;
+		} else if (gamemode::mode == gamemode::MODE_GAME) {
+			action::playeraction(action);
+		} else if (gamemode::mode == gamemode::MODE_GAMEMENU) {
+			menu::playeraction(action);
 		}
-		game::clearevents();  // clear remaining events
+		
 		if (playermob.hp <= 0) {
 			cout << "you died" << endl;
 			break;
@@ -228,43 +207,6 @@ int get_action() {
 
 
 
-int handle_menu_actions() {
-	SDL_Event event;
-
-	while (SDL_PollEvent(&event)) {
-		switch (event.type) {
-		case SDL_QUIT:
-			return 1;
-		case SDL_WINDOWEVENT:
-			// (int)event.window.event
-			break;
-		case SDL_KEYDOWN:
-			// handle key press
-			switch (event.key.keysym.sym) {
-			case SDLK_ESCAPE:
-				return 1;
-			case SDLK_LEFT:
-				menu::move_hand(-1);
-				return 0;
-			case SDLK_RIGHT:
-				menu::move_hand(1);
-				return 0;
-			case SDLK_x:
-				// 
-				return 0;
-			case SDLK_s:
-				// showmenu = 1;
-				gamemode::mode = gamemode::GAME;
-				return 0;
-			}
-			break;
-		}  // end switch
-	}  // end while
-
-	return 0;
-}
-
-
 void cleardead() {
 	for (int i = 0; i < gmobs.size(); i++)
 		if (gmobs[i].hp <= 0) {
@@ -320,7 +262,10 @@ namespace action {
 		case ACT_ACTION:
 			collide = 0; // no-op
 			break;
-		default:
+		 case ACT_MENU:
+		 	gamemode::mode = gamemode::MODE_GAMEMENU;
+		 	break;
+		 default:
 			break;
 		}
 
@@ -561,7 +506,7 @@ void draw() {
 			drawcard(i, parchment_pos.x+22+(i*17), parchment_pos.y+6);
 		
 		// menu markers
-		if (gamemode::mode == gamemode::GAME_MENU) {
+		if (gamemode::mode == gamemode::MODE_GAMEMENU) {
 			int x = parchment_pos.x + 22 + 5 + (menu::handpos*17);
 			int y = parchment_pos.y + 26;
 			string s = string()+char(24);
