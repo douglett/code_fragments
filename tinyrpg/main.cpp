@@ -3,7 +3,6 @@
 #include <iomanip>
 #include <vector>
 #include <map>
-#include <algorithm>
 #include "libsrc/xcengine.h"
 #include "globals.h"
 // #include "tmap.h"
@@ -13,22 +12,8 @@ using namespace std;
 
 
 
-class gtext {
-public:
-	int x = 0;
-	int y = 0;
-	int type = 0;
-	string s;
-	gtext(int tx, int ty, string ts, int ttype = 0) : 
-			x(tx), y(ty), type(ttype), s(ts) { }
-};
-
-
 mob  create_mob(map<string, int>& mm);
 int  get_action();
-void cleardead();
-void centercam();
-void combatlog(const string& s);
 void draw();
 
 
@@ -47,13 +32,9 @@ const vector<string> mob_names = {
 	"scorp",
 	"cakey"
 };
-const vector<char> walkable = {
-	' ', '.', '/'
-};
 
 
 // main.cpp globals
-stringstream ss;
 int showmenu = 1;
 int animtt = 0, animstate = 0;
 SDL_Rect camera = { 0, 0, 10, 10 };
@@ -67,12 +48,6 @@ vector<gtext> gtexts;
 namespace gamestate {
 	int gamemode = MODE_GAME;
 	int movecount = 0;
-}
-
-
-stringstream& ssreset() {
-	ss.str(""), ss.clear();
-	return ss;
 }
 
 
@@ -159,6 +134,14 @@ int main() {
 }
 
 
+stringstream& ss(int reset) {
+	static stringstream strm;
+	if (reset)
+		strm.str(""), strm.clear();
+	return strm;
+}
+
+
 mob create_mob(map<string, int>& mm) {
 	mob m;
 	m.x = mm["x"];
@@ -166,6 +149,16 @@ mob create_mob(map<string, int>& mm) {
 	m.type = mm["type"];
 	m.name = mob_names[m.type];
 	return m;
+}
+
+
+gtext create_gtext(int x, int y, string s, int type) {
+	gtext g;
+	g.x = x;
+	g.y = y;
+	g.s = s;
+	g.type = type;
+	return g;
 }
 
 
@@ -222,9 +215,8 @@ int get_action() {
 void cleardead() {
 	for (int i = 0; i < gmobs.size(); i++)
 		if (gmobs[i].hp <= 0) {
-			ss.str(""), ss.clear();
-			ss << gmobs[i].name << " died";
-			combatlog(ss.str());
+			ss(1) << gmobs[i].name << " died";
+			combatlog(ss().str());
 			gmobs.erase(gmobs.begin()+i);
 			i--;
 		}
@@ -237,217 +229,6 @@ void combatlog(const string& s) {
 	combat_log.push_back(s);
 }
 
-
-
-namespace action {
-
-	int  collision(int x, int y);
-	mob* findmob(int x, int y);
-	void doattack(mob* attacker, mob* defender);
-	void allenemyactions();
-	void enemyaction(mob& m);
-
-
-	int playeraction(int action) {
-		int x = 0, y = 0;
-		int collide = -1;  // default, no movement
-
-		switch (action) {
-		case ACT_NONE:
-			break;
-		case ACT_WEST:
-			x = -1;
-			collide = collision(playermob.x + x, playermob.y + y);
-			break;
-		case ACT_EAST:
-			x = +1;
-			collide = collision(playermob.x + x, playermob.y + y);
-			break;
-		case ACT_SOUTH:
-			y = +1;
-			collide = collision(playermob.x + x, playermob.y + y);
-			break;
-		case ACT_NORTH:
-			y = -1;
-			collide = collision(playermob.x + x, playermob.y + y);
-			break;
-		case ACT_ACTION:
-			collide = 0; // no-op
-			break;
-		 case ACT_MENU:
-		 	gamestate::gamemode = gamestate::MODE_GAMEMENU;
-		 	break;
-		 default:
-			break;
-		}
-
-		// do movement actions
-		if (collide == 0 || collide == 2) {
-			gtexts.erase(gtexts.begin(), gtexts.end());
-			// player action
-			if (collide == 0) {
-				playermob.x += x;
-				playermob.y += y;
-				centercam();
-			} else if (collide == 2) {
-				doattack(&playermob, findmob(playermob.x + x, playermob.y + y));
-				cleardead();
-			}
-			// enemy actions
-			allenemyactions();
-			return 1;
-		}
-
-		return 0;
-	}
-
-
-	int collision(int x, int y) {
-		if (y < 0 || y >= gmap.size() || x < 0 || x >= gmap[0].size())
-			return 1;
-		if ( find(walkable.begin(), walkable.end(), gmap[y][x]) == walkable.end() )
-			return 1;
-		for (auto &m : gmobs)
-			if (m.x == x && m.y == y)
-				return 2;
-		if (playermob.x == x && playermob.y == y)
-			return 3;
-		return 0;
-	}
-
-
-	mob* findmob(int x, int y) {
-		for (auto& m : gmobs)
-			if (m.x == x && m.y == y)
-				return &m;
-		if (playermob.x == x && playermob.y == y)
-			return &playermob;
-		return NULL;
-	}
-
-
-	void doattack(mob* attacker, mob* defender) {
-		assert(attacker != NULL && defender != NULL);
-
-		// do attack
-		int atk = attacker->atk - defender->def;
-		defender->hp -= atk;
-
-		// display attack
-		ss.str(""), ss.clear();
-		ss << atk;
-		gtexts.push_back(gtext( defender->x, defender->y, ss.str() ));
-
-		// add player log
-		ss.str(""), ss.clear();
-		ss << "-> " << defender->name << " (-" << atk << ")";
-		combatlog(ss.str());
-	}
-
-
-	void doheal(mob* target) {
-		assert(target != NULL);
-
-		// do heal
-		int heal = ceil( target->maxhp * 0.25 ); 
-		if (heal > target->maxhp - target->hp)
-			heal = target->maxhp - target->hp;
-		target->hp += heal;
-
-		// display attack
-		ssreset() << heal;
-		gtexts.push_back(gtext( target->x, target->y, ss.str(), 1 ));
-
-		// add player log
-		ssreset() << "-> " << target->name << " (+" << heal << ")";
-		combatlog(ss.str());
-	}
-
-
-	void dofireball(int x, int y) {
-		mob* m = findmob(x, y);
-		if (m) {
-			m->hp -= 5;
-			// display attack
-			ssreset() << 5;
-			gtexts.push_back( gtext(x, y, ss.str()) );
-		}
-	}
-
-
-	int dospell(int cardtype) {
-		int x = playermob.x;
-		int y = playermob.y;
-		switch(cardtype) {
-		 case menu::CARD_HEART:
-			doheal(&playermob);
-		 	return 1;
-		 case menu::CARD_CLUB:
-			dofireball(x-1, y);
-		 	dofireball(x+1, y);
-		 	dofireball(x, y-1);
-		 	dofireball(x, y+1);
-		 	ssreset() << "spell: diamond";
-		 	combatlog(ss.str());
-		 	return 1;
-		 case menu::CARD_DIAMOND:
-		 	dofireball(x-1, y-1);
-		 	dofireball(x+1, y-1);
-		 	dofireball(x-1, y+1);
-		 	dofireball(x+1, y+1);
-		 	ssreset() << "spell: diamond";
-		 	combatlog(ss.str());
-		 	return 1;
-		 case menu::CARD_SPADE:
-		 	combatlog("spell: spade (fail)");
-		 	return 1;
-		}
-		return 0;
-	}
-
-
-	void allenemyactions() {
-		for (auto &m : gmobs) {
-			int dist = sqrt(pow(playermob.x - m.x, 2) + pow(playermob.y - m.y, 2));
-			// printf("%d %d %d\n", (playermob.x - m.x), (playermob.y - m.y), dist);
-			if (dist <= 3)
-				enemyaction(m);
-		}
-	}
-
-
-	void enemyaction(mob& m) {
-		int diffx = playermob.x - m.x;
-		int diffy = playermob.y - m.y;
-		// cout << diffx << " " << diffy << endl;
-		if (diffy <= -1) {
-			int collide = collision(m.x, m.y - 1);
-			if (collide == 0)
-				m.y -= 1;
-			else if (collide == 3)
-				doattack(&m, &playermob);
-		} else if (diffy >= 1) {
-			int collide = collision(m.x, m.y + 1);
-			if (collide == 0)
-				m.y += 1;
-			else if (collide == 3)
-				doattack(&m, &playermob);
-		} else if (diffx <= -1) {
-			int collide = collision(m.x - 1, m.y);
-			if (collide == 0)
-				m.x -= 1;
-			else if (collide == 3)
-				doattack(&m, &playermob);
-		} else if (diffx >= 1) {
-			int collide = collision(m.x + 1, m.y);
-			if (collide == 0)
-				m.x += 1;
-			else if (collide == 3)
-				doattack(&m, &playermob);
-		}
-	}
-
-} // end actions
 
 
 
@@ -596,37 +377,33 @@ void draw() {
 		SDL_RenderFillRect(game::ren, &textbox);
 
 		// HP text
-		ss.str(""), ss.clear();
-		ss  << setfill('0') << setw(2) << playermob.hp << "/"
-			<< setfill('0') << setw(2) << playermob.maxhp;
+		ss(1) 	<< setfill('0') << setw(2) << playermob.hp << "/"
+				<< setfill('0') << setw(2) << playermob.maxhp;
 		game::qbcolor(0, 0, 0);
-		game::qbprint(textbox.x+2, textbox.y+2, ss.str());
+		game::qbprint(textbox.x+2, textbox.y+2, ss().str());
 		game::qbcolor(0, 200, 0);
-		game::qbprint(textbox.x+1, textbox.y+1, ss.str());
+		game::qbprint(textbox.x+1, textbox.y+1, ss().str());
 
 		// ATK text
-		ss.str(""), ss.clear();
-		ss << "atk " << playermob.atk;
+		ss(1) << "atk " << playermob.atk;
 		game::qbcolor(0, 0, 0);
-		game::qbprint(textbox.x+2, textbox.y+11, ss.str());
+		game::qbprint(textbox.x+2, textbox.y+11, ss().str());
 		game::qbcolor(230, 230, 0);
-		game::qbprint(textbox.x+1, textbox.y+10, ss.str());
+		game::qbprint(textbox.x+1, textbox.y+10, ss().str());
 
 		// DEF text
-		ss.str(""), ss.clear();
-		ss << "def " << playermob.def;
+		ss(1) << "def " << playermob.def;
 		game::qbcolor(0, 0, 0);
-		game::qbprint(textbox.x+2, textbox.y+20, ss.str());
+		game::qbprint(textbox.x+2, textbox.y+20, ss().str());
 		game::qbcolor(230, 230, 0);
-		game::qbprint(textbox.x+1, textbox.y+19, ss.str());
+		game::qbprint(textbox.x+1, textbox.y+19, ss().str());
 
 		// moves
-		ss.str(""), ss.clear();
-		ss << gamestate::movecount;
+		ss(1) << gamestate::movecount;
 		game::qbcolor(0, 0, 0);
-		game::qbprint(textbox.x+2, textbox.y+30, ss.str());
+		game::qbprint(textbox.x+2, textbox.y+30, ss().str());
 		game::qbcolor(230, 230, 0);
-		game::qbprint(textbox.x+1, textbox.y+29, ss.str());
+		game::qbprint(textbox.x+1, textbox.y+29, ss().str());
 
 		// combat log
 		for (int i = 0; i < 5; i++) {
@@ -645,9 +422,8 @@ void draw() {
 	// draw small info
 	else {
 		// HP text
-		ss.str(""), ss.clear();
-		ss << playermob.hp << "/" << playermob.maxhp;
-		string s = ss.str();
+		ss(1) << playermob.hp << "/" << playermob.maxhp;
+		string s = ss().str();
 
 		// background
 		SDL_Rect textbox = { 0, 1, int(s.length())*8 + 1, 10 };
@@ -656,8 +432,8 @@ void draw() {
 		SDL_RenderFillRect(game::ren, &textbox);
 
 		game::qbcolor(0, 0, 0);
-		game::qbprint(textbox.x+2, textbox.y+2, ss.str());
+		game::qbprint(textbox.x+2, textbox.y+2, s);
 		game::qbcolor(0, 200, 0);
-		game::qbprint(textbox.x+1, textbox.y+1, ss.str());
+		game::qbprint(textbox.x+1, textbox.y+1, s);
 	}
 }

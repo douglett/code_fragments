@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 
 // mob types
 class mob {
@@ -15,6 +16,15 @@ public:
 	int atk = 1;
 	int def = 0;
 	std::string name;
+};
+
+// visible text
+class gtext {
+public:
+	int x = 0;
+	int y = 0;
+	int type = 0;
+	std::string s;
 };
 
 // game state
@@ -61,6 +71,14 @@ namespace menu {
 }
 
 // globals
-// extern mob playermob;
+std::stringstream& ss(int reset = 0);
+gtext create_gtext(int x, int y, std::string s, int type = 0);
+extern std::vector<gtext> gtexts;
+extern mob playermob;
+extern std::vector<std::string> gmap;
+extern std::vector<mob> gmobs;
+void cleardead();
+void centercam();
+void combatlog(const std::string& s);
 
 #endif
