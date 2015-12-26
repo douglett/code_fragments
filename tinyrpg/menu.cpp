@@ -7,7 +7,7 @@ using namespace std;
 
 namespace menu {
 
-	void use_card(int card);
+	int  use_card();
 	void move_hand(int direction);
 
 
@@ -25,9 +25,9 @@ namespace menu {
 		 	move_hand(1);
 		 	break;
 		 case action::ACT_ACTION:
-		 	if (handpos >= 0 && handpos < cards.size()) {
-		 		use_card(handpos);
-		 		menu::playeraction(action::ACT_MENU);
+		 	if ( use_card() ) {
+		 		menu::playeraction(action::ACT_MENU);  // close menu
+		 		return 1;
 		 	}
 			break;
 		 case action::ACT_MENU:
@@ -50,20 +50,39 @@ namespace menu {
 	}
 
 
-	void use_card(int handpos) {
+	int use_card() {
+		if (handpos < 0 || handpos >= cards.size())
+			return 0;
 		int card = cards[handpos];
-		cards.erase(cards.begin()+handpos);
+		int action_performed = 0;
+		// try to use card
 		switch (card) {
 		 case CARD_SPADE:
 		 	break;
 		 case CARD_HEART:
 		 	action::doheal(&playermob);
+		 	action_performed = 1;
 		 	break;
 		 case CARD_CLUB:
 		 	break;
 		 case CARD_DIAMOND:
 		 	break;
 		}
+		// check if card was used correctly
+		if (action_performed) {
+			cards.erase(cards.begin()+handpos);
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+
+
+	int givecard() {
+		if (cards.size() >= 4)
+			return 0;
+		cards.push_back( rand() % 4 );
+		return 1;
 	}
 
 } // end menu

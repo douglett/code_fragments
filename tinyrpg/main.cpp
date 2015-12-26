@@ -58,6 +58,7 @@ const vector<char> walkable = {
 stringstream ss;
 int showmenu = 1;
 int animtt = 0, animstate = 0;
+int movecount = 0;
 SDL_Rect camera = { 0, 0, 10, 10 };
 SDL_Texture* sprites = NULL;
 vector<string> gmap;
@@ -72,6 +73,9 @@ int main() {
 	cout << "hello world" << endl;
 	if (game::init())
 		return 1;
+
+	// sprite images
+	sprites = texture::get("images")->tex;
 
 	// build maps
 	lazymap::buildmap(6000);
@@ -103,8 +107,7 @@ int main() {
 	for (auto& mm : mobcache)
 		gmobs.push_back(create_mob(mm));
 
-	// sprite images
-	sprites = texture::get("images")->tex;
+	movecount = 0;
 
 	while (true) {
 		animtt++;
@@ -117,15 +120,26 @@ int main() {
 		SDL_RenderPresent(game::ren);
 		game::waitscreen();
 		
+		// take player action
 		int action = get_action();
+		int action_performed = 0;
 		if (action == action::ACT_KILL) {
 			break;
 		} else if (gamemode::mode == gamemode::MODE_GAME) {
-			action::playeraction(action);
+			action_performed = action::playeraction(action);
 		} else if (gamemode::mode == gamemode::MODE_GAMEMENU) {
-			menu::playeraction(action);
+			action_performed = menu::playeraction(action);
+		}
+
+		// give player a card
+		if (action_performed) {
+			movecount++;
+			if (movecount % 10 == 0) {
+				menu::givecard();
+			}
 		}
 		
+		// kill player
 		if (playermob.hp <= 0) {
 			cout << "you died" << endl;
 			break;
@@ -272,6 +286,7 @@ namespace action {
 			}
 			// enemy actions
 			allenemyactions();
+			return 1;
 		}
 
 		return 0;
@@ -564,6 +579,14 @@ void draw() {
 		game::qbprint(textbox.x+2, textbox.y+20, ss.str());
 		game::qbcolor(230, 230, 0);
 		game::qbprint(textbox.x+1, textbox.y+19, ss.str());
+
+		// moves
+		ss.str(""), ss.clear();
+		ss << movecount;
+		game::qbcolor(0, 0, 0);
+		game::qbprint(textbox.x+2, textbox.y+30, ss.str());
+		game::qbcolor(230, 230, 0);
+		game::qbprint(textbox.x+1, textbox.y+29, ss.str());
 
 		// combat log
 		for (int i = 0; i < 5; i++) {

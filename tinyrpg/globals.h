@@ -57,6 +57,7 @@ namespace menu {
 	extern std::vector<int> cards;
 	extern int handpos;
 	int playeraction(int action);
+	int givecard();
 }
 
 #endif
