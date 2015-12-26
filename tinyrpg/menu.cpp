@@ -32,7 +32,7 @@ namespace menu {
 			break;
 		 case action::ACT_MENU:
 		 case action::ACT_CANCEL:
-		 	gamemode::mode = gamemode::MODE_GAME;
+		 	gamestate::gamemode = gamestate::MODE_GAME;
 			break;
 		 default:
 		 	break;
@@ -58,14 +58,10 @@ namespace menu {
 		// try to use card
 		switch (card) {
 		 case CARD_SPADE:
-		 	break;
 		 case CARD_HEART:
-		 	action::doheal(&playermob);
-		 	action_performed = 1;
-		 	break;
 		 case CARD_CLUB:
-		 	break;
 		 case CARD_DIAMOND:
+		 	action_performed = action::dospell(card);
 		 	break;
 		}
 		// check if card was used correctly

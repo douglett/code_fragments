@@ -19,11 +19,9 @@ public:
 	int y = 0;
 	int type = 0;
 	string s;
+	gtext(int tx, int ty, string ts, int ttype = 0) : 
+			x(tx), y(ty), type(ttype), s(ts) { }
 };
-
-namespace gamemode {
-	int mode = gamemode::MODE_GAME;
-}
 
 
 mob  create_mob(map<string, int>& mm);
@@ -58,7 +56,6 @@ const vector<char> walkable = {
 stringstream ss;
 int showmenu = 1;
 int animtt = 0, animstate = 0;
-int movecount = 0;
 SDL_Rect camera = { 0, 0, 10, 10 };
 SDL_Texture* sprites = NULL;
 vector<string> gmap;
@@ -66,6 +63,17 @@ vector<mob> gmobs;
 mob playermob;
 vector <string> combat_log;
 vector<gtext> gtexts;
+
+namespace gamestate {
+	int gamemode = MODE_GAME;
+	int movecount = 0;
+}
+
+
+stringstream& ssreset() {
+	ss.str(""), ss.clear();
+	return ss;
+}
 
 
 
@@ -79,6 +87,7 @@ int main() {
 
 	// build maps
 	lazymap::buildmap(6000);
+	srand(time(NULL));
 	gmap = lazymap::gmap;
 	auto& mobcache = lazymap::gmobs;
 
@@ -107,7 +116,7 @@ int main() {
 	for (auto& mm : mobcache)
 		gmobs.push_back(create_mob(mm));
 
-	movecount = 0;
+	gamestate::movecount = 0;
 
 	while (true) {
 		animtt++;
@@ -125,16 +134,16 @@ int main() {
 		int action_performed = 0;
 		if (action == action::ACT_KILL) {
 			break;
-		} else if (gamemode::mode == gamemode::MODE_GAME) {
+		} else if (gamestate::gamemode == gamestate::MODE_GAME) {
 			action_performed = action::playeraction(action);
-		} else if (gamemode::mode == gamemode::MODE_GAMEMENU) {
+		} else if (gamestate::gamemode == gamestate::MODE_GAMEMENU) {
 			action_performed = menu::playeraction(action);
 		}
 
 		// give player a card
 		if (action_performed) {
-			movecount++;
-			if (movecount % 10 == 0) {
+			gamestate::movecount++;
+			if (gamestate::movecount % menu::CARD_DRAW_RATE == 0) {
 				menu::givecard();
 			}
 		}
@@ -266,7 +275,7 @@ namespace action {
 			collide = 0; // no-op
 			break;
 		 case ACT_MENU:
-		 	gamemode::mode = gamemode::MODE_GAMEMENU;
+		 	gamestate::gamemode = gamestate::MODE_GAMEMENU;
 		 	break;
 		 default:
 			break;
@@ -327,11 +336,7 @@ namespace action {
 		// display attack
 		ss.str(""), ss.clear();
 		ss << atk;
-		gtext g;
-			g.x = defender->x;
-			g.y = defender->y;
-			g.s = ss.str();
-		gtexts.push_back(g);
+		gtexts.push_back(gtext( defender->x, defender->y, ss.str() ));
 
 		// add player log
 		ss.str(""), ss.clear();
@@ -350,19 +355,54 @@ namespace action {
 		target->hp += heal;
 
 		// display attack
-		ss.str(""), ss.clear();
-		ss << heal;
-		gtext g;
-			g.x = target->x;
-			g.y = target->y;
-			g.type = 1;
-			g.s = ss.str();
-		gtexts.push_back(g);
+		ssreset() << heal;
+		gtexts.push_back(gtext( target->x, target->y, ss.str(), 1 ));
 
 		// add player log
-		ss.str(""), ss.clear();
-		ss << "-> " << target->name << " (+" << heal << ")";
+		ssreset() << "-> " << target->name << " (+" << heal << ")";
 		combatlog(ss.str());
+	}
+
+
+	void dofireball(int x, int y) {
+		mob* m = findmob(x, y);
+		if (m) {
+			m->hp -= 5;
+			// display attack
+			ssreset() << 5;
+			gtexts.push_back( gtext(x, y, ss.str()) );
+		}
+	}
+
+
+	int dospell(int cardtype) {
+		int x = playermob.x;
+		int y = playermob.y;
+		switch(cardtype) {
+		 case menu::CARD_HEART:
+			doheal(&playermob);
+		 	return 1;
+		 case menu::CARD_CLUB:
+			dofireball(x-1, y);
+		 	dofireball(x+1, y);
+		 	dofireball(x, y-1);
+		 	dofireball(x, y+1);
+		 	ssreset() << "spell: diamond";
+		 	combatlog(ss.str());
+		 	return 1;
+		 case menu::CARD_DIAMOND:
+		 	dofireball(x-1, y-1);
+		 	dofireball(x+1, y-1);
+		 	dofireball(x-1, y+1);
+		 	dofireball(x+1, y+1);
+		 	ssreset() << "spell: diamond";
+		 	combatlog(ss.str());
+		 	return 1;
+		 case menu::CARD_SPADE:
+		 	combatlog("spell: spade (fail)");
+		 	return 1;
+		}
+		return 0;
 	}
 
 
@@ -539,7 +579,7 @@ void draw() {
 			drawcard(menu::cards[i], parchment_pos.x+22+(i*17), parchment_pos.y+6);
 		
 		// menu markers
-		if (gamemode::mode == gamemode::MODE_GAMEMENU) {
+		if (gamestate::gamemode == gamestate::MODE_GAMEMENU) {
 			int x = parchment_pos.x + 22 + 5 + (menu::handpos*17);
 			int y = parchment_pos.y + 26;
 			string s = string()+char(24);
@@ -582,7 +622,7 @@ void draw() {
 
 		// moves
 		ss.str(""), ss.clear();
-		ss << movecount;
+		ss << gamestate::movecount;
 		game::qbcolor(0, 0, 0);
 		game::qbprint(textbox.x+2, textbox.y+30, ss.str());
 		game::qbcolor(230, 230, 0);

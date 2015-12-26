@@ -16,16 +16,15 @@ public:
 	int def = 0;
 	std::string name;
 };
-extern mob playermob;
 
-// game modes
-namespace gamemode {
+// game state
+namespace gamestate {
 	enum mode {
 		MODE_NONE,
 		MODE_GAME,
 		MODE_GAMEMENU
 	};
-	extern int mode;
+	extern int gamemode;
 }
 
 // attack actions
@@ -43,7 +42,7 @@ namespace action {
 		ACT_SELECT
 	};
 	int  playeraction(int action);
-	void doheal(mob* target);
+	int  dospell(int cardtype);
 }
 
 // menu actions 
@@ -54,10 +53,14 @@ namespace menu {
 		CARD_CLUB,
 		CARD_DIAMOND
 	};
+	const int CARD_DRAW_RATE = 20;
 	extern std::vector<int> cards;
 	extern int handpos;
 	int playeraction(int action);
 	int givecard();
 }
+
+// globals
+// extern mob playermob;
 
 #endif
