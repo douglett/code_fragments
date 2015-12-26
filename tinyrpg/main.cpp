@@ -13,22 +13,11 @@ using namespace std;
 
 
 
-class mob {
-public:
-	int x = 0;
-	int y = 0;
-	int type = 0;
-	int hp = 3;
-	int maxhp = 3;
-	int atk = 1;
-	int def = 0;
-	string name;
-};
-
 class gtext {
 public:
 	int x = 0;
 	int y = 0;
+	int type = 0;
 	string s;
 };
 
@@ -55,7 +44,6 @@ const SDL_Rect
 		man = { 0, 48, 12, 12 },
 		scorpion = { 24, 48, 12, 12 },
 		cake = { 48, 48, 12, 12 };
-
 const vector<string> mob_names = {
 	"???",
 	"scorp",
@@ -101,6 +89,7 @@ int main() {
 	playermob.x = 4;
 	playermob.y = 3;
 	playermob.name = "player";
+	menu::cards.push_back(menu::CARD_HEART);
 	// see if the map creator sent us some start coordinates
 	if (mobcache.size() > 0 && mobcache[0]["type"] == -1) {
 		playermob.x = mobcache[0]["x"];
@@ -182,9 +171,9 @@ int get_action_inner() {
 			 case SDLK_DOWN:
 				return action::ACT_SOUTH;
 			 case SDLK_SPACE:
-			 case SDLK_x:
-				return action::ACT_ACTION;
 			 case SDLK_z:
+				return action::ACT_ACTION;
+			 case SDLK_x:
 				return action::ACT_CANCEL;
 			 case SDLK_s:
 				return action::ACT_MENU;
@@ -332,6 +321,32 @@ namespace action {
 		// add player log
 		ss.str(""), ss.clear();
 		ss << "-> " << defender->name << " (-" << atk << ")";
+		combatlog(ss.str());
+	}
+
+
+	void doheal(mob* target) {
+		assert(target != NULL);
+
+		// do heal
+		int heal = ceil( target->maxhp * 0.25 ); 
+		if (heal > target->maxhp - target->hp)
+			heal = target->maxhp - target->hp;
+		target->hp += heal;
+
+		// display attack
+		ss.str(""), ss.clear();
+		ss << heal;
+		gtext g;
+			g.x = target->x;
+			g.y = target->y;
+			g.type = 1;
+			g.s = ss.str();
+		gtexts.push_back(g);
+
+		// add player log
+		ss.str(""), ss.clear();
+		ss << "-> " << target->name << " (+" << heal << ")";
 		combatlog(ss.str());
 	}
 
@@ -502,8 +517,8 @@ void draw() {
 		// drawcard(3, 73, 80);
 
 		// draw cards (inline)
-		for (int i = 0; i < 4; i++)
-			drawcard(i, parchment_pos.x+22+(i*17), parchment_pos.y+6);
+		for (int i = 0; i < menu::cards.size(); i++)
+			drawcard(menu::cards[i], parchment_pos.x+22+(i*17), parchment_pos.y+6);
 		
 		// menu markers
 		if (gamemode::mode == gamemode::MODE_GAMEMENU) {
