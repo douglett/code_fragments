@@ -496,7 +496,10 @@ void draw() {
 		dst.y = 12 * (g.y - camera.y) + offsety - 2;
 		game::qbcolor(0, 0, 0);
 		game::qbprint(dst.x+1, dst.y+1, g.s);
-		game::qbcolor(200, 0, 0);
+		if (g.type == 1)
+			game::qbcolor(0, 240, 0);
+		else
+			game::qbcolor(200, 0, 0);
 		game::qbprint(dst.x, dst.y, g.s);
 	}
 
