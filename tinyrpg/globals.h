@@ -73,12 +73,12 @@ namespace menu {
 // globals
 std::stringstream& ss(int reset = 0);
 gtext create_gtext(int x, int y, std::string s, int type = 0);
-extern std::vector<gtext> gtexts;
-extern mob playermob;
-extern std::vector<std::string> gmap;
-extern std::vector<mob> gmobs;
 void cleardead();
 void centercam();
 void combatlog(const std::string& s);
+extern std::vector<std::string> gmap;
+extern std::vector<mob> gmobs;
+extern std::vector<gtext> gtexts;
+extern mob playermob;
 
 #endif
