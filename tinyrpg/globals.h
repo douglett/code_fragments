@@ -78,6 +78,7 @@ void centercam();
 void combatlog(const std::string& s);
 extern std::vector<std::string> gmap;
 extern std::vector<mob> gmobs;
+extern std::vector<mob> effects;
 extern std::vector<gtext> gtexts;
 extern mob playermob;
 

@@ -56,6 +56,7 @@ namespace action {
 		// do movement actions
 		if (collide == 0 || collide == 2) {
 			gtexts.erase(gtexts.begin(), gtexts.end());
+			effects.erase(effects.begin(), effects.end());
 			// player action
 			if (collide == 0) {
 				playermob.x += x;
@@ -142,6 +143,13 @@ namespace action {
 			ss(1) << 5;
 			gtexts.push_back(create_gtext( x, y, ss().str() ));
 		}
+		// make fireball
+		mob e;
+		e.x = x;
+		e.y = y;
+		e.type = 1;
+		e.name = "fireball";
+		effects.push_back(e);
 	}
 
 
@@ -158,7 +166,7 @@ namespace action {
 		 	dofireball(x+1, y);
 		 	dofireball(x, y-1);
 		 	dofireball(x, y+1);
-		 	ss(1) << "spell: diamond";
+		 	ss(1) << "spell: club";
 		 	combatlog(ss().str());
 		 	return 1;
 		 case menu::CARD_DIAMOND:

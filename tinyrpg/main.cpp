@@ -41,6 +41,7 @@ SDL_Rect camera = { 0, 0, 10, 10 };
 SDL_Texture* sprites = NULL;
 vector<string> gmap;
 vector<mob> gmobs;
+vector<mob> effects;
 mob playermob;
 vector <string> combat_log;
 vector<gtext> gtexts;
@@ -337,6 +338,15 @@ void draw() {
 		else
 			game::qbcolor(200, 0, 0);
 		game::qbprint(dst.x, dst.y, g.s);
+	}
+
+	// draw special effects
+	for (auto e : effects) {
+		dst.x = 12 * (e.x - camera.x) + offsetx;
+		dst.y = 12 * (e.y - camera.y) + offsety;
+		if (e.type == 1)
+			SDL_SetRenderDrawColor(game::ren, 255, 0, 0, 100);
+		SDL_RenderFillRect(game::ren, &dst);
 	}
 
 	// draw large info
