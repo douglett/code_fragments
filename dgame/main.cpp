@@ -4,7 +4,7 @@
 using namespace std;
 
 
-namespace dgame {
+namespace xd {
 namespace screen {
 
 	// consts
@@ -51,11 +51,19 @@ namespace screen {
 	}
 
 } // end screen
-} // end dgame
+} // end xd
 
 
 
-using namespace dgame;
+using namespace xd;
+
+
+uint32_t rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+	return (r<<24) | (g<<16) | (b<<8) | a;
+}
+uint32_t rgb(uint8_t r, uint8_t g, uint8_t b) {
+	return (r<<24) | (g<<16) | (b<<8) | 255;
+}
 
 
 int main() {
@@ -66,7 +74,22 @@ int main() {
 	SDL_SetRenderDrawColor(screen::ren, 255, 0, 0, 255);
 	SDL_RenderFillRect(screen::ren, &r);
 
-	uint32_t tile[64*64+2] = { 0 };
+	uint32_t tile[64*64+2] = { 64, 64, 0 };
+	fill_n(tile+2, 64*64, rgb(0, 0, 255));
+	SDL_Texture* tex = SDL_CreateTexture(screen::ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 64, 64);
+	uint32_t* pix;
+	int pitch;
+	SDL_LockTexture(tex, NULL, (void**)&pix, &pitch);
+	memcpy(pix, tile+2, sizeof(uint32_t)*64*64);
+	SDL_UnlockTexture(tex);
+
+	cout << sizeof(uint32_t) << endl;
+	cout << (255 << 2) << endl;
+	cout << hex << rgba(255, 0, 0, 255) << endl;
+	cout << tile[0] << " " << tile[1] << endl;
+
+	SDL_Rect r2 = { 20, 20, 64, 64 };
+	SDL_RenderCopy(screen::ren, tex, NULL, &r2);
 
 	screen::flip();
 	SDL_Delay(2000);
