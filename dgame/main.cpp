@@ -5,10 +5,7 @@
 
 
 using namespace std;
-
-
 using namespace xd;
-using namespace xd::screen;
 
 
 int main() {
@@ -21,11 +18,11 @@ int main() {
 	SDL_RenderFillRect(screen::ren, &r);
 
 	// sprite test
-	Sprite s(64, 64);
+	screen::Sprite s(64, 64);
 	s.dst.x = 20;
 	s.dst.y = 20;
 	uint32_t* d = s.getdata();
-	fill_n(d+2, d[0]*d[1], rgb(0, 255, 0));
+	fill_n(d+2, d[0]*d[1], screen::rgb(0, 255, 0));
 	s.flip();
 
 	screen::flip();
