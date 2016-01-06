@@ -1,7 +1,8 @@
+#include <vector>
 #include <SDL.h>
 #include "screen.h"
 
-// using namespace std;
+using namespace std;
 
 
 namespace xd {
@@ -10,9 +11,11 @@ namespace screen {
 	// local consts
 	// static const SDL_Rect
 	// 		WINRECT = { 0, 0, WIDTH, HEIGHT };
+
 	// member vars
 	SDL_Window* win = NULL;
 	SDL_Renderer* ren = NULL;
+	vector<shared_ptr<Sprite> > spritelist;
 
 
 	int init() {
@@ -44,6 +47,23 @@ namespace screen {
 		SDL_RenderPresent(ren);
 		SDL_Delay(16);
 		return 0;
+	}
+
+
+	// repaint all sprites and flip screen
+	int paint() {
+		cls();
+		for (auto& spr : spritelist)
+			spr->flip();
+		flip();
+		return 0;
+	}
+
+
+	Sprite& makesprite(int width, int height) {
+		auto s = make_shared<Sprite>(width, height);
+		spritelist.push_back(s);
+		return *s;
 	}
 
 

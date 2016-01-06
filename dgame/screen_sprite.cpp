@@ -26,6 +26,13 @@ uint32_t* Sprite::getdata() {
 }
 
 
+int Sprite::pos(int x, int y) {
+	dst.x = x;
+	dst.y = y;
+	return 0;	
+}
+
+
 // write texture to GPU
 int Sprite::stream() {
 	uint32_t* pix; 	// holds pixel data
