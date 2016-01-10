@@ -58,6 +58,9 @@ namespace draw {
 } // end draw
 
 
+using namespace xd;
+
+
 int main() {
 	cout << "hello world" << endl;
 
@@ -70,8 +73,11 @@ int main() {
 	int posx = 100, posy = 10;
 
 	while (posy < 200) {
+		// cls
+		uint32_t* buf = screen::backbuffer->getdata();
+		draw::fillrect(buf, draw::rgb(0, 0, 0), 0, 0, screen::WIDTH, screen::HEIGHT);
+
 		// draw some boxes
-		uint32_t* buf = xd::screen::backbuffer->getdata();
 		draw::fillrect(buf, draw::rgb(255, 0, 0), -5, -5, 40, 40);
 		draw::fillrect(buf, draw::rgb(0, 255, 0), 40, 40, 40, 40);
 		draw::fillrect(buf, draw::rgb(0, 0, 255), 80, 80, 40, 40);
