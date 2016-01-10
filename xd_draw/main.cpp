@@ -44,7 +44,7 @@ namespace draw {
 			dst_width = dst[0],
 			dst_height = dst[1];
 		for (int y = 0; y < src_height; y++) {
-			if (posx+y < 0 || posy+y >= dst_height)
+			if (posy+y < 0 || posy+y >= dst_height)
 				continue;
 			for (int x = 0; x < src_width; x++) {
 				if (posx+x < 0 || posx+x >= dst_width)
