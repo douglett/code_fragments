@@ -1,7 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include <SDL.h>
-#include "screen.h"
+#include "libsrc/screen.h"
 
 
 using namespace std;
@@ -13,9 +13,9 @@ int main() {
 	screen::init();
 
 	// box test
-	SDL_Rect r = { 5, 5, 10, 10 };
-	SDL_SetRenderDrawColor(screen::ren, 255, 0, 0, 255);
-	SDL_RenderFillRect(screen::ren, &r);
+	// SDL_Rect r = { 5, 5, 10, 10 };
+	// SDL_SetRenderDrawColor(screen::ren, 255, 0, 0, 255);
+	// SDL_RenderFillRect(screen::ren, &r);
 
 	// sprite test
 	// screen::Sprite s(64, 64);
@@ -23,9 +23,9 @@ int main() {
 	s.pos(20, 20);
 	uint32_t* d = s.getdata();
 	fill_n(d+2, d[0]*d[1], screen::rgb(0, 255, 0));
-	s.flip();
+	// s.flip();
 
-	screen::flip();
+	screen::paint();
 	SDL_Delay(1000);
 
 	s.pos(30, 30);
