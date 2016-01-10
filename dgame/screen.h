@@ -1,5 +1,4 @@
-#ifndef __XD_SCREEN_DEF__
-	#define __XD_SCREEN_DEF__
+#pragma once
 
 #include <stdint.h>
 #include <SDL.h>
@@ -43,5 +42,3 @@ namespace screen {
 	uint32_t rgb(uint8_t r, uint8_t g, uint8_t b);
 } // end screen
 } // end xd
-
-#endif

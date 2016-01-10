@@ -1,4 +1,5 @@
 #include <vector>
+#include <memory>
 #include <SDL.h>
 #include "screen.h"
 
