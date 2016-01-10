@@ -16,16 +16,21 @@ namespace screen {
 	// member vars
 	SDL_Window* win = NULL;
 	SDL_Renderer* ren = NULL;
+	Sprite* backbuffer = NULL;
 	vector<shared_ptr<Sprite> > spritelist;
 
 
 	int init() {
+		// setup SDL
 		SDL_Init(SDL_INIT_VIDEO);
 		SDL_CreateWindowAndRenderer(WIDTH * WIN_SCALE, HEIGHT * WIN_SCALE, 0, &win, &ren);
 		if (ren == NULL || win == NULL)
 			return 1;
 		SDL_RenderSetLogicalSize(ren, WIDTH, HEIGHT);
-		SDL_RenderClear(ren);
+		cls();
+		// setup screen backbuffer in first slot
+		makesprite(WIDTH, HEIGHT);
+		backbuffer = spritelist[0].get();
 		return 0;
 	}
 

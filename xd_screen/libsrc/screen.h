@@ -31,6 +31,7 @@ namespace screen {
 	// member vars
 	extern SDL_Window* win;
 	extern SDL_Renderer* ren;
+	extern Sprite* backbuffer;
 	// methods
 	int init();
 	int quit();
