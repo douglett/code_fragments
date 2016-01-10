@@ -1,0 +1,4 @@
+<app>
+	<screen width="320" height="240" />
+	<img src="qbfont.png" name="qbfont"/>
+</app>
