@@ -1,0 +1,7 @@
+<app>
+	<screen width="320" height="240"/>
+	<img src="qbfont.png" name="qbfont"/>
+	<data name="strings">
+		<d>temp</d>
+	</data>
+</app>
