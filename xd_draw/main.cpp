@@ -30,11 +30,28 @@ namespace draw {
 	}
 
 	int fillrect(uint32_t* imgdata, uint32_t color, int posx, int posy, int w, int h) {
-		int imgw = imgdata[0];
-		int imgh = imgdata[1];
-		for (int y = max(posy, 0); y < min(posy+h, imgh); y++)
-			for (int x = max(posx, 0); x < min(posy+w, imgw); x++)
-				imgdata[imgw*y + x + 2] = color;
+		int img_width = imgdata[0];
+		int img_height = imgdata[1];
+		for (int y = max(posy, 0); y < min(posy+h, img_height); y++)
+			for (int x = max(posx, 0); x < min(posy+w, img_width); x++)
+				imgdata[img_width*y + x + 2] = color;
+		return 0;
+	}
+
+	int blit(uint32_t* src, uint32_t* dst, int posx, int posy) {
+		int src_width = src[0],
+			src_height = src[1],
+			dst_width = dst[0],
+			dst_height = dst[1];
+		for (int y = 0; y < src_height; y++) {
+			if (posx+y < 0 || posy+y >= dst_height)
+				continue;
+			for (int x = 0; x < src_width; x++) {
+				if (posx+x < 0 || posx+x >= dst_width)
+					continue;
+				dst[dst_width*(posy+y) + (posx+x) + 2] = src[src_width*y + x + 2];
+			}
+		}
 		return 0;
 	}
 
@@ -46,14 +63,27 @@ int main() {
 
 	xd::screen::init();
 
-	// uint32_t* img = draw::make_img(20, 20);
-	// draw::fillrect(img, draw::rgb(255, 0, 0), 0, 0, 20, 20);
-	uint32_t* buf = xd::screen::backbuffer->getdata();
-	draw::fillrect(buf, draw::rgb(255, 0, 0), -5, -5, 40, 40);
-	draw::fillrect(buf, draw::rgb(0, 255, 0), 40, 40, 40, 40);
-	draw::fillrect(buf, draw::rgb(0, 0, 255), 80, 80, 40, 40);
+	// make a sprite
+	uint32_t* img = draw::make_img(20, 20);
+	draw::fillrect(img, draw::rgb(255, 255, 0), 0, 0, 20, 20);
+	draw::fillrect(img, draw::rgb(200, 0, 0), 5, 5, 10, 10);
+	int posx = 100, posy = 10;
 
-	xd::screen::paint();
+	while (posy < 200) {
+		// draw some boxes
+		uint32_t* buf = xd::screen::backbuffer->getdata();
+		draw::fillrect(buf, draw::rgb(255, 0, 0), -5, -5, 40, 40);
+		draw::fillrect(buf, draw::rgb(0, 255, 0), 40, 40, 40, 40);
+		draw::fillrect(buf, draw::rgb(0, 0, 255), 80, 80, 40, 40);
+
+		// draw sprite		
+		draw::blit(img, buf, posx, posy);
+		posx++;
+		posy++;
+
+		xd::screen::paint();
+	}
+	
 	SDL_Delay(1000);
 
 	xd::screen::quit();
