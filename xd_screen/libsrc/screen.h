@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <memory>
 #include <SDL.h>
 
 namespace xd {
@@ -9,7 +10,7 @@ namespace screen {
 	class Sprite {
 	private:
 		int dirty = 1;
-		uint32_t* data = NULL;
+		std::shared_ptr<uint32_t> data = NULL;
 		SDL_Texture* tex = NULL;
 		SDL_Rect size = { 0 };
 	public:
