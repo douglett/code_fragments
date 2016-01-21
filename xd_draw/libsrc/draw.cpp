@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <memory>
+#include <algorithm>
 #include <cassert>
 
 #include "draw.h"
