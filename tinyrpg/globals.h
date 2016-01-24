@@ -52,6 +52,7 @@ namespace action {
 		ACT_SELECT
 	};
 	int  playeraction(int action);
+	void allenemyactions();
 	int  dospell(int cardtype);
 }
 

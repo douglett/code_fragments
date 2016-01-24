@@ -118,6 +118,8 @@ int main() {
 
 		// give player a card
 		if (action_performed) {
+			cleardead();
+			action::allenemyactions();
 			gamestate::movecount++;
 			if (gamestate::movecount % menu::CARD_DRAW_RATE == 0) {
 				menu::givecard();

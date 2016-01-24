@@ -27,6 +27,7 @@ namespace menu {
 		 case action::ACT_ACTION:
 		 	if ( use_card() ) {
 		 		menu::playeraction(action::ACT_MENU);  // close menu
+		 		cleardead();
 		 		return 1;
 		 	}
 			break;

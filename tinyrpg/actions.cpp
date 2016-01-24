@@ -64,10 +64,10 @@ namespace action {
 				centercam();
 			} else if (collide == 2) {
 				doattack(&playermob, findmob(playermob.x + x, playermob.y + y));
-				cleardead();
+				// cleardead();
 			}
 			// enemy actions
-			allenemyactions();
+			// allenemyactions();
 			return 1;
 		}
 
