@@ -1,6 +1,7 @@
 #include <string>
 #include <cassert>
 #include <algorithm>
+#include <cmath>
 #include "globals.h"
 
 using namespace std;
