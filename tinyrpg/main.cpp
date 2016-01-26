@@ -14,6 +14,7 @@ using namespace std;
 
 mob  create_mob(map<string, int>& mm);
 int  get_action();
+void revealfog();
 void draw();
 
 
@@ -40,6 +41,7 @@ int animtt = 0, animstate = 0;
 SDL_Rect camera = { 0, 0, 10, 10 };
 SDL_Texture* sprites = NULL;
 vector<string> gmap;
+vector<string> fogofwar;
 vector<mob> gmobs;
 vector<mob> effects;
 mob playermob;
@@ -92,6 +94,12 @@ int main() {
 	for (auto& mm : mobcache)
 		gmobs.push_back(create_mob(mm));
 
+	// make fog of war
+	fogofwar = vector<string>(
+			gmap.size(),
+			string(gmap[0].size(), 0) );
+	revealfog();
+
 	gamestate::movecount = 0;
 
 	while (true) {
@@ -118,6 +126,7 @@ int main() {
 
 		// give player a card
 		if (action_performed) {
+			revealfog();
 			cleardead();
 			action::allenemyactions();
 			gamestate::movecount++;
@@ -232,6 +241,20 @@ void combatlog(const string& s) {
 	combat_log.push_back(s);
 }
 
+void revealfog() {
+	int xx, yy;
+	for (int y = -3; y <= 3; y++) {
+		yy = playermob.y + y;
+		for (int x = -3; x <= 3; x++) {
+			xx = playermob.x + x;
+			if (xx < 0 || xx >= fogofwar[0].size() || yy < 0 || yy >= fogofwar.size())
+				continue;
+			if (abs(x) + abs(y) < 4)
+				fogofwar[playermob.y+y][playermob.x+x] = 1;
+		}
+	}
+}
+
 
 
 
@@ -280,22 +303,24 @@ void draw() {
 
 			dst.x = x * 12 + offsetx;
 			// draw block
-			switch ( gmap[camera.y+y][camera.x+x] ) {
-				case ' ':
-					continue;  // use background
-				case '#':
-					SDL_SetRenderDrawColor(game::ren, 100, 100, 100, 255);
-					break;
-				case '.':
-					SDL_SetRenderDrawColor(game::ren, 0, 200, 0, 255);
-					break;
-				case '/':
-					SDL_SetRenderDrawColor(game::ren, 160, 100, 100, 255);
-					break;
-				default:
-					SDL_SetRenderDrawColor(game::ren, 255, 0, 255, 255);  // unknown - hot pink
+			if ( fogofwar[camera.y+y][camera.x+x] == 1 ) {
+				switch ( gmap[camera.y+y][camera.x+x] ) {
+					case ' ':
+						continue;  // use background
+					case '#':
+						SDL_SetRenderDrawColor(game::ren, 100, 100, 100, 255);
+						break;
+					case '.':
+						SDL_SetRenderDrawColor(game::ren, 0, 200, 0, 255);
+						break;
+					case '/':
+						SDL_SetRenderDrawColor(game::ren, 160, 100, 100, 255);
+						break;
+					default:
+						SDL_SetRenderDrawColor(game::ren, 255, 0, 255, 255);  // unknown - hot pink
+				}
+				SDL_RenderFillRect(game::ren, &dst);
 			}
-			SDL_RenderFillRect(game::ren, &dst);
 			// draw lines
 			// SDL_SetRenderDrawColor(game::ren, 255, 150, 150, 255);
 			// SDL_RenderDrawRect(game::ren, &dst);
@@ -317,6 +342,8 @@ void draw() {
 	// mobs
 	for (auto m : gmobs) {
 		if (m.x < camera.x || m.x >= camera.x+camera.w || m.y < camera.y || m.y >= camera.y+camera.h)
+			continue;
+		if ( fogofwar[m.y][m.x] == 0 )
 			continue;
 		if (m.type == 1)
 			src = scorpion;
