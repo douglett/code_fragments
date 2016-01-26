@@ -5,8 +5,8 @@
 #include <map>
 #include "libsrc/xcengine.h"
 #include "globals.h"
-// #include "tmap.h"
-#include "lazymap.h"
+// #include "mapgen/tmap.h"
+#include "mapgen/lazymap.h"
 
 using namespace std;
 
