@@ -2,9 +2,9 @@ TODO
 ----
 
 - implement bonfires - brazier!
-- deck max draw (for now)
 - stairs (for next level)
-- fog-of-war
+- stairs = bonfire?
+- deck draw system - have to design something useful?
 
 future
 ------
@@ -18,5 +18,9 @@ future
 done
 ----
 
+26/01/16
+- fog-of-war
+
+24/01/16
 - spell cast actually takes a turn
 - bug in which mobs die when using fireball after 1 turn (related?)
