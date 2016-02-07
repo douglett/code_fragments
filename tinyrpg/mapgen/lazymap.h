@@ -1,5 +1,4 @@
-#ifndef __LAZYMAP_DEF__
-	#define __LAZYMAP_DEF__
+#pragma once
 
 #include <string>
 #include <vector>
@@ -11,4 +10,3 @@ namespace lazymap {
 	int buildmap(int seed);
 }
 
-#endif

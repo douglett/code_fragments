@@ -16,6 +16,7 @@ mob  create_mob(map<string, int>& mm);
 int  get_action();
 void revealfog();
 void draw();
+void draw_menu();
 
 
 const SDL_Rect
@@ -28,7 +29,8 @@ const SDL_Rect
 		man = { 0, 48, 12, 12 },
 		scorpion = { 24, 48, 12, 12 },
 		cake = { 48, 48, 12, 12 },
-		flame = { 0, 63, 12, 12 };
+		flame = { 0, 63, 12, 12 },
+		stairs = { 24, 63, 12, 12 };
 const vector<string> mob_names = {
 	"???",
 	"scorp",
@@ -319,6 +321,7 @@ void draw() {
 						break;
 					case '.':
 					case 'i':
+					case '%':
 						SDL_SetRenderDrawColor(game::ren, 0, 200, 0, 255);
 						break;
 					default:
@@ -329,6 +332,9 @@ void draw() {
 				switch ( gmap[camera.y+y][camera.x+x] ) {
 					case 'i':
 						tile = &flame;
+						break;
+					case '%':
+						tile = &stairs;
 						break;
 				}
 				// draw em
@@ -400,7 +406,12 @@ void draw() {
 			game::qbcolor(200, 0, 0);
 		game::qbprint(dst.x, dst.y, g.s);
 	}
+	
+	// draw game menus
+	draw_menu();
+}
 
+void draw_menu() {
 	// draw large info
 	if (showmenu) {
 		// draw parchment background
@@ -499,3 +510,4 @@ void draw() {
 		game::qbprint(textbox.x+1, textbox.y+1, s);
 	}
 }
+

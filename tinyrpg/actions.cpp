@@ -7,7 +7,7 @@
 using namespace std;
 
 
-const string walkable = " ./";
+const string walkable = " ./%";
 
 
 namespace action {

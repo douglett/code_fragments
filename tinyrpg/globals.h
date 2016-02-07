@@ -1,5 +1,4 @@
-#ifndef __GLOBALS_DEF__
-	#define __GLOBALS_DEF__
+#pragma once
 
 #include <string>
 #include <vector>
@@ -83,4 +82,3 @@ extern std::vector<mob> effects;
 extern std::vector<gtext> gtexts;
 extern mob playermob;
 
-#endif

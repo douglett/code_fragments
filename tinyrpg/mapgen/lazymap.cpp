@@ -46,6 +46,7 @@ namespace lazymap {
 		
 		// make font(s) and exit steps
 		gmap[4][4] = 'i';
+		gmap[4][6] = '%';
 		gmap[16][16] = '%';
 
 		// make mobs
