@@ -7,9 +7,7 @@
 using namespace std;
 
 
-const vector<char> walkable = {
-	' ', '.', '/'
-};
+const string walkable = " ./";
 
 
 namespace action {

@@ -10,9 +10,11 @@ namespace menu {
 	int  use_card();
 	void move_hand(int direction);
 
+	const int HAND_SIZE_MAX = 4;
 
-	const int HANDPOS_MAX = 3;
 	vector<int> cards;
+	int deck_size = 2;
+	int draw_count = 0;
 	int handpos = 0;
 	
 	
@@ -46,8 +48,8 @@ namespace menu {
 		handpos += direction;
 		if (handpos < 0)
 			handpos = 0;
-		else if (handpos > HANDPOS_MAX)
-			handpos = HANDPOS_MAX;
+		else if (handpos >= HAND_SIZE_MAX)
+			handpos = HAND_SIZE_MAX - 1;
 	}
 
 
@@ -75,11 +77,21 @@ namespace menu {
 	}
 
 
+	int reset_cards() {
+		cards.erase(cards.begin(), cards.end());
+		cards.push_back(menu::CARD_HEART);
+		draw_count = 1;
+		return 0;
+	}
+
+
 	int givecard() {
-		if (cards.size() >= 4)
+		if (cards.size() >= HAND_SIZE_MAX || draw_count >= deck_size)
 			return 0;
 		cards.push_back( rand() % 4 );
+		draw_count++;
 		return 1;
 	}
 
 } // end menu
+

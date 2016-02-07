@@ -64,10 +64,10 @@ namespace menu {
 		CARD_CLUB,
 		CARD_DIAMOND
 	};
-	const int CARD_DRAW_RATE = 20;
 	extern std::vector<int> cards;
 	extern int handpos;
 	int playeraction(int action);
+	int reset_cards();
 	int givecard();
 }
 

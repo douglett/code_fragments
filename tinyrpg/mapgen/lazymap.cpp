@@ -58,4 +58,5 @@ namespace lazymap {
 		return 0;
 	}
 
-}
+} // end lazymap
+

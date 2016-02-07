@@ -70,8 +70,11 @@ int main() {
 	auto& mobcache = lazymap::gmobs;
 
 	// dump map in console
-	for (auto& s : gmap)
-		cout << s << endl;
+	for (const auto& s : gmap) {
+		for (auto c : s)
+			cout << c << ' ';
+		cout << endl;
+	}
 
 	// make main player
 	camera.w = ceil(game::width/12.0);
@@ -80,7 +83,8 @@ int main() {
 	playermob.x = 4;
 	playermob.y = 3;
 	playermob.name = "player";
-	menu::cards.push_back(menu::CARD_HEART);
+	//menu::cards.push_back(menu::CARD_HEART);
+	menu::reset_cards();
 	// see if the map creator sent us some start coordinates
 	if (mobcache.size() > 0 && mobcache[0]["type"] == -1) {
 		playermob.x = mobcache[0]["x"];
@@ -130,9 +134,7 @@ int main() {
 			cleardead();
 			action::allenemyactions();
 			gamestate::movecount++;
-			if (gamestate::movecount % menu::CARD_DRAW_RATE == 0) {
-				menu::givecard();
-			}
+			menu::givecard(); // add random card to hand if space available
 		}
 		
 		// kill player
