@@ -7,7 +7,9 @@
 using namespace std;
 
 
-const string walkable = " ./%";
+const string 
+	walkable = " ./",
+	actionable = "%i";
 
 
 namespace action {
@@ -53,20 +55,23 @@ namespace action {
 		}
 
 		// do movement actions
-		if (collide == 0 || collide == 2) {
+		if (collide == 0 || collide == 2 || collide == 4) {
 			gtexts.erase(gtexts.begin(), gtexts.end());
 			effects.erase(effects.begin(), effects.end());
-			// player action
+			// player can move
 			if (collide == 0) {
 				playermob.x += x;
 				playermob.y += y;
 				centercam();
-			} else if (collide == 2) {
+			} 
+			// player hits a mob - do attack
+			else if (collide == 2) {
 				doattack(&playermob, findmob(playermob.x + x, playermob.y + y));
-				// cleardead();
+			} 
+			// player hits 
+			else if (collide == 4) {
+				cout << "collide 4" << endl;
 			}
-			// enemy actions
-			// allenemyactions();
 			return 1;
 		}
 
@@ -76,15 +81,17 @@ namespace action {
 
 	int collision(int x, int y) {
 		if (y < 0 || y >= gmap.size() || x < 0 || x >= gmap[0].size())
-			return 1;
-		if ( find(walkable.begin(), walkable.end(), gmap[y][x]) == walkable.end() )
-			return 1;
+			return 1; // out of bounds
+		if ( count(actionable.begin(), actionable.end(), gmap[y][x]) > 0 )
+			return 4; // hit an action square
+		if ( count(walkable.begin(), walkable.end(), gmap[y][x]) == 0 )
+			return 1; // hit a wall
 		for (auto &m : gmobs)
 			if (m.x == x && m.y == y)
-				return 2;
+				return 2; // hit an enemy
 		if (playermob.x == x && playermob.y == y)
-			return 3;
-		return 0;
+			return 3; // hit the player (mob use)
+		return 0; // no collision
 	}
 
 
