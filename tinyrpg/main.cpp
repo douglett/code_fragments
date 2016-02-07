@@ -27,7 +27,8 @@ const SDL_Rect
 		diamond = { 62, 30, 14, 16 },
 		man = { 0, 48, 12, 12 },
 		scorpion = { 24, 48, 12, 12 },
-		cake = { 48, 48, 12, 12 };
+		cake = { 48, 48, 12, 12 },
+		flame = { 0, 63, 12, 12 };
 const vector<string> mob_names = {
 	"???",
 	"scorp",
@@ -306,22 +307,37 @@ void draw() {
 			dst.x = x * 12 + offsetx;
 			// draw block
 			if ( fogofwar[camera.y+y][camera.x+x] == 1 ) {
+				// background color
 				switch ( gmap[camera.y+y][camera.x+x] ) {
 					case ' ':
 						continue;  // use background
 					case '#':
 						SDL_SetRenderDrawColor(game::ren, 100, 100, 100, 255);
 						break;
-					case '.':
-						SDL_SetRenderDrawColor(game::ren, 0, 200, 0, 255);
-						break;
 					case '/':
 						SDL_SetRenderDrawColor(game::ren, 160, 100, 100, 255);
+						break;
+					case '.':
+					case 'i':
+						SDL_SetRenderDrawColor(game::ren, 0, 200, 0, 255);
 						break;
 					default:
 						SDL_SetRenderDrawColor(game::ren, 255, 0, 255, 255);  // unknown - hot pink
 				}
-				SDL_RenderFillRect(game::ren, &dst);
+				// foreground tile
+				const SDL_Rect* tile = NULL;
+				switch ( gmap[camera.y+y][camera.x+x] ) {
+					case 'i':
+						tile = &flame;
+						break;
+				}
+				// draw em
+				SDL_RenderFillRect(game::ren, &dst); // fill
+				if (tile) {
+					SDL_Rect s = *tile;
+					s.x += 12 * animstate;
+					SDL_RenderCopy(game::ren, sprites, &s, &dst); // draw top sprite
+				}
 			}
 			// draw lines
 			// SDL_SetRenderDrawColor(game::ren, 255, 150, 150, 255);
@@ -358,6 +374,20 @@ void draw() {
 		SDL_RenderCopy(game::ren, sprites, &src, &dst);
 	}
 
+	// draw special effects
+	for (auto e : effects) {
+		dst.x = 12 * (e.x - camera.x) + offsetx;
+		dst.y = 12 * (e.y - camera.y) + offsety;
+		if (e.type == 1) {
+			src = flame;
+			src.x += 12 * animstate;
+			SDL_RenderCopy(game::ren, sprites, &src, &dst);
+		} else {
+			SDL_SetRenderDrawColor(game::ren, 255, 0, 0, 100);
+			SDL_RenderFillRect(game::ren, &dst);
+		}
+	}
+	
 	// attack text
 	for (auto g : gtexts) {
 		dst.x = 12 * (g.x - camera.x) + offsetx + 1;
@@ -369,15 +399,6 @@ void draw() {
 		else
 			game::qbcolor(200, 0, 0);
 		game::qbprint(dst.x, dst.y, g.s);
-	}
-
-	// draw special effects
-	for (auto e : effects) {
-		dst.x = 12 * (e.x - camera.x) + offsetx;
-		dst.y = 12 * (e.y - camera.y) + offsety;
-		if (e.type == 1)
-			SDL_SetRenderDrawColor(game::ren, 255, 0, 0, 100);
-		SDL_RenderFillRect(game::ren, &dst);
 	}
 
 	// draw large info

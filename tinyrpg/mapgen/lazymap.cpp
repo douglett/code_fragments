@@ -43,6 +43,10 @@ namespace lazymap {
 			}
 			gmap.push_back(s);
 		}
+		
+		// make font(s) and exit steps
+		gmap[4][4] = 'i';
+		gmap[16][16] = '%';
 
 		// make mobs
 		srand(seed);
