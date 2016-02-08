@@ -2,6 +2,7 @@
 #include <cassert>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 #include "globals.h"
 
 using namespace std;
