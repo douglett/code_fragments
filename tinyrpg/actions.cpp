@@ -69,9 +69,9 @@ namespace action {
 			else if (collide == 2) {
 				doattack(&playermob, findmob(playermob.x + x, playermob.y + y));
 			} 
-			// player hits 
+			// player hits an action block
 			else if (collide == 4) {
-				cout << "collide 4" << endl;
+				doactionblock(playermob.x+x, playermob.y+y);
 			}
 			return 1;
 		}
@@ -120,6 +120,25 @@ namespace action {
 		// add player log
 		ss(1) << "-> " << defender->name << " (-" << atk << ")";
 		combatlog(ss().str());
+	}
+
+
+	void doactionblock(int x, int y) {
+		char block = gmap[y][x];
+		switch (block) {
+		 case 'i':  // brazier
+		 	combatlog("brazier: reset level");
+		 	reset_level();
+		 	break;
+		 case '%':  // ladder
+		 	combatlog("descended the ladder");
+		 	dungeon_floor++;
+		 	reset_level();
+		 	break;
+		 default:
+			cout << "unknown action block: " << block << endl;
+			break;
+		}
 	}
 
 

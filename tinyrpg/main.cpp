@@ -11,7 +11,6 @@
 using namespace std;
 
 
-
 mob  create_mob(map<string, int>& mm);
 int  get_action();
 void revealfog();
@@ -41,6 +40,7 @@ const vector<string> mob_names = {
 // main.cpp globals
 int showmenu = 1;
 int animtt = 0, animstate = 0;
+int dungeon_floor = 1;
 SDL_Rect camera = { 0, 0, 10, 10 };
 SDL_Texture* sprites = NULL;
 vector<string> gmap;
@@ -66,46 +66,15 @@ int main() {
 	// sprite images
 	sprites = texture::get("images")->tex;
 
-	// build maps
-	lazymap::buildmap(6000);
-	srand(time(NULL));
-	gmap = lazymap::gmap;
-	auto& mobcache = lazymap::gmobs;
-
-	// dump map in console
-	for (const auto& s : gmap) {
-		for (auto c : s)
-			cout << c << ' ';
-		cout << endl;
-	}
-
-	// make main player
+	// set up main player
 	camera.w = ceil(game::width/12.0);
 	camera.h = ceil(game::height/12.0);
 	playermob.hp = playermob.maxhp = 20;
 	playermob.x = 4;
 	playermob.y = 3;
 	playermob.name = "player";
-	//menu::cards.push_back(menu::CARD_HEART);
-	menu::reset_cards();
-	// see if the map creator sent us some start coordinates
-	if (mobcache.size() > 0 && mobcache[0]["type"] == -1) {
-		playermob.x = mobcache[0]["x"];
-		playermob.y = mobcache[0]["y"];
-		mobcache.erase(mobcache.begin());
-	}
-	// recenter cam
-	centercam();
 
-	// make mobs
-	for (auto& mm : mobcache)
-		gmobs.push_back(create_mob(mm));
-
-	// make fog of war
-	fogofwar = vector<string>(
-			gmap.size(),
-			string(gmap[0].size(), 0) );
-	revealfog();
+	reset_level();
 
 	gamestate::movecount = 0;
 
@@ -148,6 +117,38 @@ int main() {
 	}
 
 	game::quit();
+}
+
+
+void reset_level() {
+	// build maps
+	lazymap::buildmap(6000 + dungeon_floor);
+	gmap = lazymap::gmap;
+	auto& mobcache = lazymap::gmobs;
+
+	// see if the map creator sent us some start coordinates
+	if (mobcache.size() > 0 && mobcache[0]["type"] == -1) {
+		// playermob.x = mobcache[0]["x"];
+		// playermob.y = mobcache[0]["y"];
+		mobcache.erase(mobcache.begin());
+	}
+
+	// make mobs
+	gmobs.erase(gmobs.begin(), gmobs.end());
+	for (auto& mm : mobcache)
+		gmobs.push_back(create_mob(mm));
+
+	// make fog of war
+	fogofwar = vector<string>(
+			gmap.size(),
+			string(gmap[0].size(), 0) );
+
+	// reset player
+	srand(time(NULL));
+	playermob.hp = playermob.maxhp;
+	menu::reset_cards();
+	revealfog();
+	centercam();
 }
 
 

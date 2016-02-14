@@ -52,6 +52,7 @@ namespace action {
 	};
 	int  playeraction(int action);
 	void allenemyactions();
+	void doactionblock(int x, int y);
 	int  dospell(int cardtype);
 }
 
@@ -72,13 +73,14 @@ namespace menu {
 
 // globals
 std::stringstream& ss(int reset = 0);
+void reset_level();
 gtext create_gtext(int x, int y, std::string s, int type = 0);
 void cleardead();
 void centercam();
 void combatlog(const std::string& s);
+extern int dungeon_floor;
 extern std::vector<std::string> gmap;
 extern std::vector<mob> gmobs;
 extern std::vector<mob> effects;
 extern std::vector<gtext> gtexts;
 extern mob playermob;
-
