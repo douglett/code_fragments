@@ -73,7 +73,7 @@ namespace menu {
 
 // globals
 std::stringstream& ss(int reset = 0);
-void reset_level();
+void reset_level(int reset_player = 0);
 gtext create_gtext(int x, int y, std::string s, int type = 0);
 void cleardead();
 void centercam();

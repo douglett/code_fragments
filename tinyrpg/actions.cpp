@@ -133,7 +133,7 @@ namespace action {
 		 case '%':  // ladder
 		 	combatlog("descended the ladder");
 		 	dungeon_floor++;
-		 	reset_level();
+		 	reset_level(true);
 		 	break;
 		 default:
 			cout << "unknown action block: " << block << endl;

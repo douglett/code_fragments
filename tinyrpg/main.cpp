@@ -6,7 +6,8 @@
 #include "libsrc/xcengine.h"
 #include "globals.h"
 // #include "mapgen/tmap.h"
-#include "mapgen/lazymap.h"
+// #include "mapgen/lazymap.h"
+#include "mapgen/testmap.h"
 
 using namespace std;
 
@@ -74,7 +75,7 @@ int main() {
 	playermob.y = 3;
 	playermob.name = "player";
 
-	reset_level();
+	reset_level(true);
 
 	gamestate::movecount = 0;
 
@@ -120,16 +121,18 @@ int main() {
 }
 
 
-void reset_level() {
+void reset_level(int reset_player) {
 	// build maps
-	lazymap::buildmap(6000 + dungeon_floor);
-	gmap = lazymap::gmap;
-	auto& mobcache = lazymap::gmobs;
+	testmap::buildmap(6000 + dungeon_floor);
+	gmap = testmap::gmap;
+	auto& mobcache = testmap::gmobs;
 
 	// see if the map creator sent us some start coordinates
 	if (mobcache.size() > 0 && mobcache[0]["type"] == -1) {
-		// playermob.x = mobcache[0]["x"];
-		// playermob.y = mobcache[0]["y"];
+		if (reset_player) {
+			playermob.x = mobcache[0]["x"];
+			playermob.y = mobcache[0]["y"];
+		}
 		mobcache.erase(mobcache.begin());
 	}
 
@@ -141,7 +144,7 @@ void reset_level() {
 	// make fog of war
 	fogofwar = vector<string>(
 			gmap.size(),
-			string(gmap[0].size(), 0) );
+			string(gmap[0].size(), 1) );
 
 	// reset player
 	srand(time(NULL));
