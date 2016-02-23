@@ -56,7 +56,6 @@ namespace action {
 	};
 	int  playeraction(int action);
 	void allenemyactions();
-	void doactionblock(int x, int y);
 	int  dospell(int cardtype);
 }
 
@@ -87,10 +86,11 @@ namespace display {
 
 // globals
 std::stringstream& ss(int reset = 0);
-void reset_level(int reset_player = 0);
+void  reset_level(int reset_player = 0);
 gtext create_gtext(int x, int y, std::string s, int type = 0);
-void cleardead();
-void combatlog(const std::string& s);
+void  cleardead();
+void  combatlog(const std::string& s);
+int   level_up();
 extern int dungeon_floor;
 extern std::vector<std::string> gmap, fogofwar, combat_log;
 extern std::vector<mob> gmobs, effects;

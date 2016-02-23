@@ -18,6 +18,7 @@ namespace action {
 	int  collision(int x, int y);
 	mob* findmob(int x, int y);
 	void doattack(mob* attacker, mob* defender);
+	void doactionblock(int x, int y);
 	void allenemyactions();
 	void enemyaction(mob& m);
 

@@ -136,15 +136,6 @@ void reset_level(int reset_player) {
 	display::centercam();
 }
 
-
-stringstream& ss(int reset) {
-	static stringstream strm;
-	if (reset)
-		strm.str(""), strm.clear();
-	return strm;
-}
-
-
 mob create_mob(map<string, int>& mm) {
 	mob m;
 	m.x = mm["x"];
@@ -153,8 +144,6 @@ mob create_mob(map<string, int>& mm) {
 	m.name = mob_names[m.type];
 	return m;
 }
-
-
 gtext create_gtext(int x, int y, string s, int type) {
 	gtext g;
 	g.x = x;
@@ -164,6 +153,13 @@ gtext create_gtext(int x, int y, string s, int type) {
 	return g;
 }
 
+
+stringstream& ss(int reset) {
+	static stringstream strm;
+	if (reset)
+		strm.str(""), strm.clear();
+	return strm;
+}
 
 
 int get_action_inner() {
@@ -214,7 +210,6 @@ int get_action() {
 }
 
 
-
 void cleardead() {
 	for (int i = 0; i < gmobs.size(); i++)
 		if (gmobs[i].hp <= 0) {
@@ -223,11 +218,27 @@ void cleardead() {
 			combatlog(ss().str());
 			// add xp
 			playermob.xp += gmobs[i].xp;
+			level_up();
 			// erase
 			gmobs.erase(gmobs.begin()+i);
 			i--;
 		}
 }
+
+int level_up() {
+	int nextlevel = 20 * pow(2, playermob.lvl-1);
+	if (playermob.xp >= nextlevel) {
+		playermob.lvl += 1;
+		playermob.xp %= nextlevel; // add level num
+		playermob.maxhp += 4;
+		playermob.hp += 4; // add health
+		combatlog("you leveled up!");
+		return 1;
+	}
+	return 0;
+}
+
+
 void combatlog(const string& s) {
 	combat_log.push_back(s);
 	int overflow = combat_log.size() - 50;
