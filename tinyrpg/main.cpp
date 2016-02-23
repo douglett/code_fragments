@@ -144,7 +144,7 @@ void reset_level(int reset_player) {
 	// make fog of war
 	fogofwar = vector<string>(
 			gmap.size(),
-			string(gmap[0].size(), 1) );
+			string(gmap[0].size(), 0) );
 
 	// reset player
 	srand(time(NULL));
@@ -415,6 +415,14 @@ void draw() {
 	draw_menu();
 }
 
+
+void menu_text(int x, int y, string s, const int* col) {
+	game::qbcolor(0, 0, 0);
+	game::qbprint(x+1, y+1, s);
+	game::qbcolor(col[0], col[1], col[2]);
+	game::qbprint(x, y, s);
+}
+
 void draw_menu() {
 	// draw large info
 	if (showmenu) {
@@ -453,34 +461,30 @@ void draw_menu() {
 		SDL_SetRenderDrawColor(game::ren, 0, 0, 0, 150);
 		SDL_RenderFillRect(game::ren, &textbox);
 
+		static const int 
+				yellow[] = { 230, 230, 0 },
+				green[] = { 0, 200, 0 },
+				red[] = { 200, 80, 80 };
+
 		// HP text
 		ss(1) 	<< setfill('0') << setw(2) << playermob.hp << "/"
 				<< setfill('0') << setw(2) << playermob.maxhp;
-		game::qbcolor(0, 0, 0);
-		game::qbprint(textbox.x+2, textbox.y+2, ss().str());
-		game::qbcolor(0, 200, 0);
-		game::qbprint(textbox.x+1, textbox.y+1, ss().str());
-
+		menu_text(textbox.x+1, textbox.y+1, ss().str(), green);
 		// ATK text
 		ss(1) << "atk " << playermob.atk;
-		game::qbcolor(0, 0, 0);
-		game::qbprint(textbox.x+2, textbox.y+11, ss().str());
-		game::qbcolor(230, 230, 0);
-		game::qbprint(textbox.x+1, textbox.y+10, ss().str());
-
+		menu_text(textbox.x+1, textbox.y+11, ss().str(), yellow);
 		// DEF text
 		ss(1) << "def " << playermob.def;
-		game::qbcolor(0, 0, 0);
-		game::qbprint(textbox.x+2, textbox.y+20, ss().str());
-		game::qbcolor(230, 230, 0);
-		game::qbprint(textbox.x+1, textbox.y+19, ss().str());
-
-		// moves
+		menu_text(textbox.x+1, textbox.y+21, ss().str(), yellow);
+		// LVL text
+		ss(1) << "lvl " << playermob.lvl;
+		menu_text(textbox.x+1, textbox.y+31, ss().str(), yellow);
+		// XP text
+		ss(1) << "xp  " << 0;
+		menu_text(textbox.x+1, textbox.y+41, ss().str(), yellow);
+		// move count
 		ss(1) << gamestate::movecount;
-		game::qbcolor(0, 0, 0);
-		game::qbprint(textbox.x+2, textbox.y+30, ss().str());
-		game::qbcolor(230, 230, 0);
-		game::qbprint(textbox.x+1, textbox.y+29, ss().str());
+		menu_text(textbox.x+1, textbox.y+51, ss().str(), red);
 
 		// combat log
 		for (int i = 0; i < 5; i++) {

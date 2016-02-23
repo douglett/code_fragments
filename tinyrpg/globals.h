@@ -14,6 +14,7 @@ public:
 	int maxhp = 3;
 	int atk = 1;
 	int def = 0;
+	int lvl = 1;
 	std::string name;
 };
 
