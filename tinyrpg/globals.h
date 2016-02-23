@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <SDL.h>
 
 // mob types
 class mob {
@@ -15,6 +16,7 @@ public:
 	int atk = 1;
 	int def = 0;
 	int lvl = 1;
+	int xp = 3;
 	std::string name;
 };
 
@@ -35,6 +37,7 @@ namespace gamestate {
 		MODE_GAMEMENU
 	};
 	extern int gamemode;
+	extern int movecount;
 }
 
 // attack actions
@@ -72,16 +75,24 @@ namespace menu {
 	int givecard();
 }
 
+// display
+namespace display {
+	extern SDL_Texture* sprites;
+	extern int animstate;
+	extern SDL_Rect camera;
+	void draw();
+	void centercam();
+	void draw_menu();
+}
+
 // globals
 std::stringstream& ss(int reset = 0);
 void reset_level(int reset_player = 0);
 gtext create_gtext(int x, int y, std::string s, int type = 0);
 void cleardead();
-void centercam();
 void combatlog(const std::string& s);
 extern int dungeon_floor;
-extern std::vector<std::string> gmap;
-extern std::vector<mob> gmobs;
-extern std::vector<mob> effects;
+extern std::vector<std::string> gmap, fogofwar, combat_log;
+extern std::vector<mob> gmobs, effects;
 extern std::vector<gtext> gtexts;
 extern mob playermob;

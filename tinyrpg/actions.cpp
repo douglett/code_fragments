@@ -63,7 +63,6 @@ namespace action {
 			if (collide == 0) {
 				playermob.x += x;
 				playermob.y += y;
-				centercam();
 			} 
 			// player hits a mob - do attack
 			else if (collide == 2) {
