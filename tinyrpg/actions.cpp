@@ -10,7 +10,7 @@ using namespace std;
 
 const string 
 	walkable = " ./",
-	actionable = "%i";
+	actionable = "%iC";
 
 
 namespace action {
