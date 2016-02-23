@@ -21,7 +21,7 @@ const vector<string> mob_names = {
 	"scorp",
 	"cakey"
 };
-const int FOG_ENABLED = 0;
+const int FOG_ENABLED = 1;
 
 
 // main.cpp globals
@@ -51,8 +51,9 @@ int main() {
 	display::camera.w = ceil(game::width/12.0);
 	display::camera.h = ceil(game::height/12.0);
 	playermob.hp = playermob.maxhp = 20;
-	playermob.x = 4;
-	playermob.y = 3;
+	playermob.xp = 0;
+	// playermob.x = 4;
+	// playermob.y = 3;
 	playermob.name = "player";
 
 	reset_level(true);
@@ -83,12 +84,12 @@ int main() {
 
 		// do turn actions
 		if (action_performed) {
-			revealfog();
 			cleardead();
 			action::allenemyactions();
-			display::centercam();
-			gamestate::movecount++;
 			menu::givecard(); // add random card to hand if space available
+			gamestate::movecount++; // increment moves
+			revealfog();
+			display::centercam();
 		}
 		
 		// kill player

@@ -175,7 +175,9 @@ namespace display {
 		dst.y = y + 1;
 		SDL_RenderCopy(game::ren, sprites, &cards[type], &dst);
 	}
-	static void menu_text(int x, int y, string s, const int* col) {
+	static void menu_text(int line, string s, const int* col) {
+		int x = game::width - (s.length()*8) - 1;
+		int y = line * 8 + 1;
 		game::qbcolor(0, 0, 0);
 		game::qbprint(x+1, y+1, s);
 		game::qbcolor(col[0], col[1], col[2]);
@@ -216,35 +218,35 @@ namespace display {
 			}
 
 			// background
-			SDL_Rect textbox = { 0, 1, 41, 28 };
-			textbox.x = game::width - textbox.w - 1;
-			SDL_SetRenderDrawColor(game::ren, 0, 0, 0, 150);
-			SDL_RenderFillRect(game::ren, &textbox);
+			// SDL_Rect textbox = { 0, 1, 41, 28 };
+			// textbox.x = game::width - textbox.w - 1;
+			// SDL_SetRenderDrawColor(game::ren, 0, 0, 0, 150);
+			// SDL_RenderFillRect(game::ren, &textbox);
 
 			static const int 
-					yellow[] = { 230, 230, 0 },
-					green[] = { 0, 200, 0 },
-					red[] = { 200, 80, 80 };
+				yellow[] = { 230, 230, 0 },
+				green[] = { 0, 200, 0 },
+				red[] = { 200, 80, 80 };
 
 			// HP text
-			ss(1) 	<< setfill('0') << setw(2) << playermob.hp << "/"
-					<< setfill('0') << setw(2) << playermob.maxhp;
-			menu_text(textbox.x+1, textbox.y+1, ss().str(), green);
+			ss(1) << setfill('0') << setw(2) << playermob.hp << "/"
+				<< setfill('0') << setw(2) << playermob.maxhp;
+			menu_text(0, ss().str(), green);
 			// ATK text
-			ss(1) << "atk " << playermob.atk;
-			menu_text(textbox.x+1, textbox.y+1+8, ss().str(), yellow);
+			ss(1) << playermob.atk << " atk";
+			menu_text(1, ss().str(), yellow);
 			// DEF text
-			ss(1) << "def " << playermob.def;
-			menu_text(textbox.x+1, textbox.y+1+8*2, ss().str(), yellow);
+			ss(1) <<  playermob.def << " def";
+			menu_text(2, ss().str(), yellow);
 			// LVL text
-			ss(1) << "lvl " << playermob.lvl;
-			menu_text(textbox.x+1, textbox.y+1+8*3, ss().str(), yellow);
+			ss(1) << playermob.lvl << " lvl";
+			menu_text(3, ss().str(), yellow);
 			// XP text
-			ss(1) << "xp  " << 0;
-			menu_text(textbox.x+1, textbox.y+1+8*4, ss().str(), yellow);
+			ss(1) << playermob.xp << " xp";
+			menu_text(4, ss().str(), yellow);
 			// move count
-			ss(1) << gamestate::movecount;
-			menu_text(textbox.x+1, textbox.y+1+8*5, ss().str(), red);
+			ss(1) << gamestate::movecount << "m";
+			menu_text(5, ss().str(), red);
 
 			// combat log
 			for (int i = 0; i < COMBAT_LOG_LENGTH; i++) {
