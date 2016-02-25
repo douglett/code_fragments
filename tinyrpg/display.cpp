@@ -19,7 +19,9 @@ namespace display {
 		scorpion = { 24, 48, 12, 12 },
 		cake = { 48, 48, 12, 12 },
 		flame = { 0, 63, 12, 12 },
-		stairs = { 24, 63, 12, 12 };
+		stairs = { 24, 63, 12, 12 },
+		chest = { 48, 63, 12, 12 },
+		chest_open = { 72, 63, 12, 12 };
 
 	// external vars
 	int animstate = 0;
@@ -71,6 +73,8 @@ namespace display {
 						case '.':
 						case 'i':
 						case '%':
+						case 'C':
+						case 'c':
 							SDL_SetRenderDrawColor(game::ren, 0, 200, 0, 255);
 							break;
 						default:
@@ -84,6 +88,12 @@ namespace display {
 							break;
 						case '%':
 							tile = &stairs;
+							break;
+						case 'C':
+							tile = &chest;
+							break;
+						case 'c':
+							tile = &chest_open;
 							break;
 					}
 					// draw em

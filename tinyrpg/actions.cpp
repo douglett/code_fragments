@@ -135,6 +135,11 @@ namespace action {
 		 	dungeon_floor++;
 		 	reset_level(true);
 		 	break;
+		 case 'C':
+		 	combatlog("opened a chest");
+		 	chest_item();
+		 	gmap[y][x] = 'c';
+		 	break;
 		 default:
 			cout << "unknown action block: " << block << endl;
 			break;

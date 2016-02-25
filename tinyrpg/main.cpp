@@ -238,6 +238,11 @@ int level_up() {
 	return 0;
 }
 
+int chest_item() {
+	combatlog("you got a bean");
+	return 0;
+}
+
 
 void combatlog(const string& s) {
 	combat_log.push_back(s);
