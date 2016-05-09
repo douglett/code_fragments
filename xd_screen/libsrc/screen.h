@@ -10,13 +10,18 @@ namespace screen {
 	class Sprite {
 	private:
 		int dirty = 1;
-		std::shared_ptr<uint32_t> data = NULL;
+		uint32_t* data = NULL;
 		SDL_Texture* tex = NULL;
 		SDL_Rect size = { 0 };
 	public:
 		SDL_Rect dst = { 0 };  // user editable
-		// methods
+		// constructors
 		Sprite(int width, int height);
+		~Sprite();
+		// disable copy
+		Sprite(const Sprite&) = delete;
+		Sprite& operator=(const Sprite&) = delete;
+		// methods
 		uint32_t* getdata();
 		int pos(int x, int y);
 		int stream();

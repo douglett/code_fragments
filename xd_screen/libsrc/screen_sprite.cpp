@@ -11,21 +11,26 @@ namespace screen {
 
 // constructor
 Sprite::Sprite(int width, int height) {
-	data = shared_ptr<uint32_t>( 
-		new uint32_t[width*height+2], 
-		default_delete<uint32_t[]>() );
-	size.w = dst.w = data.get()[0] = width;   // set widths
-	size.h = dst.h = data.get()[1] = height;  // set heights
-	fill_n(data.get()+2, width*height, rgb(0, 0, 0));  // fill black
+	data = new uint32_t[width*height+2];
+	size.w = dst.w = data[0] = width;   // set widths
+	size.h = dst.h = data[1] = height;  // set heights
+	fill_n(data+2, width*height, rgb(0, 0, 0));  // fill black
 	tex = SDL_CreateTexture(screen::ren,  // make texture
 		SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 
 		width, height);
 }
 
 
+// destructor
+Sprite::~Sprite() {
+	delete data;
+	SDL_DestroyTexture(tex);
+}
+
+
 uint32_t* Sprite::getdata() {
 	dirty = 1;
-	return data.get();
+	return data;
 }
 
 
@@ -41,7 +46,7 @@ int Sprite::stream() {
 	uint32_t* pix; 	// holds pixel data
 	int pitch;	    // holds width*bytelen (unused)
 	SDL_LockTexture(tex, NULL, (void**)&pix, &pitch);  // prepare texture data
-	memcpy(pix, data.get()+2, sizeof(uint32_t)*size.w*size.h);  // copy pixels to GPU
+	memcpy(pix, data+2, sizeof(uint32_t)*size.w*size.h);  // copy pixels to GPU
 	SDL_UnlockTexture(tex);  // done copying
 	dirty = 0;
 	return 0;
