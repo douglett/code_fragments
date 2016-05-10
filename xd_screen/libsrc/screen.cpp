@@ -49,10 +49,22 @@ namespace screen {
 	}
 
 
+	// private helper for flip()
+	static int clearpoll() {
+		SDL_Event e;
+		int rval = 0;
+		while (SDL_PollEvent(&e))
+			if (e.type == SDL_QUIT)
+				rval = 1;
+		return rval;
+	}
+
+
 	int flip() {
 		SDL_RenderPresent(ren);
+		int rval = clearpoll();  // clear leftover SDL poll events before delay
 		SDL_Delay(16);
-		return 0;
+		return rval;  // return 1 on window quit event
 	}
 
 
@@ -61,15 +73,14 @@ namespace screen {
 		cls();
 		for (auto& spr : spritelist)
 			spr->flip();
-		flip();
-		return 0;
+		return flip();  // return 1 on window quit event
 	}
 
 
-	Sprite& makesprite(int width, int height) {
+	Sprite* makesprite(int width, int height) {
 		auto s = make_shared<Sprite>(width, height);
 		spritelist.push_back(s);
-		return *s;
+		return s.get();
 	}
 
 

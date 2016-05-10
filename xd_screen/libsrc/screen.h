@@ -44,7 +44,7 @@ namespace screen {
 	int cls();
 	int flip();
 	int paint();
-	Sprite& makesprite(int width, int height);
+	Sprite* makesprite(int width, int height);
 	uint32_t rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 	uint32_t rgb(uint8_t r, uint8_t g, uint8_t b);
 } // end screen

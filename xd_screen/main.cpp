@@ -19,16 +19,16 @@ int main() {
 
 	// sprite test
 	// screen::Sprite s(64, 64);
-	auto& s = screen::makesprite(64, 64);
-	s.pos(20, 20);
-	uint32_t* d = s.getdata();
+	screen::Sprite* s = screen::makesprite(64, 64);
+	s->pos(20, 20);
+	uint32_t* d = s->getdata();
 	fill_n(d+2, d[0]*d[1], screen::rgb(0, 255, 0));
 	// s.flip();
 
 	screen::paint();
 	SDL_Delay(1000);
 
-	s.pos(30, 30);
+	s->pos(30, 30);
 	screen::paint();
 	SDL_Delay(1000);
 

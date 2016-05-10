@@ -21,21 +21,21 @@ int main() {
 	int posx = 100, posy = 10;
 
 	while (posy < 200) {
-		// cls
-		uint32_t* buf = screen::backbuffer->getdata();
-		draw::fillrect(buf, draw::rgb(0, 0, 0), 0, 0, screen::WIDTH, screen::HEIGHT);
+		uint32_t* scr = screen::backbuffer->getdata();  // get screen data
+		draw::fillrect(scr, draw::rgb(0, 0, 0), 0, 0, screen::WIDTH, screen::HEIGHT);  // cls
 
 		// draw some boxes
-		draw::fillrect(buf, draw::rgb(255, 0, 0), -5, -5, 40, 40);
-		draw::fillrect(buf, draw::rgb(0, 255, 0), 40, 40, 40, 40);
-		draw::fillrect(buf, draw::rgb(0, 0, 255), 80, 80, 40, 40);
+		draw::fillrect(scr, draw::rgb(255, 0, 0), -5, -5, 40, 40);
+		draw::fillrect(scr, draw::rgb(0, 255, 0), 40, 40, 40, 40);
+		draw::fillrect(scr, draw::rgb(0, 0, 255), 80, 80, 40, 40);
 
 		// draw sprite		
-		draw::blit(img, buf, posx, posy);
+		draw::blit(img, scr, posx, posy);
 		posx++;
 		posy++;
 
-		screen::paint();
+		if (screen::paint())
+			return 0;
 	}
 	
 	SDL_Delay(1000);
