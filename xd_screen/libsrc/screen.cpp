@@ -71,9 +71,9 @@ namespace screen {
 
 
 	int flip() {
-		SDL_RenderPresent(ren);
 		int rval = clearpoll();  // clear leftover SDL poll events before delay
-		// SDL_Delay(16);
+		SDL_RenderPresent(ren);
+		// SDL_Delay(16);  // vsync takes care of this
 		return rval;  // return 1 on window quit event
 	}
 
