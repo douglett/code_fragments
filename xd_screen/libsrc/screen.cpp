@@ -1,5 +1,6 @@
 #include <vector>
 #include <memory>
+#include <iostream>
 #include <SDL.h>
 #include "screen.h"
 
@@ -22,10 +23,19 @@ namespace screen {
 
 	int init() {
 		// setup SDL
-		SDL_Init(SDL_INIT_VIDEO);
-		SDL_CreateWindowAndRenderer(WIDTH * WIN_SCALE, HEIGHT * WIN_SCALE, 0, &win, &ren);
-		if (ren == NULL || win == NULL)
+		int init = SDL_Init(SDL_INIT_VIDEO);
+		win = SDL_CreateWindow( "xd",
+			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+			WIDTH * WIN_SCALE, HEIGHT * WIN_SCALE, 
+			0 );
+		ren = SDL_CreateRenderer( win, -1, 
+			SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
+		// error checking
+		if (init != 0 || win == NULL || ren == NULL) {
+			cerr << SDL_GetError() << endl;
 			return 1;
+		}
+		// initial state
 		SDL_RenderSetLogicalSize(ren, WIDTH, HEIGHT);
 		cls();
 		// setup screen backbuffer in first slot
@@ -63,7 +73,7 @@ namespace screen {
 	int flip() {
 		SDL_RenderPresent(ren);
 		int rval = clearpoll();  // clear leftover SDL poll events before delay
-		SDL_Delay(16);
+		// SDL_Delay(16);
 		return rval;  // return 1 on window quit event
 	}
 
