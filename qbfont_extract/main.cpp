@@ -18,13 +18,6 @@ int main() {
 	// show some info
 	printf("%d  %d  %d\n", s->w, s->h, s->pitch);
 	uint32_t* data = (uint32_t*)s->pixels;
-	
-	// for (int y = 0; y < s->h; y++) {
-	// 	for (int x = 0; x < s->w; x++)
-	// 		cout << ( data[ s->w * y + x ] == 0 ? ' ' : '#' );
-	// 	cout << endl;
-	// }
-	// cout << endl;
 
 	// create char buffer
 	int bufsize = s->w * s->h / 8;
@@ -43,15 +36,31 @@ int main() {
 	for (int i = 0; i < bufsize; i++) {
 		if (i % 16 == 0)
 			cout << endl;
-		cout << bitset<8>(c[i]);
+		auto b = bitset<8>(c[i]);
+		// cout << b;
+		string s = b.to_string<char, string::traits_type, string::allocator_type>();
+		replace(s.begin(), s.end(), '0', ' ');
+		cout << s;
 	}
 	cout << endl << endl;
 	
-	// show data in hex
+	// show data in hex v1
 	for (int i = 0; i < bufsize; i++) {
 		if (i % 16 == 0)
 			cout << endl;
-		printf( "%02x", c[i] );
+		printf( "%02x ", c[i] );
+		// printf( "%#04x, ", c[i] );
+	}
+	cout << endl << endl;
+
+	// show data in hex v2
+	for (int i = 0; i < bufsize; i += 4) {
+		if (i % (8*4) == 0)
+			cout << endl;
+		printf("0x");
+		for (int j = 0; j < 4; j++)
+			printf( "%02x", c[i+j] );
+		printf(", ");
 	}
 	cout << endl << endl;
 
