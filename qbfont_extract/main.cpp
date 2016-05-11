@@ -37,32 +37,30 @@ int main() {
 		if (i % 16 == 0)
 			cout << endl;
 		auto b = bitset<8>(c[i]);
-		// cout << b;
-		string s = b.to_string<char, string::traits_type, string::allocator_type>();
-		replace(s.begin(), s.end(), '0', ' ');
-		cout << s;
+		for (int j = 0; j < b.size(); j++)
+			cout << ( b[j] ? '#' : ' ' );
 	}
 	cout << endl << endl;
 	
 	// show data in hex v1
-	for (int i = 0; i < bufsize; i++) {
-		if (i % 16 == 0)
-			cout << endl;
-		printf( "%02x ", c[i] );
-		// printf( "%#04x, ", c[i] );
-	}
-	cout << endl << endl;
+	// for (int i = 0; i < bufsize; i++) {
+	// 	if (i % 16 == 0)
+	// 		cout << endl;
+	// 	printf( "%02x ", c[i] );
+	// 	// printf( "%#04x, ", c[i] );
+	// }
+	// cout << endl << endl;
 
-	// show data in hex v2
-	for (int i = 0; i < bufsize; i += 4) {
-		if (i % (8*4) == 0)
-			cout << endl;
-		printf("0x");
-		for (int j = 0; j < 4; j++)
-			printf( "%02x", c[i+j] );
-		printf(", ");
-	}
-	cout << endl << endl;
+	// // show data in hex v2
+	// for (int i = 0; i < bufsize; i += 4) {
+	// 	if (i % (8*4) == 0)
+	// 		cout << endl;
+	// 	printf("0x");
+	// 	for (int j = 0; j < 4; j++)
+	// 		printf( "%02x", c[i+j] );
+	// 	printf(", ");
+	// }
+	// cout << endl << endl;
 
 
 	SDL_UnlockSurface(s);
