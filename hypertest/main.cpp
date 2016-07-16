@@ -118,6 +118,25 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	// program step box
+	auto progv = xd::screen::makesprite(8*4*4+4, 10*12+4);
+	{
+		using namespace xd::draw;
+		progv->pos(dscreen->width(), dscreen->y);
+		auto dat = progv->getdata();
+		auto red = rgb(255, 0, 0);
+		auto gray = rgba(255, 255, 255, 40);
+		fillrect(dat, gray, 0, 0, 8*4+2, progv->height());
+		tracerect(dat, red, 0, 0, dat[0], dat[1]);
+		// xd::text::prints(dat, "aaaa", 2, 2, red);
+		// xd::text::prints(dat, "bbbb", 8*4+2, 2, rgb(0, 255, 0));
+		// xd::text::prints(dat, "cccc", 8*8+2, 2, rgb(0, 0, 255));
+		// xd::text::prints(dat, "dddd", 8*12+2, 2, rgb(255, 255, 0));
+		string s = hexnum(0);
+			s += hexnum(0); s += hexnum(0); s += hexnum(0);
+		xd::text::prints(dat, s, 2, 2, red);
+	}
+
 	// mainloop
 	while (!esc) {
 		if (xd::screen::paint())
