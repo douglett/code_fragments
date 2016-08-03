@@ -41,6 +41,10 @@ int main() {
 	int yoff = 0;
 	char c[4*8];
 	for (int i = 0; i < 256; i++) {
+		if (i > 0 && i % 64 == 0) {
+			xoff = 0;
+			yoff += 8;
+		}
 		
 		// make char sprite
 		for (int y = 0; y < 8; y++)
@@ -64,10 +68,6 @@ int main() {
 
 		// increment
 		xoff += 4;
-		if (i > 0 && i % 64 == 0) {
-			xoff = 0;
-			yoff += 8;
-		}
 	}
 
 	cout << endl << endl;
