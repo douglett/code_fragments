@@ -83,8 +83,9 @@ int extract2_rot() {
 		}
 
 		for (int j = 0; j < 8; j += 2)
-			printf("0x%02x%02x, ", c[j], c[j+1]);
-		printf("\n");
+			printf("0x%02x%02x,", c[j], c[j+1]);
+		if (test_display || i % 2 == 1) 
+			printf("\n");
 	}
 	
 	return 0;
