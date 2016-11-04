@@ -1,0 +1,5 @@
+; number test
+#define number 		[0-9]+
+#define math_cmd 	add|sub
+; macro test
+#macro  math_expr 	math_cmd number number
