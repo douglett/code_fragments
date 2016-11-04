@@ -11,8 +11,12 @@ const regex REG_DEFINE("#define", regex::icase);
 const regex REG_MACRO ("#macro",  regex::icase);
 const regex REG_IDENT ("[a-z][a-z0-9_-]*", regex::icase);
 const regex REG_INT   ("[-+]?[0-9]+");
-
-map<string, regex> deflist;
+struct deftype {
+	int type;
+	regex regex;
+	vector<string> vs;
+};
+map<string, deftype> deflist;
 
 
 //--- utilities ---
@@ -76,7 +80,7 @@ int parse_file(const string& fname) {
 				string mdef;
 				getline(ss, mdef);
 				chomp(mdef);
-				deflist[ident] = regex(mdef);
+				deflist[ident] = { .type = 0, .regex = regex(mdef) };
 				printf("    l%03d:  [%-15s]  [%s] \n", lineno, ident.c_str(), mdef.c_str());
 			}
 			// get define macro
@@ -89,6 +93,7 @@ int parse_file(const string& fname) {
 					}
 					vs.push_back(s);
 				}
+				deflist[ident] = { .type = 1, .vs = vs };
 				printf("    l%03d:  [%-15s]  [%d defines] \n", lineno, ident.c_str(), (int)vs.size());
 			}
 		} else {
