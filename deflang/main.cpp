@@ -163,7 +163,13 @@ int parse_input_line(int lineno, const string& ln) {
 		}
 	}
 	// 
-	if (en.size())
-		cout << en << endl;
+	if (!en.size()) {
+		fprintf(stderr, "expression not found : %03d \n", lineno);
+		return 1;
+	}
+	printf("    l%03d:  [%-15s]  [", lineno, en.c_str());
+	for (const auto& t : toklist)
+		printf("%s ", t.second.c_str());
+	printf("] \n");
 	return 0;
 }
