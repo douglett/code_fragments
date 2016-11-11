@@ -1,0 +1,12 @@
+#define test2 213
+
+
+:blah
+	SET A, 1
+:blah_2
+	SET A, 2
+	SET PC, end
+
+
+:end
+	SUB PC, 1

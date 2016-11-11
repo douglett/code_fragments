@@ -1,0 +1,13 @@
+#define test 213
+
+
+:Blah
+	SET A, 1
+:blah_1
+	SET A, 2
+	SET PC, end
+
+asd :a :b asdlkjhjldf :asd aaa
+
+:end
+	SUB PC, 1

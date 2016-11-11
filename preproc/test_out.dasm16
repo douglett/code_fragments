@@ -1,0 +1,13 @@
+#define test 213
+
+
+:__a9bd4_blah
+	SET A, 1
+:__a9bd4_blah_1
+	SET A, 2
+	SET PC, end
+
+asd :__a9bd4_a :__a9bd4_b asdlkjhjldf :__a9bd4_asd aaa
+
+:__a9bd4_end
+	SUB PC, 1
