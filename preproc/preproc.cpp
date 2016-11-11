@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <map>
 #include <regex>
 #include <fstream>
@@ -12,7 +13,7 @@ void chomp(string& s);
 int  is_meta(const string& s);
 string strhash(const string& s);
 int  regex_replace_cb(string& line, const regex& REG, void (*cb)(string& s));
-// func
+// member funcs
 void label_cb(string& s);
 // consts
 const regex REG_IDENT      ("[a-z][a-z0-9_-]*",      regex::icase);
@@ -24,28 +25,38 @@ string mpattern;
 
 
 
-int main() {
+int main(int argc, char** argv) {
+	// for (int i = 0; i < argc; i++)
+	// 	printf("%s\n", argv[i]);
 	vector<string> fnames = { "test1.dasm16", "test2.dasm16" };
 	ofstream ofs("test_out.dasm16");
 	// ostream& ofs = cout;
 	string s;
 	for (const auto& fn : fnames) {
 		ifstream ifs(fn);
+		// write header
+		ofs << "; " << endl;
+		ofs << "; ##############################" << endl;
+		ofs << "; #    " << left << setw(23) << fn << " #" << endl;
+		ofs << "; ##############################" << endl;
+		ofs << "; " << endl;
+		// 
 		int lineno = 0;
 		mpattern = ":__" + strhash(fn) + "_";
 		while (getline(ifs, s)) {
 			lineno++;
-			if (is_meta(s)) {
-				// parse_meta(s);  // save meta-command
-			} else { 
+			if (is_meta(s))
+				; // parse_meta(s);  // save meta-command
+			else 
 				regex_replace_cb(s, REG_LABEL, label_cb);  // mangle
-			}
 			ofs << s << endl;  // output
-			// cout << s << ( is_meta(s) ? "  (is_meta)" : "" ) << endl;  // show
 		}
 	}
 }
 
+
+
+//--- member funcs ---
 
 void label_cb(string& s) {
 	if (s[1] < 'A' || s[1] > 'Z')
