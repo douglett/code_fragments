@@ -11,44 +11,55 @@ void strtolower(string& s);
 void chomp(string& s);
 int  is_meta(const string& s);
 string strhash(const string& s);
-int replace_labels(string& line);
+int  replace_labels(string& line, const string& mpattern);
 // consts
 const regex REG_IDENT      ("[a-z][a-z0-9_-]*",      regex::icase);
 const regex REG_LABEL      (":[a-z_][a-z0-9_]*",     regex::icase);
 const regex REG_INT        ("[-+]?[0-9]+");
 // member
 map<string, string> deflist;
-string mpattern;
 
 
 
 int main() {
-	ifstream ifs("test1.dasm16");
+	vector<string> fnames = { "test1.dasm16", "test2.dasm16" };
 	ofstream ofs("test_out.dasm16");
-	string s;
-	int lineno = 0;
-	mpattern = ":__" + strhash("test1.dasm16") + "_";
-	while (getline(ifs, s)) {
-		lineno++;
-		replace_labels(s);  // mangle
-		ofs << s;  // output
-		if (!ifs.eof())  ofs << endl;  // manual end lines
-		cout << s << ( is_meta(s) ? "  (is_meta)" : "" ) << endl;  // show
+	// ostream& ofs = cout;
+	string s, mpattern;
+	for (const auto& fn : fnames) {
+		ifstream ifs(fn);
+		int lineno = 0;
+		mpattern = ":__" + strhash(fn) + "_";
+		while (getline(ifs, s)) {
+			lineno++;
+			if (is_meta(s)) {
+				// parse_meta(s);  // save meta-command
+			} else { 
+				replace_labels(s, mpattern);   // mangle
+			}
+			ofs << s;  // output
+			if (!ifs.eof())  ofs << endl;  // manual end lines
+			// cout << s << ( is_meta(s) ? "  (is_meta)" : "" ) << endl;  // show
+		}
 	}
 }
 
 
-int replace_labels(string& line) {
+int replace_labels(string& line, const string& mpattern) {
 	int count = 0;
 	smatch match;
 	auto it = line.cbegin();
+	string s;
 	while (regex_search(it, line.cend(), match, REG_LABEL)) {
 		count++;
 		auto& tok = match[0];
 		int pos = distance(line.cbegin(), tok.first);
-		string s = mpattern + tok.str().substr(1);
-		// printf("-- %d  %s  %s  %d \n", pos, tok.str().c_str(), s.c_str(), (int)s.length());
-		line.replace(tok.first, tok.second, s);
+		s = tok.str();
+		if (s[1] < 'A' || s[1] > 'Z') {
+			// printf("-- %d  %s  %s  %d \n", pos, tok.str().c_str(), s.c_str(), (int)s.length());
+			s = mpattern + s.substr(1);
+			line.replace(tok.first, tok.second, s);
+		}
 		it = line.cbegin() + pos + s.length();
 	}
 	return count;

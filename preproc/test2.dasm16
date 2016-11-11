@@ -1,10 +1,10 @@
-#define test2 213
+#define test2 200
 
 
 :blah
 	SET A, 1
 :blah_2
-	SET A, 2
+	SET A, test2
 	SET PC, end
 
 
