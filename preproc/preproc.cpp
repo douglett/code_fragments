@@ -56,11 +56,13 @@ int main(int argc, char** argv) {
 		mpattern = ":__" + strhash(fn) + "_";
 		while (getline(ifs, s)) {
 			lineno++;
-			if (is_meta(s))
+			if (is_meta(s)) {
 				; // parse_meta(s);  // save meta-command
-			else 
+				ofs << s << endl;  // output
+			} else {
 				regex_replace_cb(s, REG_LABEL, label_cb);  // mangle
-			ofs << s << endl;  // output
+				ofs << s << endl;  // output
+			}
 		}
 	}
 }
