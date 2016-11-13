@@ -3,6 +3,7 @@
 #include <map>
 #include <regex>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -15,10 +16,12 @@ string strhash(const string& s);
 int  regex_replace_cb(string& line, const regex& REG, void (*cb)(string& s));
 // member funcs
 void label_cb(string& s);
+string exec(const string& cmd);
 // consts
-const regex REG_IDENT      ("[a-z][a-z0-9_-]*",      regex::icase);
-const regex REG_LABEL      (":[a-z_][a-z0-9_]*",     regex::icase);
-const regex REG_INT        ("[-+]?[0-9]+");
+const regex  REG_IDENT     ("[a-z][a-z0-9_-]*",      regex::icase);
+const regex  REG_LABEL     (":[a-z_][a-z0-9_]*",     regex::icase);
+const regex  REG_INT       ("[-+]?[0-9]+");
+const string OUTPUT_DEF    ("_output.dasm16");
 // member
 map<string, string> deflist;
 string mpattern;
@@ -26,12 +29,20 @@ string mpattern;
 
 
 int main(int argc, char** argv) {
-	// for (int i = 0; i < argc; i++)
-	// 	printf("%s\n", argv[i]);
-	vector<string> fnames = { "test1.dasm16", "test2.dasm16" };
-	ofstream ofs("test_out.dasm16");
-	// ostream& ofs = cout;
+	// figure out files to compile
 	string s;
+	vector<string> fnames;
+	stringstream ss(exec("ls *.dasm16"));
+	printf("compiling:\n");
+	while (ss >> s) {
+		if (s.length() >= 1 && s[0] == '_')  continue;  // ignore underscore files
+		fnames.push_back(s);
+		printf("    [%s]\n", s.c_str());
+	}
+	printf("output:\n");
+	printf("    [%s]\n", OUTPUT_DEF.c_str());
+	// do the work
+	ofstream ofs(OUTPUT_DEF);
 	for (const auto& fn : fnames) {
 		ifstream ifs(fn);
 		// write header
@@ -61,6 +72,19 @@ int main(int argc, char** argv) {
 void label_cb(string& s) {
 	if (s[1] < 'A' || s[1] > 'Z')
 		s = mpattern + s.substr(1);
+}
+
+
+string exec(const string& cmd) {
+    char buffer[128];
+    string result = "";
+    shared_ptr<FILE> pipe(popen(cmd.c_str(), "r"), pclose);
+    if (!pipe) throw runtime_error("popen() failed!");
+    while (!feof(pipe.get())) {
+        if (fgets(buffer, 128, pipe.get()) != NULL)
+            result += buffer;
+    }
+    return result;
 }
 
 

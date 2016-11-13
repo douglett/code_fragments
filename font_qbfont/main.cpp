@@ -7,8 +7,6 @@ using namespace std;
 
 int extract1();
 int extract2();
-int extract2_rot();
-const int test_display = 0;
 SDL_Surface* s = NULL;
 uint32_t* data = NULL;
 
@@ -26,8 +24,7 @@ int main() {
 	data = (uint32_t*)s->pixels;
 
 	// extract1();
-	// extract2();
-	extract2_rot();
+	extract2();
 
 	SDL_UnlockSurface(s);
 	SDL_Quit();
@@ -35,57 +32,44 @@ int main() {
 
 
 int extract2() {
+	static const int 
+		rotate = 0,
+		test_display = 1;
+
 	int pitch = s->w;
 	int start = 0, last = 256;
-	if (test_display)  start = 3,  last = 7;
+	// if (test_display)  start = 'a',  last = 'e';
 	
 	for (int i = start; i < last; i++) {
-		int yoff = (i * 8) / pitch;
+		int yoff = (i * 8) / pitch * 8;
 		int xoff = (i * 8) % pitch;
 		uint8_t c[8] = { 0 };
 
-		for (int y = 0; y < 8; y++) {
+		if (rotate)
+			// rotated 90 degrees right
 			for (int x = 0; x < 8; x++) {
-				int v = !!data[ (yoff+y) * pitch + xoff + x ];
-				c[y] = c[y] << 1 | v;
-				if (test_display)  cout << ( v ? '#' : ' ' );
+				for (int y = 7; y >= 0; y--) {
+					int v = !!data[ (yoff+y) * pitch + xoff + x ];
+					c[x] = c[x] << 1 | v;
+					if (test_display)  cout << ( v ? '#' : ' ' );
+				}
+				if (test_display)  cout << endl;
 			}
-			if (test_display)  cout << endl;
-		}
-
-		for (int j = 0; j < 8; j += 2)
-			printf("0x%02x%02x, ", c[j], c[j+1]);
-		printf("\n");
-	}
-	
-	return 0;
-}
-
-
-// right rotated
-int extract2_rot() {
-	int pitch = s->w;
-	int start = 0, last = 256;
-	if (test_display)  start = 3,  last = 7;
-	
-	for (int i = start; i < last; i++) {
-		int yoff = (i * 8) / pitch;
-		int xoff = (i * 8) % pitch;
-		uint8_t c[8] = { 0 };
-
-		for (int x = 0; x < 8; x++) {
-			for (int y = 7; y >= 0; y--) {
-				int v = !!data[ (yoff+y) * pitch + xoff + x ];
-				c[x] = c[x] << 1 | v;
-				if (test_display)  cout << ( v ? '#' : ' ' );
+		else
+			// normal
+			for (int y = 0; y < 8; y++) {
+				for (int x = 0; x < 8; x++) {
+					int v = !!data[ (yoff+y) * pitch + xoff + x ];
+					c[y] = c[y] << 1 | v;
+					if (test_display)  cout << ( v ? '#' : ' ' );
+				}
+				if (test_display)  cout << endl;
 			}
-			if (test_display)  cout << endl;
-		}
 
 		for (int j = 0; j < 8; j += 2)
 			printf("0x%02x%02x,", c[j], c[j+1]);
-		if (test_display || i % 2 == 1) 
-			printf("\n");
+		// printf( i % 2 == 1 ? "\n" : " " );
+		printf("\n");
 	}
 	
 	return 0;
