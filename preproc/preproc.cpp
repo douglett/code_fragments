@@ -10,14 +10,13 @@ using namespace std;
 
 // consts
 // const regex  REG_INT       ("[-+]?[0-9]+");
-// const regex  REG_IDENT     ("[a-z][a-z0-9_-]*",    regex::icase);
+static const regex  REG_IDENT     ("[a-z_][a-z0-9_]*",                regex::icase);
 static const regex  REG_LABEL     (":[a-z_][a-z0-9_]*",               regex::icase);
 static const regex  REG_INCLUDE   ("^\\s*#include\\s+\"(.+)\"\\s*$",  regex::icase);
 static const string OUTPUT_DEF    ("_output.dasm16");
-// members
-// map<string, string> deflist;
+// member vars
 static string mpattern;
-
+static vector<string> labels;
 
 
 //--- utilities ---
@@ -96,12 +95,6 @@ static int regex_replace_cb(string& line, const regex& REG, void (*cb)(string& s
 
 //--- member funcs ---
 
-static void label_cb(string& s) {
-	if (s[1] < 'A' || s[1] > 'Z')
-		s = mpattern + s.substr(1);
-}
-
-
 static int get_fnames(vector<string>& fnames, char type) {
 	// all dasm16 files
 	if (type == 'a') {
@@ -136,6 +129,26 @@ static int get_fnames(vector<string>& fnames, char type) {
 }
 
 
+// static void label_cb(string& s) {
+// 	if (s[1] < 'A' || s[1] > 'Z')
+// 		s = mpattern + s.substr(1);
+// }
+
+static void label_save_cb(string& s) {
+	// cout << "label: " << s << endl;
+	if (s[1] < 'A' || s[1] > 'Z')
+		labels.push_back(s.substr(1));
+}
+static void ident_replace_cb(string& s) {
+	// cout << "  ident: " << s << endl;
+	for (const auto& l : labels)
+		if (s == l) {
+			s = mpattern + s;
+			return;
+		}
+}
+
+
 
 //--- external funcs ---
 
@@ -154,22 +167,28 @@ int preproc() {
 	string s;
 	for (const auto& fn : fnames) {
 		ifstream ifs(fn);
+		// find and save all labels
+		labels.erase(labels.begin(), labels.end());
+		while (getline(ifs, s))
+			regex_replace_cb(s, REG_LABEL, label_save_cb);
+		ifs.clear(), ifs.seekg(0, ios::beg);  // reset
 		// write header
 		ofs << "; " << endl;
-		ofs << "; ##############################" << endl;
-		ofs << "; #    " << left << setw(23) << fn << " #" << endl;
-		ofs << "; ##############################" << endl;
+		ofs << "; ########################################" << endl;
+		ofs << "; #    " << left << setw(40-7) << (fn+"  ["+strhash(fn)+"]") << " #" << endl;
+		ofs << "; ########################################" << endl;
 		ofs << "; " << endl;
 		// 
 		int lineno = 0;
-		mpattern = ":__" + strhash(fn) + "_";
+		mpattern = "__" + strhash(fn) + "_";
 		while (getline(ifs, s)) {
 			lineno++;
 			if (is_meta(s)) {
 				; // parse_meta(s);  // save meta-command
 				ofs << s << endl;  // output
 			} else {
-				regex_replace_cb(s, REG_LABEL, label_cb);  // mangle
+				// regex_replace_cb(s, REG_LABEL, label_cb);  // mangle
+				regex_replace_cb(s, REG_IDENT, ident_replace_cb);  // mangle
 				ofs << s << endl;  // output
 			}
 		}
