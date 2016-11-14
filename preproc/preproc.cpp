@@ -56,7 +56,7 @@ static int is_meta(const string& s) {
 static string strhash(const string& s) {
 	static hash<string> mhash;
 	static char cs[10];
-	int i = mhash("s");
+	int i = mhash(s);
 	snprintf(cs, 6, "%0x", i);
 	return cs;
 }
@@ -146,7 +146,7 @@ int preproc() {
 	// show files
 	printf("compiling:\n");
 	for (const auto& f : fnames)
-		printf("    [%s]\n", f.c_str());
+		printf("    [%s]  [%s]\n", f.c_str(), strhash(f).c_str());
 	printf("output:\n");
 	printf("    [%s]\n", OUTPUT_DEF.c_str());
 	// do the work
