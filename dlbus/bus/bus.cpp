@@ -109,20 +109,32 @@ int main() {
 	printf("BUS_plugin started...\n");
 
 	// load plugin
-	Plugin::defpath = "../dlib/";
+	Plugin::defpath = "../";
 	Plugin::load("libdlib.so");
 	auto* dlib = Plugin::find("libdlib.so");
+	Plugin::load("libdmath.so");
+	auto* dmath = Plugin::find("libdmath.so");
 
 	// create pipe
 	const uint BUFS = 100;
 	char s[BUFS] = "test 123";
 	PIPE_t mpipe = { BUFS, s };
 
-	// send a message and get result
+	// send a message to dlib and get result
 	dlib->PIPE_in(mpipe);
 	while (dlib->PIPE_sig() > 0) {
 		PIPE_t pp = dlib->PIPE_out();
 		cout << pp.c << endl;
+	}
+
+	// send a message to dmath and get result
+	dmath->PIPE_in({ 8, "[double]" });
+	int n = 8;
+	dmath->PIPE_in({ sizeof(int), (const char*) &n });
+	while (dmath->PIPE_sig() > 0) {
+		PIPE_t pp = dmath->PIPE_out();
+		int n2 = *((int*) pp.c);
+		cout << "result: " << n2 << endl;
 	}
 
 	Plugin::quit();
