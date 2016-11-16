@@ -1,8 +1,10 @@
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <map>
+#include <vector>
 #include <dlfcn.h>
-#include "pipe.h"
+#include "../pipe.h"
 
 using namespace std;
 
@@ -61,10 +63,14 @@ void Plugin::close() {
 }
 
 
+vector<Plugin> pluglist;
+
 
 int main() {
 	printf("BUS_plugin started...\n");
-	Plugin p("libdlib.so");
+	Plugin p("../dlib/libdlib.so");
+	string s = "test 123";
+	p.PIPE_in({ s.size()+1, s.c_str() });
 	PIPE_t pp = p.PIPE_out();
 	cout << pp.c << endl;
 
