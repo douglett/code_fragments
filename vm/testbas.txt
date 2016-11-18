@@ -1,9 +1,0 @@
-dim a, b
-
-add 10 12
-set a
-
-if = a 1
-	print "hello"
-end if
-
