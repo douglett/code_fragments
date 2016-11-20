@@ -14,7 +14,7 @@ const regex REG_IDENT ("[a-z][a-z0-9_-]*", regex::icase);
 const regex REG_INT   ("[-+]?[0-9]+");
 struct deftype {
 	char type;
-	regex regex;
+	regex reg;
 	vector<string> vs;
 };
 map<string, deftype> deflist;
@@ -103,7 +103,7 @@ int parse_deflist_line(int lineno, const string& ln) {
 			string mdef;
 			getline(ss, mdef);
 			chomp(mdef);
-			deflist[ident] = { .type = 'd', .regex = regex(mdef) };
+			deflist[ident] = { .type = 'd', .reg = regex(mdef) };
 			printf("    l%03d:  [%-15s]  [%s] \n", lineno, ident.c_str(), mdef.c_str());
 		}
 		// get define expression
@@ -136,7 +136,7 @@ int parse_input_line(int lineno, const string& ln) {
 	while (ss >> tok) {
 		int found = 0;
 		for (const auto& d : deflist)
-			if (d.second.type == 'd' && regex_match(tok, d.second.regex)) {
+			if (d.second.type == 'd' && regex_match(tok, d.second.reg)) {
 				toklist.push_back({ d.first, tok });
 				found = 1;
 				break;
