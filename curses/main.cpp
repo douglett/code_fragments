@@ -16,7 +16,7 @@ namespace scr {
 	static const int  MAP_W = 30,  MAP_H = 10;
 	static int  width = 10,  height = 10;
 	static WINDOW  *mainwin = NULL,  *mapwin = NULL;
-	string inputstr;
+	string istr;
 
 
 	void init() {
@@ -29,12 +29,15 @@ namespace scr {
 		init_pair(COL_HEADBAR, COLOR_BLACK, COLOR_BLUE);
 		getmaxyx(stdscr, height, width);
 		// make windows
-		mainwin  = newwin((height - 3), (width - MAP_W - 3), 2, 1);
-		mapwin   = newwin(MAP_H, MAP_W, 2, (width - MAP_W - 1));
+		int main_h = height - 3;
+		int main_w = width - MAP_W - 3;
+		int main_top = 2;
+		mainwin  = newwin(main_h, main_w, main_top, 1);
+		mapwin   = newwin(MAP_H, MAP_W, main_top, main_w + 2);
 		repaint();
 	}
 
-	void border_win(const WINDOW* win, const string& title = "") {
+	static void paint_winborder(const WINDOW* win, const string& title = "") {
 		int x, y, w, h;
 		getbegyx(win, y, x);
 		getmaxyx(win, h, w);
@@ -53,17 +56,39 @@ namespace scr {
 		// main window
 		mvprintw(0, 2, "game title");
 		mvchgat(0, 0, -1, 0, 1, NULL);
-		border_win(mainwin);
-		border_win(mapwin);
+		paint_winborder(mainwin);
+		paint_winborder(mapwin);
 		refresh();
-		// main sub-window
-		// box(mainwin, 0, 0);
-		wprintw(mainwin, "hello world");
-		wrefresh(mainwin);
 		// map sub-window
 		// box(mapwin, 0, 0);
 		wprintw(mapwin, "hello world 1234");
 		wrefresh(mapwin);
+		// main sub-window
+		// box(mainwin, 0, 0);
+		wprintw(mainwin, "start:\n");
+		wrefresh(mainwin);
+	}
+
+	int docmd() {
+		wprintw(mainwin, "you typed: %s\n", istr.c_str());
+		wrefresh(mainwin);
+		istr = "";
+	}
+
+	int dotype() {
+		int c = getch();
+		if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == ' ') {
+			istr += c;
+			wprintw(mainwin, "%c", c);
+			wrefresh(mainwin);
+		}
+		switch (c) {
+		case 127:
+		case '\b':  istr.pop_back();  wprintw(mainwin, "\b \b");  wrefresh(mainwin);  break;
+		case '\n':  wprintw(mainwin, "\n");  wrefresh(mainwin);  docmd();  break;
+		case '\e':  return 1;
+		}
+		return 0;
 	}
 
 	void quit() {
@@ -79,9 +104,7 @@ int main() {
 	scr::init();
 
 	while (true) {
-		int c = getch();
-		scr::inputstr += c;
-		if (c == 'q')  break;
+		if (scr::dotype())  break;
 	}
 
 	scr::quit();
