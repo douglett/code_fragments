@@ -6,7 +6,7 @@
 using namespace std;
 
 
-namespace position {
+namespace loc {
 	
 	static vector<string> map = {
 		"..   ",
@@ -35,6 +35,15 @@ namespace position {
 		return 0;
 	}
 
+	int move(char c) {
+		if (!test_exit(c))  return 0;
+		if (c == 'n')  { y--;  return 1; }
+		if (c == 's')  { y++;  return 1; }
+		if (c == 'w')  { x--;  return 1; }
+		if (c == 'e')  { x++;  return 1; }
+		return 0;
+	}
+
 	string exits() {
 		vector<string> e;
 		if (test_exit('n'))  e.push_back("north");
@@ -44,7 +53,7 @@ namespace position {
 		return join(e);
 	}
 
-} // end position
+} // end loc
 
 
 

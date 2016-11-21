@@ -42,16 +42,20 @@ namespace interpret {
 				"    e - east\n"
 				"    w - west" );
 		else if (cmd == "l" || cmd == "look")
-			scr::println("exits are: " + position::exits());
-		else if (cmd == "n")
-			scr::println("you walked north.");
-		else if (cmd == "s")
-			scr::println("you walked south.");
-		else if (cmd == "e")
-			scr::println("you walked east.");
-		else if (cmd == "w")
-			scr::println("you walked west.");
-		else
+			scr::println("exits are: " + loc::exits());
+		else if (cmd == "n") {
+			if (loc::move('n'))  scr::println("you walked north.");
+			else  scr::println("north blocked.");
+		} else if (cmd == "s") {
+			if (loc::move('s'))  scr::println("you walked south.");
+			else  scr::println("south blocked.");
+		} else if (cmd == "e") {
+			if (loc::move('e'))  scr::println("you walked east.");
+			else  scr::println("east blocked.");
+		} else if (cmd == "w") {
+			if (loc::move('w'))  scr::println("you walked west.");
+			else  scr::println("west blocked.");
+		} else
 			scr::println("you typed: " + istr);
 		return 0;
 	}

@@ -16,7 +16,8 @@ namespace interpret {
 	int  run_command(const std::string& istr);
 } // end interpret
 
-namespace position {
+namespace loc {
 	int  test_exit(char c);
+	int  move(char c);
 	std::string exits();
-} // end position
+} // end loc
