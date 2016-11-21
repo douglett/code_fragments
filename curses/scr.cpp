@@ -1,20 +1,9 @@
-#include <iostream>
+#include <string>
 #include <vector>
-#include <sstream>
 #include <ncurses.h>
-
-#include "scr.h"
+#include "game.h"
 
 using namespace std;
-
-
-// helpers
-static string tolower(const string& s) {
-	string s2 = s;
-	for (auto& c : s2)
-		c = tolower(c);
-	return s2;
-}
 
 
 namespace scr {
@@ -28,7 +17,7 @@ namespace scr {
 	static const int  MAP_W = 30,  MAP_H = 10,  HISTORY_MAX = 10;
 	static int  width = 10,  height = 10;
 	static WINDOW  *mainwin = NULL,  *mapwin = NULL;
-	static vector<string>  history,  cmdlist;
+	static vector<string>  history;
 	static string  istr;
 
 
@@ -100,6 +89,10 @@ namespace scr {
 		wrefresh(mapwin);
 	}
 
+	void println(const string& s) {
+		wprintw(mainwin, "%s\n", s.c_str());
+	}
+
 	int get_input() {
 		int c = getch();
 		switch (c) {
@@ -121,36 +114,13 @@ namespace scr {
 	int end_input() {
 		if (istr.length()) {
 			history.push_back(istr);
-			stringstream ss(tolower(istr));
-			string s;
-			while (ss >> s)  cmdlist.push_back(s);
 			if (history.size() > HISTORY_MAX)  history.erase(history.begin());
-			if (run_command())  return 1;
+			if (interpret::run_command(istr))  return 1;
+			istr = "";  // clear input state
 		}
-		// clear input state
-		cmdlist.erase(cmdlist.begin(), cmdlist.end());
-		istr = "";
 		// show command prompt
 		wprintw(mainwin, "$> ");
 		wrefresh(mainwin);
-		return 0;
-	}
-
-	int run_command() {
-		if (cmdlist.size() == 0)  return 0;
-		string cmd = cmdlist[0];
-		if (cmd == "quit" || cmd == "exit" || cmd.substr(0, 2) == ":q")
-			return 1;
-		else if (cmd == "n")
-			wprintw(mainwin, "you walked north.\n");
-		else if (cmd == "s")
-			wprintw(mainwin, "you walked south.\n");
-		else if (cmd == "e")
-			wprintw(mainwin, "you walked east.\n");
-		else if (cmd == "w")
-			wprintw(mainwin, "you walked west.\n");
-		else
-			wprintw(mainwin, "you typed: %s\n", istr.c_str());
 		return 0;
 	}
 
