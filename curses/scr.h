@@ -1,8 +1,5 @@
 #pragma once
 
-#include <string>
-#include <vector>
-
 namespace scr {
 	void init();
 	void quit();
@@ -10,5 +7,5 @@ namespace scr {
 	void repaint_map();
 	int  get_input();
 	int  end_input();
-	int  run_command(std::vector<std::string>& vs);
+	int  run_command();
 } // end scr

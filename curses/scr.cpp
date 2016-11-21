@@ -9,9 +9,11 @@ using namespace std;
 
 
 // helpers
-static void tolower(string& s) {
-	for (auto& c : s)
+static string tolower(const string& s) {
+	string s2 = s;
+	for (auto& c : s2)
 		c = tolower(c);
+	return s2;
 }
 
 
@@ -26,8 +28,8 @@ namespace scr {
 	static const int  MAP_W = 30,  MAP_H = 10,  HISTORY_MAX = 10;
 	static int  width = 10,  height = 10;
 	static WINDOW  *mainwin = NULL,  *mapwin = NULL;
-	vector<string> history;
-	string istr;
+	static vector<string>  history,  cmdlist;
+	static string  istr;
 
 
 	void init() {
@@ -118,33 +120,34 @@ namespace scr {
 
 	int end_input() {
 		if (istr.length()) {
-			tolower(istr);
-			stringstream ss(istr);
+			history.push_back(istr);
+			stringstream ss(tolower(istr));
 			string s;
-			vector<string> vs;
-			while (ss >> s)  vs.push_back(s);
-			history.push_back(s);
+			while (ss >> s)  cmdlist.push_back(s);
 			if (history.size() > HISTORY_MAX)  history.erase(history.begin());
-			if (run_command(vs))  return 1;
-			istr = "";
+			if (run_command())  return 1;
 		}
+		// clear input state
+		cmdlist.erase(cmdlist.begin(), cmdlist.end());
+		istr = "";
+		// show command prompt
 		wprintw(mainwin, "$> ");
 		wrefresh(mainwin);
 		return 0;
 	}
 
-	int run_command(vector<string>& vs) {
-		if (vs.size() == 0)  
-			return 0;
-		else if (vs[0] == "quit" || vs[0] == "exit" || vs[0].substr(0, 2) == ":q")
+	int run_command() {
+		if (cmdlist.size() == 0)  return 0;
+		string cmd = cmdlist[0];
+		if (cmd == "quit" || cmd == "exit" || cmd.substr(0, 2) == ":q")
 			return 1;
-		else if (vs[0] == "n")
+		else if (cmd == "n")
 			wprintw(mainwin, "you walked north.\n");
-		else if (vs[0] == "s")
+		else if (cmd == "s")
 			wprintw(mainwin, "you walked south.\n");
-		else if (vs[0] == "e")
+		else if (cmd == "e")
 			wprintw(mainwin, "you walked east.\n");
-		else if (vs[0] == "w")
+		else if (cmd == "w")
 			wprintw(mainwin, "you walked west.\n");
 		else
 			wprintw(mainwin, "you typed: %s\n", istr.c_str());
