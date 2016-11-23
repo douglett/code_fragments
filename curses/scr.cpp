@@ -65,7 +65,7 @@ namespace scr {
 
 	void repaint() {
 		// main window
-		mvprintw(0, 2, ":game title");
+		mvprintw(0, 2, "SPUD v0.-1");
 		mvchgat(0, 0, -1, 0, COL_TITLEBAR, NULL);
 		paint_winborder(mainwin);
 		paint_winborder(mapwin, "map");

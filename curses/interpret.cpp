@@ -65,6 +65,9 @@ namespace interpret {
 			else  scr::println("west blocked.");
 			scr::repaint_map();
 			loc::show_thingums();
+		} else if (cmd == "win") {
+			scr::println("You win! Or not.");
+			loc::show_thingums();
 		} else
 			scr::println("you typed: " + istr);
 		
