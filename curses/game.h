@@ -19,5 +19,6 @@ namespace interpret {
 namespace loc {
 	int  test_exit(char c);
 	int  move(char c);
+	std::string submap(int h, int w);
 	std::string exits();
 } // end loc

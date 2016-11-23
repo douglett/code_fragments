@@ -14,7 +14,7 @@ namespace scr {
 		COL_HEADBAR
 	};
 
-	static const int  MAP_W = 30,  MAP_H = 10,  HISTORY_MAX = 10;
+	static const int  MAP_W = 30,  MAP_H = 9,  HISTORY_MAX = 10;
 	static int  width = 10,  height = 10;
 	static WINDOW  *mainwin = NULL,  *mapwin = NULL;
 	static vector<string>  history;
@@ -27,9 +27,9 @@ namespace scr {
 		keypad(stdscr, TRUE);
 		//scrollok(stdscr, true);	
 		start_color();
-		init_pair(COL_BAR, COLOR_BLACK, COLOR_WHITE);
-		init_pair(COL_TITLEBAR, COLOR_BLACK, COLOR_GREEN);
-		init_pair(COL_HEADBAR, COLOR_BLACK, COLOR_BLUE);
+		init_pair(COL_BAR,       COLOR_BLACK, COLOR_WHITE);
+		init_pair(COL_TITLEBAR,  COLOR_BLACK, 8);
+		init_pair(COL_HEADBAR,   COLOR_BLACK, COLOR_BLUE);
 		getmaxyx(stdscr, height, width);
 		// make windows
 		int main_top = 2;
@@ -77,20 +77,25 @@ namespace scr {
 	}
 
 	void repaint_map() {
-		// box(mapwin, 0, 0);
-		// wprintw(mapwin, "hello world 1234");
-		// wmove(mapwin, 1, 0);
-		int x = 9, y = 2;
-		mvwprintw(mapwin, y++, x, "  ##  ##  ");
-		mvwprintw(mapwin, y++, x, "####  ####");
-		mvwprintw(mapwin, y++, x, "    @@    ");
-		mvwprintw(mapwin, y++, x, "####  ####");
-		mvwprintw(mapwin, y++, x, "  ##  ##  ");
+		int  w = 9,  h = 9;
+		string map = loc::submap(w, h);
+		for (int y = 0; y < h; y++)
+			for (int x = 0; x < w; x++) {
+				int col = 0;
+				switch (map[y*w+x]) {
+				case '.':  col = COL_BAR;  break;
+				default:   col = COL_TITLEBAR;  break;
+				}
+				wattron  (mapwin, COLOR_PAIR(col));
+				mvwprintw(mapwin, y, 6 + x*2, ( y == h/2 && x == w/2 ? "@@" : "  " ));
+				wattroff (mapwin, COLOR_PAIR(col));
+			}
 		wrefresh(mapwin);
 	}
 
 	void println(const string& s) {
 		wprintw(mainwin, "%s\n", s.c_str());
+		wrefresh(mainwin);
 	}
 
 	int get_input() {

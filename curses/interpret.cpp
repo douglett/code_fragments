@@ -41,9 +41,10 @@ namespace interpret {
 				"    s - south\n"
 				"    e - east\n"
 				"    w - west" );
-		else if (cmd == "l" || cmd == "look")
+		else if (cmd == "l" || cmd == "look") {
 			scr::println("exits are: " + loc::exits());
-		else if (cmd == "n") {
+			scr::repaint_map();
+		} else if (cmd == "n") {
 			if (loc::move('n'))  scr::println("you walked north.");
 			else  scr::println("north blocked.");
 		} else if (cmd == "s") {
