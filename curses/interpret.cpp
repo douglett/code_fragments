@@ -44,22 +44,27 @@ namespace interpret {
 		else if (cmd == "l" || cmd == "look") {
 			scr::println("exits are: " + loc::exits());
 			scr::repaint_map();
+			loc::show_thingums();
 		} else if (cmd == "n") {
 			if (loc::move('n'))  scr::println("you walked north.");
 			else  scr::println("north blocked.");
+			loc::show_thingums();
 			scr::repaint_map();
 		} else if (cmd == "s") {
 			if (loc::move('s'))  scr::println("you walked south.");
 			else  scr::println("south blocked.");
 			scr::repaint_map();
+			loc::show_thingums();
 		} else if (cmd == "e") {
 			if (loc::move('e'))  scr::println("you walked east.");
 			else  scr::println("east blocked.");
 			scr::repaint_map();
+			loc::show_thingums();
 		} else if (cmd == "w") {
 			if (loc::move('w'))  scr::println("you walked west.");
 			else  scr::println("west blocked.");
 			scr::repaint_map();
+			loc::show_thingums();
 		} else
 			scr::println("you typed: " + istr);
 		

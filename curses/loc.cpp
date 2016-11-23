@@ -19,14 +19,30 @@ namespace loc {
 	
 	static vector<shared_ptr<Thingum>> thingums;
 	
+	static int  xpos = 0,  ypos = 0;
+	
 	void setup_thingums() {
 		thingums.push_back(make_shared<Wizard>());
 	}
 
+	shared_ptr<Thingum> get_thingum_at(int x, int y) {
+		for (auto t : thingums) {
+			if (t->xpos == x && t->ypos == y) {
+				return t;
+			}
+		}
+		return NULL;
+	}
 
-	
-	static int  xpos = 0,  ypos = 0;
+	void show_thingums() {
+		shared_ptr<Thingum> t = get_thingum_at(xpos, ypos);
+		if (t == NULL) {
+			return;
+		}
 
+		scr::println(t->name + " is here.");
+
+	}
 	
 	
 	static string join(const vector<string>& vs, const string& glue = ", ") {

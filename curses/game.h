@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 namespace scr {
 	void init();
@@ -16,12 +17,6 @@ namespace interpret {
 	int  run_command(const std::string& istr);
 } // end interpret
 
-namespace loc {
-	int  test_exit(char c);
-	int  move(char c);
-	std::string submap(int h, int w);
-	std::string exits();
-} // end loc
 
 class Thingum {
 private:
@@ -35,6 +30,19 @@ public:
 class Wizard: public Thingum {
 private:
 public:
-	std::string name = "Floogleflib... the Wizard";
-	std::string description = "A wizard.";
+	Wizard() {	
+		name = "Floogleflib... the Wizard";
+		description = "A wizard.";
+	}
 };
+
+namespace loc {
+	void setup_thingums();
+	std::shared_ptr<Thingum> get_thingums_at();
+	void show_thingums();
+	int  test_exit(char c);
+	int  move(char c);
+	std::string submap(int h, int w);
+	std::string exits();
+} // end loc
+

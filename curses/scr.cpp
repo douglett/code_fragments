@@ -39,7 +39,10 @@ namespace scr {
 		scrollok(mainwin, true);
 		mapwin   = newwin(MAP_H, MAP_W, main_top, main_w + 2);
 		repaint();
-	}
+		loc::setup_thingums();
+		interpret::run_command("l");
+		end_input();
+}
 
 	static void paint_winborder(const WINDOW* win, const string& title = "") {
 		int x, y, w, h;
@@ -71,9 +74,7 @@ namespace scr {
 		repaint_map();
 		// main sub-window
 		// box(mainwin, 0, 0);
-		wprintw(mainwin, "start:\n");
 		wrefresh(mainwin);
-		end_input();
 	}
 
 	void repaint_map() {
