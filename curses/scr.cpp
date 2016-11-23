@@ -34,7 +34,7 @@ namespace scr {
 		// make windows
 		int main_top = 2;
 		int main_h = (height - 1) - main_top;
-		int main_w = (width - 1) - (MAP_W - 1) - 1;
+		int main_w = (width - 1) - (MAP_W - 1) - 3;
 		mainwin  = newwin(main_h, main_w, main_top, 1);
 		scrollok(mainwin, true);
 		mapwin   = newwin(MAP_H, MAP_W, main_top, main_w + 2);
