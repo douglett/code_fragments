@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <memory>
 #include "game.h"
 
 using namespace std;
@@ -9,14 +10,25 @@ using namespace std;
 namespace loc {
 	
 	static vector<string> map = {
-		"..   ",
-		"..   ",
+		"..... ",
+		".. . ",
 		".....",
-		" .   ",
-		" .   "
+		" . . ",
+		" ... "
 	};
+	
+	static vector<shared_ptr<Thingum>> thingums;
+	
+	void setup_thingums() {
+		thingums.push_back(make_shared<Wizard>());
+	}
+
+
+	
 	static int  xpos = 0,  ypos = 0;
 
+	
+	
 	static string join(const vector<string>& vs, const string& glue = ", ") {
 		int started = 0;
 		string str;
@@ -31,7 +43,7 @@ namespace loc {
 		if (c == 'n'  && ypos > 0 && map[ypos-1][xpos] != ' ')  return 1;
 		if (c == 's'  && ypos < map.size()-1 && map[ypos+1][xpos] != ' ')  return 1;
 		if (c == 'w'  && xpos > 0 && map[ypos][xpos-1] != ' ')  return 1;
-		if (c == 'e'  && xpos < map[0].size()-1 && map[ypos][xpos+1] != ' ')  return 1;
+		if (c == 'e'  && xpos < map[ypos].size()-1 && map[ypos][xpos+1] != ' ')  return 1;
 		return 0;
 	}
 
@@ -49,7 +61,7 @@ namespace loc {
 		string s;
 		for (int y = ys; y < ys+h; y++)
 			for (int x = xs; x < xs+w; x++)
-				if (x < 0 || y < 0 || x >= map[0].size() || y >= map.size())  s += ' ';
+				if (x < 0 || y < 0 || x >= map[ypos].size() || y >= map.size())  s += ' ';
 				else  s += map[y][x];
 		return s;
 	}

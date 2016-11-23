@@ -22,3 +22,19 @@ namespace loc {
 	std::string submap(int h, int w);
 	std::string exits();
 } // end loc
+
+class Thingum {
+private:
+public:
+	int xpos = 0;
+	int ypos = 0;
+	std::string name = "";
+	std::string description = "";
+};
+
+class Wizard: public Thingum {
+private:
+public:
+	std::string name = "Floogleflib... the Wizard";
+	std::string description = "A wizard.";
+};
