@@ -4,13 +4,14 @@
 #include <sstream>
 
 extern "C" {
-	void initpipe(void* in, void* out, int* inf, int* outf);
-	void dothread();
-	void step();
+	void PIPE_init(void* in, void* out, int* inf, int* outf);
+	void PIPE_dothread();
+	void PIPE_step();
 }
 
 namespace pipe {
 	extern  std::stringstream  *in, *out;
 	extern  int   *infl, *outfl;
 	void  initcheck();
+	int   ready();
 } // end pipe
