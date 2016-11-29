@@ -47,27 +47,38 @@ int load(string path) {
 
 int unload() {
 	dlclose(handle);
+	handle    = NULL;
+	initpipe  = NULL; 
+	dothread  = NULL;
+	step      = NULL;
 	return 0;
 }
 
 
-int main() {
-	cout << "init" << endl;
+
+stringstream in, out;
+int infl = 0, outfl = 0;
+
+void test1() {
+	cout << "sub: single test" << endl;
 	load("../sub/bin/main.out");
-
-	stringstream in, out;
-	int infl = 0, outfl = 0;
 	initpipe(&in, &out, &infl, &outfl);
-
 	// test 1
 	string s = "hello world";
 	cout << "writing: " << s << endl;
 	in << s;
 	infl = 1;
 	step();
-
+	// end
+	unload();
+}
+void test2() {
+	cout << "sub: thread test" << endl;
+	load("../sub/bin/main.out");
+	initpipe(&in, &out, &infl, &outfl);
 	// thread test
 	thread t(dothread);
+	string s;
 	while (cin >> s) {
 		if (infl == 0)  in.str(""), in.clear();
 		in << s << " ";
@@ -75,11 +86,28 @@ int main() {
 	}
 	infl = -1;
 	t.join();
-
-	// loop t
-	// while (cin >> s) {
-	// 	cout << s << " ";
-	// }
-
+	// end
 	unload();
+}
+void test3() {
+	cout << "multiply: step test" << endl;
+	load("../mult/bin/main.out");
+	initpipe(&in, &out, &infl, &outfl);
+	// single test
+	string s;
+	in << 1234;
+	infl = 1;
+	step();
+	out >> s;
+	cout << "result: " << s << endl;
+	// end
+	unload();
+}
+
+
+int main() {
+	cout << "init hello" << endl;
+	// test1();
+	// test2();
+	test3();
 }

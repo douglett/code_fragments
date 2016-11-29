@@ -3,13 +3,13 @@
 #include <thread>
 #include <chrono>
 
+using namespace std;
+
 extern "C" {
 	void initpipe(void* in, void* out, int* inf, int* outf);
 	void dothread();
 	void step();
 }
-
-using namespace std;
 
 static stringstream  *in = NULL,  *out = NULL;
 static int  *infl = NULL,  *outfl = NULL;
@@ -34,7 +34,6 @@ void dothread() {
 			*infl = 0;
 		}
 		this_thread::sleep_for( chrono::milliseconds(1000) );
-		// this_thread::yield();
 	}
 }
 
