@@ -4,9 +4,9 @@
 #include <sstream>
 
 extern "C" {
-	void PIPE_init(void* in, void* out, int* inf, int* outf);
-	void PIPE_dothread();
-	void PIPE_step();
+	void initpipe(void* in, void* out, int* inf, int* outf);
+	void dothread();
+	void step();
 }
 
 namespace pipe {

@@ -5,7 +5,8 @@ using namespace std;
 
 
 // PIPE
-void PIPE_init(void* in_, void* out_, int* infl_, int* outfl_) {
+void initpipe(void* in_, void* out_, int* infl_, int* outfl_) {
+	using namespace pipe;
 	in   = (stringstream*) in_;
 	out  = (stringstream*) out_;
 	infl  = infl_;
