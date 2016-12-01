@@ -6,23 +6,23 @@
 using namespace std;
 
 extern "C" {
-	void PIPE_init(void* in, void* out, int* inf, int* outf);
-	void PIPE_dothread();
-	void PIPE_step();
+	void pipeinit(void* in, void* out, int* inf, int* outf);
+	void pipethread();
+	void pipestep();
 }
 
 static stringstream  *in = NULL,  *out = NULL;
 static int  *infl = NULL,  *outfl = NULL;
 
 
-void PIPE_init(void* in_, void* out_, int* infl_, int* outfl_) {
+void pipeinit(void* in_, void* out_, int* infl_, int* outfl_) {
 	in   = (stringstream*) in_;
 	out  = (stringstream*) out_;
 	infl  = infl_;
 	outfl = outfl_;
 }
 
-void PIPE_dothread() {
+void pipethread() {
 	string s;
 	while (true) {
 		if (*infl < 0)  break;
@@ -37,7 +37,7 @@ void PIPE_dothread() {
 	}
 }
 
-void PIPE_step() {
+void pipestep() {
 	if (*infl == 0)  return;
 	string s;
 	cout << "  [";
@@ -45,4 +45,8 @@ void PIPE_step() {
 		cout << " " << s << " ";
 	cout << "]" << endl;
 	*infl = 0;
+}
+
+int main() {
+	cout << "hello world" << endl;
 }

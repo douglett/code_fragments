@@ -14,6 +14,13 @@ void* handle         = NULL;
 pipefn_t pipeinit    = NULL;
 voidfn_t pipethread  = NULL;
 voidfn_t pipestep    = NULL;
+struct pipe {
+	void* handle         = NULL;
+	pipefn_t pipeinit    = NULL;
+	voidfn_t pipethread  = NULL;
+	voidfn_t pipestep    = NULL;
+	string name;
+};
 
 
 int load(string path) {
@@ -54,72 +61,69 @@ int unload() {
 	return 0;
 }
 
+int load(shared_ptr<pipe> p, string path, string name) {
+	int err = load(path + name);
+	if (err)  return err;
+	p->handle      = handle;
+	p->pipeinit    = pipeinit;
+	p->pipethread  = pipethread;
+	p->pipestep    = pipestep;
+	p->name        = name;
+	return 0;
+}
 
+int unload(shared_ptr<pipe> p) {
+	dlclose(p->handle);
+	p->handle      = NULL;
+	p->pipeinit    = NULL; 
+	p->pipethread  = NULL;
+	p->pipestep    = NULL;
+	p->name        = "";
+	return 0;
+}
+
+
+
+//*** main ***
 
 stringstream in, out;
 int infl = 0, outfl = 0;
 
-void test1() {
-	cout << "sub: single test" << endl;
-	load("../sub/bin/main.out");
-	pipeinit(&in, &out, &infl, &outfl);
-	// test 1
-	string s = "hello world";
-	cout << "writing: " << s << endl;
-	in << s;
+string message(shared_ptr<pipe> p, const string& msg) {
+	// clear
+	in.str(""), in.clear();
+	// send
+	in << msg;
 	infl = 1;
-	pipestep();
-	// end
-	unload();
-}
-void test2() {
-	cout << "sub: thread test" << endl;
-	load("../sub/bin/main.out");
-	pipeinit(&in, &out, &infl, &outfl);
-	// thread test
-	thread t(pipethread);
-	string s;
-	while (cin >> s) {
-		if (infl == 0)  in.str(""), in.clear();
-		in << s << " ";
-		infl = 1;
+	p->pipestep();
+	// response
+	string resp;
+	if (outfl > 0) {
+		getline(out, resp);
+		out.str(""), out.clear();
+		outfl = 0;
 	}
-	infl = -1;
-	t.join();
-	// end
-	unload();
-}
-void test3() {
-	cout << "multiply: step test" << endl;
-	load("../mult/bin/main.out");
-	pipeinit(&in, &out, &infl, &outfl);
-	// single test
-	string s;
-	in << 1234;
-	infl = 1;
-	pipestep();
-	out >> s;
-	cout << "result: " << s << endl;
-	// end
-	unload();
-}
-
-void test4() {
-	cout << "xd load" << endl;
-	load("../../../xd/xdso/libxd.so");
-	pipeinit(&in, &out, &infl, &outfl);
-	
-	infl = 1;
-	pipestep();
-
-	unload();
+	return resp;
 }
 
 
 int main() {
 	cout << "init hello" << endl;
-	// test1();
-	// test2();
-	// test3();
-	test4();
+
+	// setup
+	auto lib = make_shared<pipe>();
+	int err = load(lib, "../../xd/xdso/", "libxd.so");
+	if (err)  return 1;
+	lib->pipeinit(&in, &out, &infl, &outfl);
+	
+	message(lib, "[init]");
+	string resp;
+	while (true) {
+		resp = message(lib, "[step]");
+		if (resp == "[quit]")  break;
+	}
+	message(lib, "[quit]");
+	
+	// unload
+	unload(lib);
 }

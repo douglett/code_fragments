@@ -3,11 +3,11 @@
 using namespace std;
 
 
-void PIPE_dothread() {
+void pipethread() {
 	pipe::initcheck();
 }
 
-void PIPE_step() {
+void pipestep() {
 	if (!pipe::ready())  return;
 	int a = 0;
 	*pipe::in >> a;
