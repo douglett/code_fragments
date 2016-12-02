@@ -18,16 +18,17 @@ namespace tok {
 		STATE        state;
 		std::string  str;
 	};
+	struct lang_t {
+		std::string  lnstart, blstart, blend;  // comments
+		std::vector<std::string>  keyw;
+	};
 	int  parsefile (const std::string& fname);
 	void show      (char fmt = 'l');
-	static const std::vector<std::string> 
-		KEYW_CPP = {
-			"auto", "void", "int", "char",
-			"struct", "enum", "const", "static", "if", "else", "return",
-			"for", "while", "switch", "case", "break", "using", "namespace"
-		};
-	extern std::vector<tok>          toklist;
-	extern std::vector<std::string>  keyw;
+	extern const lang_t 
+		LANG_DEFAULT, 
+		LANG_CPP;
+	extern lang_t            lang;
+	extern std::vector<tok>  toklist;
 } // end tok
 
 namespace util {

@@ -5,7 +5,7 @@ using namespace std;
 
 
 int main() {
-	tok::keyw = tok::KEYW_CPP;
+	tok::lang = tok::LANG_CPP;
 	tok::parsefile("util.cpp");
 	tok::show('c');
 }

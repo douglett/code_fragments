@@ -14,12 +14,25 @@ static const regex
 	REG_IDENT   ("[a-z_][a-z0-9_]*",   regex::icase),
 	REG_NUM     ("0x[0-9a-f]|[0-9]+",  regex::icase),
 	REG_ENDL    ("[\n\r\f]",           regex::icase);
-
+// language def
+const tok::lang_t 
+	tok::LANG_DEFAULT = {
+		.lnstart = "//", .blstart = "/*", .blend = "*/"
+	},
+	tok::LANG_CPP = {
+		.lnstart = "//", .blstart = "/*", .blend = "*/",
+		.keyw = {
+			"auto", "void", "int", "char",
+			"struct", "enum", "const", "static", "if", "else", "return",
+			"for", "while", "switch", "case", "break", "using", "namespace"
+		}
+	};
 
 
 //*** helpers ***
 
 static int peekfor(fstream& fs, string& s, const string& search) {
+	if (search.length() == 0)  return 0;
 	// prepare
 	const int len = search.length() + 1;
 	char cs[len];
@@ -57,8 +70,8 @@ static int findkeyw(const vector<string> keyw, const string& s) {
 
 namespace tok {
 
-	vector<tok>     toklist;
-	vector<string>  keyw;
+	vector<tok>  toklist;
+	lang_t       lang = LANG_DEFAULT;
 
 
 	static void save_tok(STATE& state, string& s) {
@@ -81,7 +94,7 @@ namespace tok {
 				else if  (regex_match(string()+c, REG_NUM))  state = ST_num;
 				else if  (c == '\'')  state = ST_char;
 				else if  (c == '"')   state = ST_string;
-				else if  (peekmul(fs, s, { "//", "/*" }))  state = ST_comment;
+				else if  (peekmul(fs, s, { lang.lnstart, lang.blstart }))  state = ST_comment;
 				else     s = fs.get(), save_tok(state, s);  // save as unknown
 				break;
 			case ST_ws:
@@ -90,7 +103,7 @@ namespace tok {
 				break;
 			case ST_ident:
 				if       (regex_match(s+c, REG_IDENT))  s += fs.get();
-				else     { if (findkeyw(keyw, s))  state = ST_keyword;  save_tok(state, s); }  break;
+				else     { if (findkeyw(lang.keyw, s))  state = ST_keyword;  save_tok(state, s); }  break;
 			case ST_num:
 				if       (regex_match(s+c, REG_NUM))  s += fs.get();
 				else     save_tok(state, s);
@@ -109,8 +122,8 @@ namespace tok {
 				break;
 			case ST_comment:
 				s += fs.get();
-				if       ( s.substr(0, 2) == "//" && (regex_match(string()+c, REG_ENDL) || fs.peek() == EOF) )  save_tok(state, s);
-				else if  ( s.substr(0, 2) == "/*" && s.substr(s.length()-2) == "*/" )  save_tok(state, s);
+				if       ( s.substr(0, 2) == lang.lnstart && (regex_match(string()+c, REG_ENDL) || fs.peek() == EOF) )  save_tok(state, s);
+				else if  ( s.substr(0, 2) == lang.blstart && s.substr(s.length()-2) == lang.blend )  save_tok(state, s);
 				break;
 			case ST_keyword:
 				assert("should not happen" == 0);
