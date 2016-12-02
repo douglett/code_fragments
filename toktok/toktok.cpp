@@ -26,7 +26,14 @@ const tok::lang_t
 			"struct", "enum", "const", "static", "if", "else", "return",
 			"for", "while", "switch", "case", "break", "using", "namespace"
 		}
+	},
+	tok::LANG_QBASIC = {
+		.lnstart = "'", .blstart = "/*", .blend = "*/",
+		.keyw = {
+			"defint", "declare", "sub", "function", "type", "as", "integer", "end"
+		}
 	};
+
 
 
 //*** helpers ***
@@ -40,6 +47,7 @@ static int peekfor(fstream& fs, string& s, const string& search) {
 	// get
 	auto pos = fs.tellg();
 	fs.get(cs, len);
+	// printf("[[%s]]\n", cs);
 	// result
 	if (search == cs) {
 		s = cs;
@@ -90,11 +98,11 @@ namespace tok {
 			switch (state) {
 			case ST_none:
 				if       (isspace(c))  state = ST_ws;
-				else if  (regex_match(string()+c, REG_IDENT))  state = ST_ident;
-				else if  (regex_match(string()+c, REG_NUM))  state = ST_num;
+				else if  (peekmul(fs, s, { lang.lnstart, lang.blstart }))  state = ST_comment;
 				else if  (c == '\'')  state = ST_char;
 				else if  (c == '"')   state = ST_string;
-				else if  (peekmul(fs, s, { lang.lnstart, lang.blstart }))  state = ST_comment;
+				else if  (regex_match(string()+c, REG_NUM))  state = ST_num;
+				else if  (regex_match(string()+c, REG_IDENT))  state = ST_ident;
 				else     s = fs.get(), save_tok(state, s);  // save as unknown
 				break;
 			case ST_ws:
@@ -122,8 +130,8 @@ namespace tok {
 				break;
 			case ST_comment:
 				s += fs.get();
-				if       ( s.substr(0, 2) == lang.lnstart && (regex_match(string()+c, REG_ENDL) || fs.peek() == EOF) )  save_tok(state, s);
-				else if  ( s.substr(0, 2) == lang.blstart && s.substr(s.length()-2) == lang.blend )  save_tok(state, s);
+				if       ( s.substr(0, lang.lnstart.length()) == lang.lnstart && (regex_match(string()+c, REG_ENDL) || fs.peek() == EOF) )  save_tok(state, s);
+				else if  ( s.substr(0, lang.blstart.length()) == lang.blstart && s.substr(s.length()-2) == lang.blend )  save_tok(state, s);
 				break;
 			case ST_keyword:
 				assert("should not happen" == 0);

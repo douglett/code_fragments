@@ -26,7 +26,8 @@ namespace tok {
 	void show      (char fmt = 'l');
 	extern const lang_t 
 		LANG_DEFAULT, 
-		LANG_CPP;
+		LANG_CPP,
+		LANG_QBASIC;
 	extern lang_t            lang;
 	extern std::vector<tok>  toklist;
 } // end tok
@@ -34,14 +35,14 @@ namespace tok {
 namespace util {
 	enum col_code {
 		// foreground
-		RED      = 31,
-		GREEN    = 32,
-		YELLOW   = 33,
-		BLUE     = 34,
-		PURPLE   = 35,
-		CYAN     = 36,
-		GRAY     = 37,
-		DEFAULT  = 39,
+		RED         = 31,
+		GREEN       = 32,
+		YELLOW      = 33,
+		BLUE        = 34,
+		PURPLE      = 35,
+		CYAN        = 36,
+		GRAY        = 37,
+		DEFAULT     = 39,
 		// background
 		BG_RED      = 41,
 		BG_GREEN    = 42,
