@@ -10,8 +10,8 @@ enum STATE {
 	ST_ws,
 	ST_ident,
 	ST_num,
+	ST_char,
 	ST_string,
-	ST_fslash,
 	ST_comment
 };
 
@@ -19,7 +19,7 @@ const regex
 	REG_IDENT ("[a-z_][a-z0-9_]*",		regex::icase),
 	REG_NUM   ("0x[0-9a-f]|[0-9]+", 	regex::icase),
 	REG_ENDL  ("[\n\r\f]", 				regex::icase);
-string s = "asd\"";
+// string s = "asd\"";
 
 string escapews(const string& s) {
 	string s2;
@@ -45,6 +45,32 @@ void save_tok(STATE& state, string& s) {
 }
 
 
+int peekfor(fstream& fs, string& s, const string& search) {
+	// prepare
+	const int len = search.length() + 1;
+	char cs[len];
+	s = "";
+	// get
+	auto pos = fs.tellg();
+	fs.get(cs, len);
+	// result
+	if (search == cs) {
+		s = cs;
+		return 1;
+	} else {
+		fs.seekg(pos);
+		return 0;
+	}
+}
+
+// int peekform(fstream& fs, string& s, const vector<string>& search) {
+// 	for (const auto ser : search)
+// 		if (peekfor(fs, s, ser))
+// 			return 1;
+// 	return 0;
+// }
+
+
 int main() {
 	fstream fs("main.cpp");
 	char c;
@@ -56,33 +82,35 @@ int main() {
 			if       (isspace(c))  state = ST_ws;
 			else if  (regex_match(string()+c, REG_IDENT))  state = ST_ident;
 			else if  (regex_match(string()+c, REG_NUM))  state = ST_num;
-			else if  (c == '"')  state = ST_string;
-			else if  (c == '/')  state = ST_fslash;
+			else if  (c == '\'')  state = ST_char;
+			else if  (c == '"')   state = ST_string;
+			else if  (peekfor(fs, s, "//"))  state = ST_comment;
+			else if  (peekfor(fs, s, "/*"))  state = ST_comment;
 			else     s = fs.get(), save_tok(state, s);  // save as unknown
 			break;
 		case ST_ws:
-			if    (isspace(c))  s += fs.get();
-			else  save_tok(state, s);
+			if       (isspace(c))  s += fs.get();
+			else     save_tok(state, s);
 			break;
 		case ST_ident:
-			if    (regex_match(s+c, REG_IDENT))  s += fs.get();
-			else  save_tok(state, s);
+			if       (regex_match(s+c, REG_IDENT))  s += fs.get();
+			else     save_tok(state, s);
 			break;
 		case ST_num:
-			if    (regex_match(s+c, REG_NUM))  s += fs.get();
-			else  save_tok(state, s);
+			if       (regex_match(s+c, REG_NUM))  s += fs.get();
+			else     save_tok(state, s);
+			break;
+		case ST_char:
+			s += fs.get();
+			if       (s.length() == 1)  ;  // accept first
+			else if  (s.substr(s.length()-2) == "\\'")  ;  // accept escaped s-quote
+			else if  (c == '\'')  save_tok(state, s);
 			break;
 		case ST_string:
 			s += fs.get();
 			if       (s.length() == 1)  ;  // always accept first char ["]
 			else if  (s.substr(s.length()-2) == "\\\"")  ;  // accept ["] if preceded by [\]
 			else if  (c == '"')  save_tok(state, s);  // break on closing ["]
-			break;
-		case ST_fslash:
-			if       (s.length() == 0)  s += fs.get();
-			else if  (c == '/')  state = ST_comment;
-			else if  (c == '*')  state = ST_comment;
-			else     state = ST_none, save_tok(state, s);
 			break;
 		case ST_comment:
 			s += fs.get();
@@ -91,4 +119,6 @@ int main() {
 			break;
 		}
 	}
+	// check if we missed some tokens
+	if (s.length())  cout << "\n*** ERROR ***\n\n" << s << endl;
 }
