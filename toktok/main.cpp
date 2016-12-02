@@ -1,11 +1,11 @@
 #include <iostream>
 #include "toktok.h"
-#include "util.h"
 
 using namespace std;
 
 
 int main() {
-	toktok::parsefile("util.cpp");
-	toktok::show('c');
+	tok::keyw = tok::KEYW_CPP;
+	tok::parsefile("util.cpp");
+	tok::show('c');
 }

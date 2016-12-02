@@ -1,9 +1,9 @@
 #include <iostream>
-#include <regex>
-#include <fstream>
+#include <vector>
 #include <cassert>
+#include <fstream>
+#include <regex>
 #include "toktok.h"
-#include "util.h"
 
 using namespace std;
 using namespace util;
@@ -13,9 +13,7 @@ using namespace util;
 static const regex 
 	REG_IDENT   ("[a-z_][a-z0-9_]*",   regex::icase),
 	REG_NUM     ("0x[0-9a-f]|[0-9]+",  regex::icase),
-	REG_ENDL    ("[\n\r\f]",           regex::icase),
-	REG_KEYWORD ("auto|void|int|char|struct|enum|const|if|else|return|"
-		"for|while|switch|case|break|using|namespace",  regex::icase);
+	REG_ENDL    ("[\n\r\f]",           regex::icase);
 
 
 
@@ -46,13 +44,21 @@ static int peekmul(fstream& fs, string& s, const vector<string>& search) {
 	return 0;
 }
 
+static int findkeyw(const vector<string> keyw, const string& s) {
+	for (const auto& k : keyw)
+		if (strtolower(k) == strtolower(s))
+			return 1;
+	return 0;
+}
+
 
 
 //*** parser ***
 
-namespace toktok {
+namespace tok {
 
-	vector<tok> toklist;
+	vector<tok>     toklist;
+	vector<string>  keyw;
 
 
 	static void save_tok(STATE& state, string& s) {
@@ -84,7 +90,7 @@ namespace toktok {
 				break;
 			case ST_ident:
 				if       (regex_match(s+c, REG_IDENT))  s += fs.get();
-				else     { if (regex_match(s, REG_KEYWORD))  state = ST_keyword;  save_tok(state, s); }  break;
+				else     { if (findkeyw(keyw, s))  state = ST_keyword;  save_tok(state, s); }  break;
 			case ST_num:
 				if       (regex_match(s+c, REG_NUM))  s += fs.get();
 				else     save_tok(state, s);
@@ -146,4 +152,4 @@ namespace toktok {
 		}
 	}
 
-} // end toktok
+} // end tok

@@ -1,5 +1,5 @@
 #include <string>
-#include "util.h"
+#include "toktok.h"
 
 using namespace std;
 
@@ -26,6 +26,12 @@ namespace util {
 			default:    s2 += c;
 			}
 		return s2;
+	}
+
+	string strtolower(string s) {
+		for (auto& c : s)
+			c = tolower(c);
+		return s;
 	}
 
 } // end util
