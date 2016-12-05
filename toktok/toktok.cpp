@@ -30,7 +30,11 @@ const tok::lang_t
 	tok::LANG_QBASIC = {
 		.lnstart = "'", .blstart = "/*", .blend = "*/",
 		.keyw = {
-			"defint", "declare", "sub", "function", "type", "as", "integer", "end"
+			"defint", "declare", "sub", "function", "end", "dim", "type", "as", "const",
+			"if", "then", "else", "not", 
+			"gosub", "return", "while", "wend", "do", "loop", "for", "next", "select", "case",
+			"integer", "string", "float",
+			"def", "seg", "peek", "poke"
 		}
 	};
 
@@ -91,10 +95,10 @@ namespace tok {
 
 	int parsefile(const string& fname) {
 		fstream fs(fname);
-		char c;
 		string s;
 		STATE state = ST_none;
-		while ((c = fs.peek()) != EOF) {
+		while (true) {
+			char c = fs.peek();
 			switch (state) {
 			case ST_none:
 				if       (isspace(c))  state = ST_ws;
@@ -103,7 +107,7 @@ namespace tok {
 				else if  (c == '"')   state = ST_string;
 				else if  (regex_match(string()+c, REG_NUM))  state = ST_num;
 				else if  (regex_match(string()+c, REG_IDENT))  state = ST_ident;
-				else     s = fs.get(), save_tok(state, s);  // save as unknown
+				else if  (c != char(EOF))  s = fs.get(), save_tok(state, s);  // save as unknown
 				break;
 			case ST_ws:
 				if       (isspace(c))  s += fs.get();
@@ -130,12 +134,14 @@ namespace tok {
 				break;
 			case ST_comment:
 				s += fs.get();
-				if       ( s.substr(0, lang.lnstart.length()) == lang.lnstart && (regex_match(string()+c, REG_ENDL) || fs.peek() == EOF) )  save_tok(state, s);
+				if       ( s.substr(0, lang.lnstart.length()) == lang.lnstart && regex_match(string()+c, REG_ENDL) )  save_tok(state, s);
 				else if  ( s.substr(0, lang.blstart.length()) == lang.blstart && s.substr(s.length()-2) == lang.blend )  save_tok(state, s);
 				break;
 			case ST_keyword:
 				assert("should not happen" == 0);
 			}
+			// exit on EOF
+			if (c == char(EOF))  break;
 		}
 		// check if we missed some tokens
 		if (s.length()) {

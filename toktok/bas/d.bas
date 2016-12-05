@@ -50,3 +50,5 @@ TYPE settings
   showIntro AS INTEGER
   forceCGA AS INTEGER
 END TYPE
+
+a$ = "hello world"
