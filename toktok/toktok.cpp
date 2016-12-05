@@ -11,9 +11,9 @@ using namespace util;
 
 // consts
 static const regex 
-	REG_IDENT   ("[a-z_][a-z0-9_]*",   regex::icase),
-	REG_NUM     ("0x[0-9a-f]|[0-9]+",  regex::icase),
-	REG_ENDL    ("[\n\r\f]",           regex::icase);
+	REG_IDENT   ("[A-Za-z_][A-Za-z0-9_]*",  regex::icase),  // icase not working on rpi...
+	REG_NUM     ("0x[0-9A-Fa-f]|[0-9]+",    regex::icase),
+	REG_ENDL    ("[\n\r\f]",                regex::icase);
 // language def
 const tok::lang_t 
 	tok::LANG_DEFAULT = {
@@ -70,6 +70,7 @@ static int peekmul(fstream& fs, string& s, const vector<string>& search) {
 }
 
 static int findkeyw(const vector<string> keyw, const string& s) {
+	//cout << "keyw: " << s << endl;
 	for (const auto& k : keyw)
 		if (strtolower(k) == strtolower(s))
 			return 1;
