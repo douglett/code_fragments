@@ -3,6 +3,7 @@
 #include <cassert>
 #include <fstream>
 #include <regex>
+#include "util.h"
 #include "toktok.h"
 
 using namespace std;
