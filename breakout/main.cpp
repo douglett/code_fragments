@@ -19,8 +19,10 @@ vector<Brick> bricks;
 void keycb(int key, int state) {
 	switch (key) {
 	case 27:  running = 0;  break;
+	case 'a':
 	case 0x40000050:  joy = -state;  break;  // left
-	case 0x4000004f:  joy = state;  break;  // right
+	case 'd':
+	case 0x4000004f:  joy =  state;  break;  // right
 	case 0x40000052:  break;  // up
 	case 0x40000051:  break;  // down
 	// default:  printf("%x \n", key);
