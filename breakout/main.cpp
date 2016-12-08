@@ -76,40 +76,35 @@ int main() {
 	ball.sprite->pos(100, 100);
 	// bricks
 	vector<Brick> bricks;
-	// for (int i = 0; i < 10; i++)
-	// 	bricks.push_back( Brick(0, i+2, 2) );
+	for (int i = 0; i < 10; i++)
+		bricks.push_back( Brick(0, i+5, 5) );
 
 	while (running) {
-		// move paddle
-		if       (joy == -1 && paddle->x > 0)  paddle->pos(paddle->x - 1, paddle->y);
-		else if  (joy == 1 && paddle->x + paddle->width() < screenw)  paddle->pos(paddle->x + 1, paddle->y);
 		// move ball
 		ball.sprite->x += ball.accelx;
 		ball.sprite->y += ball.accely;
+		// screen intersect
 		if       (ball.sprite->x < 0)  ball.accelx = 1;
 		else if  (ball.sprite->x + ball.sprite->width() >= screenw)  ball.accelx = -1;
 		else if  (ball.sprite->y < 0)  ball.accely = 1;
 		else if  (ball.sprite->y + ball.sprite->height() >= screenh)  ball.accely = -1;
 		// paddle intersections
 		if (paddle->intersects(ball.sprite)) {
-			ball.accely = ( ball.sprite->y + ball.sprite->height()/2 < paddle->y + paddle->height()/2 ? -1 : 1 );
-			ball.accelx = ( ball.sprite->x + ball.sprite->width()/2  < paddle->x + paddle->width()/2  ? -1 : 1 );
+			ball.accely = ( ball.sprite->center('y') < paddle->center('y') ? -1 : 1 );
+			ball.accelx = ( ball.sprite->center('x') < paddle->center('x') ? -1 : 1 );
 		}
 		// brick intersections
-		// for (auto& b : bricks)
-		// 	if (b.sprite->intersects(ball.sprite)) {
-		// 		int ydiff = ( ball.sprite->y + ball.sprite->height()/2 - b.sprite->y + b.sprite->height()/2 );
-		// 		int xdiff = ( ball.sprite->x + ball.sprite->width()/2  - b.sprite->x + b.sprite->width()/2  );
-		// 		if (abs(xdiff) < abs(ydiff)) {
-		// 			if    (xdiff < 0)  ball.accelx = -1;
-		// 			else  ball.accelx = 1;
-		// 		} else {
-		// 			if    (ydiff < 0)  ball.accely = -1;
-		// 			else  ball.accely = 1;
-		// 		}
-		// 		// printf("x %d  y %d\n", xdiff, ydiff);
-		// 		break;
-		// 	}
+		int  bax = ball.sprite->center('x'),  bay = ball.sprite->center('y');
+		for (auto& b : bricks)
+			if (b.sprite->intersects(ball.sprite)) {
+				int  bx = b.sprite->center('x'),  by = b.sprite->center('y');
+				if (abs(bax - bx) > abs(bay - by))  ball.accelx = ( bax - bx < 0 ? -1 : +1 );
+				else  ball.accely = ( bay - by < 0 ? -1 : +1 );
+				break;  // only process 1 intersect per loop
+			}
+		// move paddle
+		if       (joy == -1 && paddle->x > 0)  paddle->pos(paddle->x - 1, paddle->y);
+		else if  (joy ==  1 && paddle->max('x') < screenw)  paddle->pos(paddle->x + 1, paddle->y);
 		// repaint
 		if (xd::screen::paint())  break;
 	}
