@@ -38,6 +38,9 @@ struct Brick {
 		xd::draw::clear(sprite->getdata(), 0xff0000ff);
 		xd::draw::tracerect(sprite->getdata(), 0x990000ff, 0, 0, sprite->width(), sprite->height());
 	}
+	void unmake() {
+		xd::screen::delsprite(sprite);
+	}
 	void pos(int x, int y) {
 		posx = x;
 		posy = y;
@@ -95,11 +98,13 @@ int main() {
 		}
 		// brick intersections
 		int  bax = ball.sprite->center('x'),  bay = ball.sprite->center('y');
-		for (auto& b : bricks)
-			if (b.sprite->intersects(ball.sprite)) {
-				int  bx = b.sprite->center('x'),  by = b.sprite->center('y');
+		for (int i = 0; i < bricks.size(); i++)
+			if (bricks[i].sprite->intersects(ball.sprite)) {
+				int  bx = bricks[i].sprite->center('x'),  by = bricks[i].sprite->center('y');
 				if (abs(bax - bx) > abs(bay - by))  ball.accelx = ( bax - bx < 0 ? -1 : +1 );
 				else  ball.accely = ( bay - by < 0 ? -1 : +1 );
+				bricks[i].unmake();
+				bricks.erase(bricks.begin()+i);  // kill brick
 				break;  // only process 1 intersect per loop
 			}
 		// move paddle
