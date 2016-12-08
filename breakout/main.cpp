@@ -12,6 +12,7 @@ int joy = 0;
 // game vars
 Paddle paddle;
 Ball ball;
+Score score;
 vector<Brick> bricks;
 
 
@@ -41,8 +42,9 @@ int main() {
 	ball.make();
 	ball.pos(100, 100);
 	// bricks
+	srand(1000);
 	for (int i = 0; i < 10; i++) {
-		Brick b(0);
+		Brick b( rand() % BRICK_COL.size() );
 		b.tpos(i+5, 5);
 		bricks.push_back(b);
 	}
