@@ -43,20 +43,26 @@ int main() {
 	// ball
 	ball.make();
 	ball.pos(100, 100);
+	// score
+	score.make();
 	// bricks
-	srand(1000);
-	for (int i = 0; i < 10; i++) {
-		Brick b( rand() % BRICK_COL.size() );
-		b.tpos(i+5, 5);
-		bricks.push_back(b);
-	}
+	int bwl = 16, bwh = 5;
+	for (int j = 0; j < bwh; j++)
+		for (int i = 0; i < bwl; i++) {
+			int col = 0;
+			if       (i > 1 && i < bwl-2 && j > 1 && j < bwh-2)  col = 2;
+			else if  (i > 0 && i < bwl-1 && j > 0 && j < bwh-1)  col = 1;
+			Brick b(col);
+			b.tpos(i+2, j+1);
+			bricks.push_back(b);
+		}
 
 	while (running) {
 		// move ball
 		ball.pos(ball.posx + ball.accelx, ball.posy + ball.accely);
 		// screen intersect
 		if       (ball.posx < 0)  ball.accelx = 1;
-		else if  (ball.posx + ball.sprite->width() >= screenw)  ball.accelx = -1;
+		else if  (ball.posx + ball.sprite->width()  >= screenw)  ball.accelx = -1;
 		else if  (ball.posy < 0)  ball.accely = 1;
 		else if  (ball.posy + ball.sprite->height() >= screenh)  ball.accely = -1;
 		// paddle intersections
@@ -68,17 +74,21 @@ int main() {
 		int  bax = ball.sprite->center('x'),  bay = ball.sprite->center('y');
 		for (int i = 0; i < bricks.size(); i++)
 			if (bricks[i].sprite->intersects(ball.sprite)) {
+				// check for x or y dominant collision, for bouncing
 				int  bx = bricks[i].sprite->center('x'),  by = bricks[i].sprite->center('y');
 				if (abs(bax - bx) > abs(bay - by))  ball.accelx = ( bax - bx < 0 ? -1 : +1 );
 				else  ball.accely = ( bay - by < 0 ? -1 : +1 );
+				// kill brick
+				score.add((bricks[i].col + 1) * 100);
 				bricks[i].unmake();
-				bricks.erase(bricks.begin()+i);  // kill brick
+				bricks.erase(bricks.begin()+i);
 				break;  // only process 1 intersect per loop
 			}
 		// move paddle
-		if       (joy == -1 && paddle.posx > 0)  paddle.pos(paddle.posx - 1, paddle.posy);
-		else if  (joy ==  1 && paddle.sprite->max('x') < screenw)  paddle.pos(paddle.posx + 1, paddle.posy);
+		if       (joy == -1 && paddle.posx > 0)  paddle.pos(paddle.posx - paddle.accel, paddle.posy);
+		else if  (joy ==  1 && paddle.sprite->max('x') < screenw)  paddle.pos(paddle.posx + paddle.accel, paddle.posy);
 		// repaint
+		if (score.dirty)  score.repaint();
 		if (xd::screen::paint())  break;
 	}
 

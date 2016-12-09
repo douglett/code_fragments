@@ -3,15 +3,22 @@
 #include <vector>
 #include "xdlib/xdlib.h"
 
+namespace util {
+	const  int  CSTR_MAX = 128;
+	extern char cstr[CSTR_MAX];
+}
+#define strprintf(...) (snprintf (util::cstr, 100, __VA_ARGS__), util::cstr)
+
 struct Obj {
 	xd::screen::Sprite *sprite = NULL;
 	float posx = 0, posy = 0;  // sub-pixel
 	virtual void make() = 0;
 	virtual void unmake();
-	virtual void pos(int x, int y);
+	virtual void pos(float x, float y);
 };
 
 struct Paddle : Obj {
+	float accel = 1.2;
 	void make();
 };
 
@@ -21,10 +28,14 @@ struct Ball : Obj {
 };
 
 struct Score : Obj {
+	int score = 0, lives = 3, dirty = 0;
 	void make();
+	void add(int i);
+	void repaint();
 };
 
 struct Brick : Obj {
+	static const int WIDTH = 12, HEIGHT = 12;
 	int col = 0;
 	Brick(int col);
 	void make();

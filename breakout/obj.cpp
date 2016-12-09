@@ -5,12 +5,17 @@
 using namespace std;
 
 
+namespace util {
+	char cstr[CSTR_MAX];
+}
+
+
 //*** Obj (base) ***
 // void Brick::make();  // write
 void Obj::unmake() {
 	xd::screen::delsprite(sprite);
 }
-void Obj::pos(int x, int y) {
+void Obj::pos(float x, float y) {
 	posx = x;
 	posy = y;
 	sprite->pos(posx, posy);
@@ -68,11 +73,26 @@ void Score::make() {
 	int screenw = 0, screenh = 0;
 	xd::screen::getinfo(&screenw, &screenh, NULL);
 	// make
-	sprite = xd::screen::makesprite(10, 30, "score");
-	sprite->pos(0, screenw - sprite->width());
+	sprite = xd::screen::makesprite(8*10, 10, "score");
+	sprite->pos(screenw - sprite->width(), 1);
 	sprite->zindex(100);
+	repaint();
+}
+void Score::add(int i) {
+	score += i;
+	dirty  = 1;
+}
+void Score::repaint() {
 	auto* dat = sprite->getdata();
-	xd::text::prints(dat, "100", 0, 0);
+	const int w = dat[0]; //, h = dat[1];
+	// score
+	string sh, sc = strprintf("%d", score);
+	for (int i = 0; i < lives; i++)  sh += char(3);
+	// repaint
+	xd::draw::clear(dat, 0xff0000ff);
+	xd::text::prints(dat, sc, w - sc.length()*8, 0);
+	xd::text::prints(dat, sh, 0, 0);
+	dirty = 0;  // paint done
 }
 
 
@@ -84,12 +104,12 @@ Brick::Brick(int col) {
 }
 void Brick::make() {
 	uint32_t cl = BRICK_COL[col].first, cd = BRICK_COL[col].second;
-	sprite = xd::screen::makesprite(8, 8);
+	sprite = xd::screen::makesprite(WIDTH, HEIGHT);
 	auto* dat = sprite->getdata();
 	xd::draw::clear(dat, cl);
-	xd::draw::tracerect(dat, cd, 0, 0, sprite->width(), sprite->height());
+	xd::draw::tracerect(dat, cd, 0, 0, WIDTH, HEIGHT);
 }
 void Brick::tpos(int x, int y) {
-	pos(x*8, y*8);
+	pos(x * WIDTH, y * HEIGHT);
 	sprite->pos(posx, posy);
 }
