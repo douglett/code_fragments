@@ -5,6 +5,10 @@
 using namespace std;
 
 
+// pre-def
+int  mainloop();
+void keycb(int key, int state);
+void switchlevel(int lvl);
 // vars
 int screenw = 0, screenh = 0;
 int running = 1;
@@ -15,19 +19,6 @@ Ball ball;
 Score score;
 vector<Brick> bricks;
 
-
-void keycb(int key, int state) {
-	switch (key) {
-	case 27:  running = 0;  break;
-	case 'a':
-	case 0x40000050:  joy = -state;  break;  // left
-	case 'd':
-	case 0x4000004f:  joy =  state;  break;  // right
-	case 0x40000052:  break;  // up
-	case 0x40000051:  break;  // down
-	// default:  printf("%x \n", key);
-	}
-}
 
 
 int main() {
@@ -43,28 +34,33 @@ int main() {
 	// ball
 	ball.make();
 	ball.pos(100, 100);
+	ball.moving = 0;
 	// score
 	score.make();
 	// bricks
-	int bwl = 16, bwh = 5;
-	for (int j = 0; j < bwh; j++)
-		for (int i = 0; i < bwl; i++) {
-			int col = 0;
-			if       (i > 1 && i < bwl-2 && j > 1 && j < bwh-2)  col = 2;
-			else if  (i > 0 && i < bwl-1 && j > 0 && j < bwh-1)  col = 1;
-			Brick b(col);
-			b.tpos(i+2, j+1);
-			bricks.push_back(b);
-		}
+	switchlevel(1);
+	// do stuff
+	mainloop();
+	// exit
+	xd::screen::quit();
+}
 
+
+int mainloop() {
 	while (running) {
 		// move ball
-		ball.pos(ball.posx + ball.accelx, ball.posy + ball.accely);
+		if (ball.moving)  ball.pos(ball.posx + ball.accelx, ball.posy + ball.accely);
 		// screen intersect
 		if       (ball.posx < 0)  ball.accelx = 1;
 		else if  (ball.posx + ball.sprite->width()  >= screenw)  ball.accelx = -1;
 		else if  (ball.posy < 0)  ball.accely = 1;
-		else if  (ball.posy + ball.sprite->height() >= screenh)  ball.accely = -1;
+		else if  (ball.posy + ball.sprite->height() >= screenh) {
+			// ball.accely = -1;
+			score.die();
+			ball.pos(100, 100);
+			ball.accelx = ball.accely = 1;
+			ball.moving = 0;
+		}
 		// paddle intersections
 		if (paddle.sprite->intersects(ball.sprite)) {
 			ball.accely = ( ball.sprite->center('y') < paddle.sprite->center('y') ? -1 : 1 );
@@ -90,7 +86,46 @@ int main() {
 		// repaint
 		if (score.dirty)  score.repaint();
 		if (xd::screen::paint())  break;
-	}
+	} // end while
+	return 0;
+}
 
-	xd::screen::quit();
+
+void keycb(int key, int state) {
+	switch (key) {
+	// control keys
+	case 27:   running = 0;  break;
+	case ' ':  ball.moving = 1;  break;
+	// directions
+	case 'a':
+	case 0x40000050:  joy = -state;  break;  // left
+	case 'd':
+	case 0x4000004f:  joy =  state;  break;  // right
+	case 0x40000052:  break;  // up
+	case 0x40000051:  break;  // down
+	// default:  printf("%x \n", key);
+	}
+}
+
+
+void switchlevel(int lvl) {
+	// erase bricks
+	for (auto& b : bricks)
+		b.unmake();
+	bricks.erase(bricks.begin(), bricks.end());
+	// make new bricks 
+	switch (lvl) {
+	case 1:
+		int bwl = 16, bwh = 5;
+		for (int j = 0; j < bwh; j++)
+			for (int i = 0; i < bwl; i++) {
+				int col = 0;
+				if       (i > 1 && i < bwl-2 && j > 1 && j < bwh-2)  col = 2;
+				else if  (i > 0 && i < bwl-1 && j > 0 && j < bwh-1)  col = 1;
+				Brick b(col);
+				b.tpos(i+2, j+1);
+				bricks.push_back(b);
+			}
+		break;
+	} // end switch
 }

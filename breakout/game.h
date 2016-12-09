@@ -23,14 +23,16 @@ struct Paddle : Obj {
 };
 
 struct Ball : Obj {
-	float accelx = 1, accely = 1;
+	int    moving = 0;
+	float  accelx = 1,  accely = 1;
 	void make();
 };
 
 struct Score : Obj {
-	int score = 0, lives = 3, dirty = 0;
+	int  score = 0,  lives = 3,  dirty = 0;
 	void make();
 	void add(int i);
+	void die();
 	void repaint();
 };
 

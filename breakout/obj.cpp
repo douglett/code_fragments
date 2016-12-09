@@ -82,6 +82,10 @@ void Score::add(int i) {
 	score += i;
 	dirty  = 1;
 }
+void Score::die() {
+	lives -= 1;
+	dirty  = 1;
+}
 void Score::repaint() {
 	auto* dat = sprite->getdata();
 	const int w = dat[0]; //, h = dat[1];
@@ -89,7 +93,7 @@ void Score::repaint() {
 	string sh, sc = strprintf("%d", score);
 	for (int i = 0; i < lives; i++)  sh += char(3);
 	// repaint
-	xd::draw::clear(dat, 0xff0000ff);
+	xd::draw::clear(dat);
 	xd::text::prints(dat, sc, w - sc.length()*8, 0);
 	xd::text::prints(dat, sh, 0, 0);
 	dirty = 0;  // paint done
