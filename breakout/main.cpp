@@ -6,18 +6,20 @@ using namespace std;
 
 
 // pre-def
+int  scoreloop();
 int  mainloop();
 void keycb(int key, int state);
 void switchlevel(int lvl);
 // vars
 int screenw = 0, screenh = 0;
-int running = 1;
+int running = 1, gamestate = 0;
 int joy = 0;
 // game vars
-Paddle paddle;
-Ball ball;
-Score score;
-vector<Brick> bricks;
+Paddle         paddle;
+Ball           ball;
+Score          score;
+HighScore      highscore;
+vector<Brick>  bricks;
 
 
 
@@ -28,25 +30,40 @@ int main() {
 	xd::screen::getinfo(&screenw, &screenh, NULL);
 	printf("%d %d\n", screenw, screenh);
 	xd::screen::keycb = keycb;
-	// paddle
-	paddle.make();
-	paddle.pos((screenw - paddle.sprite->width())/2, screenh - (paddle.sprite->height() + 10));
-	// ball
-	ball.make();
-	ball.pos(100, 100);
-	ball.moving = 0;
-	// score
-	score.make();
-	// bricks
-	switchlevel(1);
 	// do stuff
-	mainloop();
+	while (running) {
+		if (scoreloop())  break;
+		if (mainloop())   break;
+	}
 	// exit
 	xd::screen::quit();
 }
 
 
+int scoreloop() {
+	// setup
+	gamestate = 1;
+	highscore.make();
+	// loop
+	while (running) {
+		if (gamestate != 1)  break;
+		if (xd::screen::paint())  return 1;
+	}
+	// setdown...
+	xd::draw::clear(xd::screen::backbuffer->getdata(), 0x000000ff);
+	return 0;
+}
+
+
 int mainloop() {
+	// setup
+	gamestate = 2;
+	paddle.make();
+	paddle.pos((screenw - paddle.sprite->width())/2, screenh - (paddle.sprite->height() + 10));
+	ball.make(), ball.reset();
+	score.make(), score.reset();
+	switchlevel(1);
+	// mainloop
 	while (running) {
 		// move ball
 		if (ball.moving)  ball.pos(ball.posx + ball.accelx, ball.posy + ball.accely);
@@ -55,11 +72,9 @@ int mainloop() {
 		else if  (ball.posx + ball.sprite->width()  >= screenw)  ball.accelx = -1;
 		else if  (ball.posy < 0)  ball.accely = 1;
 		else if  (ball.posy + ball.sprite->height() >= screenh) {
-			// ball.accely = -1;
+			ball.reset();
 			score.die();
-			ball.pos(100, 100);
-			ball.accelx = ball.accely = 1;
-			ball.moving = 0;
+			if (score.lives <= 0)  break;
 		}
 		// paddle intersections
 		if (paddle.sprite->intersects(ball.sprite)) {
@@ -85,8 +100,15 @@ int mainloop() {
 		else if  (joy ==  1 && paddle.sprite->max('x') < screenw)  paddle.pos(paddle.posx + paddle.accel, paddle.posy);
 		// repaint
 		if (score.dirty)  score.repaint();
-		if (xd::screen::paint())  break;
+		if (xd::screen::paint())  return 1;
 	} // end while
+	// unset
+	paddle.unmake();
+	ball.unmake();
+	score.unmake();
+	switchlevel(0);
+	// add new score
+	highscore.add(score.score);
 	return 0;
 }
 
@@ -95,7 +117,10 @@ void keycb(int key, int state) {
 	switch (key) {
 	// control keys
 	case 27:   running = 0;  break;
-	case ' ':  ball.moving = 1;  break;
+	case ' ':
+		if (state == 1 && gamestate == 1)  gamestate = 2;
+		if (state == 1 && gamestate == 2)  ball.moving = 1;
+		break;
 	// directions
 	case 'a':
 	case 0x40000050:  joy = -state;  break;  // left

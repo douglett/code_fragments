@@ -65,6 +65,11 @@ void Ball::make() {
 	xd::draw::clear(dat, 0xff0000ff);
 	outline(dat);
 }
+void Ball::reset() {
+	pos(100, 100);
+	accelx = accely = 1;
+	moving = 0;
+}
 
 
 //*** Score ***
@@ -84,7 +89,13 @@ void Score::add(int i) {
 }
 void Score::die() {
 	lives -= 1;
+	if (lives > 0)  score /= 2;
 	dirty  = 1;
+}
+void Score::reset() {
+	score = 0;
+	lives = 3;
+	dirty = 1;
 }
 void Score::repaint() {
 	auto* dat = sprite->getdata();
@@ -95,8 +106,33 @@ void Score::repaint() {
 	// repaint
 	xd::draw::clear(dat);
 	xd::text::prints(dat, sc, w - sc.length()*8, 0);
-	xd::text::prints(dat, sh, 0, 0);
+	xd::text::prints(dat, sh, 0, 0, 0xff0000ff);
 	dirty = 0;  // paint done
+}
+
+
+//*** HighScore ***
+void HighScore::make() {
+	// just draw onto backbuffer
+	auto* dat = xd::screen::backbuffer->getdata();
+	vector<string> vs = {
+		"HIGH SCORE",
+		"   ====   " };
+	for (int i = 0; i < highscore.size(); i++) {
+		string s   = strprintf("%d", highscore[i]);
+		string pad(8 - s.length(), '.');
+		vs.push_back( strprintf("%d.%s%s", i+1, pad.c_str(), s.c_str()) );
+	}
+	for (int i = 0; i < vs.size(); i++)
+		xd::text::prints(dat, vs[i], 8*10, 8*3 + i*8);
+}
+void HighScore::add(int score) {
+	for (int i = 0; i < highscore.size(); i++)
+		if (score > highscore[i]) {
+			highscore.insert( highscore.begin()+i, score );
+			highscore.erase ( highscore.end()-1 );
+			break;
+		}
 }
 
 

@@ -26,6 +26,7 @@ struct Ball : Obj {
 	int    moving = 0;
 	float  accelx = 1,  accely = 1;
 	void make();
+	void reset();
 };
 
 struct Score : Obj {
@@ -33,7 +34,23 @@ struct Score : Obj {
 	void make();
 	void add(int i);
 	void die();
+	void reset();
 	void repaint();
+};
+
+struct HighScore : Obj {
+	std::vector<int> highscore = {
+		250000,
+		100000,
+		70000,
+		40000,
+		10000,
+		7000,
+		4000,
+		1000
+	};
+	void make();
+	void add(int score);
 };
 
 struct Brick : Obj {
