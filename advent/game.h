@@ -3,6 +3,23 @@
 #include <string>
 #include <vector>
 
+// enums
+enum GAME_MODE {
+	MODE_NONE,
+	MODE_FIGHT,
+	MODE_EXPLORE
+};
+// structs
+struct Mob {
+	int maxhp  = 10,
+		hp     = 0,
+		atk    = 2,
+		def    = 0,
+		lck    = 50;
+	std::string name;
+	Mob(std::string name);
+};
+
 namespace cstr {
 	const int CSTR_MAX = 100;
 	extern char cstr[CSTR_MAX];
@@ -10,16 +27,17 @@ namespace cstr {
 } // end cstr
 
 namespace log {
-	const int LOG_LEN = 18, LOG_WIDTH = 29;
-	extern int dirty, dirtyi;
+	const int LOG_LEN = 17, LOG_WIDTH = 29;
 	extern int screenw, screenh;
 	extern std::string input;
 	extern std::vector<std::string> vlog;
+	extern std::pair<std::string, uint32_t> title;
 
 	void log(const std::string& s);
 	void paint();
 	void inputc(char c);
 	void delc();
+	void clearc();
 } // end log
 
 // macros
