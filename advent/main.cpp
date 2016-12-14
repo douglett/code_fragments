@@ -12,13 +12,12 @@ void switchmode(GAME_MODE mode);
 void parse(const std::string& input);
 int  doattack();
 int  movepos(char dir);
-void pmap(char dir);
 // member vars
 Mob  guy("guy"), spider("spider");
 GAME_MODE gamemode = MODE_NONE;
 int running = 1;
 int posx = 0, posy = 0;
-vector<string> playermap, map = {
+vector<string> map = {
 	"...  ",
 	"  .  ",
 	" ... ",
@@ -98,12 +97,19 @@ void parse(const string& input) {
 		if (gamemode == MODE_FIGHT)  lprintf("look out! %s!", spider.name.c_str());
 		else if (gamemode == MODE_EXPLORE)  lprintf("a nondescript room...");
 	}
-	// else if (cmd == "n" || cmd == "s" || cmd == "e" || cmd == "w") {
 	else if (indexOf(cmd, { "n", "north", "s", "south", "e", "east", "w", "west" }) > -1) {
 		if (gamemode == MODE_FIGHT)  lprintf("trapped!");
 		if (gamemode == MODE_EXPLORE) {
-			if (movepos(cmd[0]))  pmap(cmd[0]), parse("look");
+			if (movepos(cmd[0]))  parse("look");
 			else  lprintf("oof. wall.");
+		}
+	}
+	else if (cmd == "m" || cmd == "map") {
+		if (gamemode == MODE_FIGHT)  lprintf("trapped!");
+		if (gamemode == MODE_EXPLORE) {
+			for (int y = 0; y < map.size(); y++)
+				if (y == posy)  lprintf("%s", string(map[y]).replace(posx, 1, "@").c_str());
+				else  lprintf("%s", map[y].c_str());
 		}
 	}
 	else if (cmd == "a" || cmd == "attack")  doattack();
@@ -147,16 +153,6 @@ int movepos(char c) {
 	case 'e':  if (posy < map[posy].size()-1 && map[posy][posx+1] == '.')  { posx++;  return 1; }  break;
 	}
 	return 0;
-}
-
-
-void pmap(char c) {
-	switch (c) {
-	case 'n':
-	case 's':
-	case 'e':
-	case 'w': ;
-	}
 }
 
 
