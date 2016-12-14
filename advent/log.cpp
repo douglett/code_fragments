@@ -10,6 +10,12 @@ using namespace std;
 namespace cstr {
 	// const int CSTR_MAX = 100;
 	char cstr[CSTR_MAX];
+	string strtolower(const string& s) {
+		string ss = s;
+		for (auto& c : ss)
+			c = tolower(c);
+		return ss;
+	}
 } // end cstr
 
 

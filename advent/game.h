@@ -6,6 +6,7 @@
 namespace cstr {
 	const int CSTR_MAX = 100;
 	extern char cstr[CSTR_MAX];
+	std::string strtolower(const std::string& s);
 } // end cstr
 
 namespace log {
@@ -22,5 +23,5 @@ namespace log {
 } // end log
 
 // macros
-#define lprintf(...)  log::log( (snprintf(cstr::cstr, cstr::CSTR_MAX, __VA_ARGS__), cstr::cstr) )
 #define strprintf(...)  snprintf(cstr::cstr, cstr::CSTR_MAX, __VA_ARGS__), cstr::cstr
+#define lprintf(...)  log::log( (snprintf(cstr::cstr, cstr::CSTR_MAX, __VA_ARGS__), cstr::cstr) )
