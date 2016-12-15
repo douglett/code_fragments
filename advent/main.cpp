@@ -34,6 +34,7 @@ int main() {
 	xd::screen::getinfo(&log::screenw, &log::screenh, NULL);
 	xd::screen::keycb = keycb;
 
+	guy.hp = 1;
 	switchmode(MODE_FIGHT);
 
 	while (running) {
@@ -69,8 +70,9 @@ static int indexOf(const T& needle, const vector<T>& haystack) {
 
 void switchmode(GAME_MODE mode) {
 	switch (mode) {
-	case 1:   log::title = { "fight!", 0x990000ff };  lprintf("a spider appears!");  break;
-	case 2:   log::title = { "explore!", 0x000099ff };  lprintf("time to go...");  break;
+	case MODE_FIGHT:    log::title = { "fight!", 0x990000ff };  lprintf("a spider appears!");  break;
+	case MODE_EXPLORE:  log::title = { "explore!", 0x000099ff };  lprintf("time to go...");  break;
+	default:            log::title = { "...",0 };  lprintf("r to re-live");  break;
 	}
 	gamemode = mode;
 }
@@ -86,7 +88,7 @@ void parse(const string& input) {
 	// parse
 	if (cmd == "quit")  running = 0;
 	else if (cmd == "x") {
-		if (gamemode == MODE_FIGHT)  switchmode(MODE_EXPLORE);
+		if    (gamemode == MODE_FIGHT)  switchmode(MODE_EXPLORE);
 		else  lprintf("can't escape fate...");
 	}
 	else if (cmd == "stat" || cmd == "status") {
@@ -94,25 +96,28 @@ void parse(const string& input) {
 		lprintf("  atk %d  def %d  lck %d", guy.atk, guy.def, guy.lck);
 	}
 	else if (cmd == "l" || cmd == "look") {
-		if (gamemode == MODE_FIGHT)  lprintf("look out! %s!", spider.name.c_str());
-		else if (gamemode == MODE_EXPLORE)  lprintf("a nondescript room...");
+		if    (gamemode == MODE_FIGHT)  lprintf("look out! %s!", spider.name.c_str());
+		else  lprintf("a nondescript room...");
 	}
 	else if (indexOf(cmd, { "n", "north", "s", "south", "e", "east", "w", "west" }) > -1) {
-		if (gamemode == MODE_FIGHT)  lprintf("trapped!");
-		if (gamemode == MODE_EXPLORE) {
+		if    (gamemode == MODE_EXPLORE) {
 			if (movepos(cmd[0]))  parse("look");
 			else  lprintf("oof. wall.");
 		}
+		else  lprintf("trapped!");
 	}
 	else if (cmd == "m" || cmd == "map") {
-		if (gamemode == MODE_FIGHT)  lprintf("trapped!");
-		if (gamemode == MODE_EXPLORE) {
+		if    (gamemode == MODE_EXPLORE) {
 			for (int y = 0; y < map.size(); y++)
 				if (y == posy)  lprintf("%s", string(map[y]).replace(posx, 1, "@").c_str());
 				else  lprintf("%s", map[y].c_str());
 		}
+		else  lprintf("no...");
 	}
-	else if (cmd == "a" || cmd == "attack")  doattack();
+	else if (cmd == "a" || cmd == "attack") {
+		if    (gamemode == MODE_FIGHT) { if (doattack() == 2)  switchmode(MODE_NONE); }
+		else  lprintf("swish.");
+	}
 	else  lprintf("wat?"), log::input.c_str();
 }
 
