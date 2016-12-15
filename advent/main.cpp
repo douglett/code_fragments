@@ -34,8 +34,9 @@ int main() {
 	xd::screen::getinfo(&log::screenw, &log::screenh, NULL);
 	xd::screen::keycb = keycb;
 
-	guy.hp = 1;
-	switchmode(MODE_FIGHT);
+	// guy.hp = 1;
+	// switchmode(MODE_FIGHT);
+	switchmode(MODE_EXPLORE);
 
 	while (running) {
 		log::paint();  // paints if dirty
@@ -108,9 +109,12 @@ void parse(const string& input) {
 	}
 	else if (cmd == "m" || cmd == "map") {
 		if    (gamemode == MODE_EXPLORE) {
+			const char* mtop = "+-----+";
+			lprintf("%s", mtop);
 			for (int y = 0; y < map.size(); y++)
-				if (y == posy)  lprintf("%s", string(map[y]).replace(posx, 1, "@").c_str());
-				else  lprintf("%s", map[y].c_str());
+				if (y == posy)  lprintf("|%s|", string(map[y]).replace(posx, 1, "@").c_str());
+				else  lprintf("|%s|", map[y].c_str());
+			lprintf("%s", mtop);
 		}
 		else  lprintf("no...");
 	}
