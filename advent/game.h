@@ -40,6 +40,17 @@ namespace log {
 	void clearc();
 } // end log
 
+namespace map {
+	extern int posx, posy;
+	extern std::vector<std::string> umap, map;
+	// members
+	int         isexit (char dir);
+	int         movepos(char dir);
+	void        showmap();
+	void        nextmap();
+	std::string exitstr();
+} // end map
+
 // macros
 #define strprintf(...)  snprintf(cstr::cstr, cstr::CSTR_MAX, __VA_ARGS__), cstr::cstr
 #define lprintf(...)  log::log( (snprintf(cstr::cstr, cstr::CSTR_MAX, __VA_ARGS__), cstr::cstr) )
