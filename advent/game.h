@@ -20,10 +20,11 @@ struct Mob {
 	Mob(std::string name);
 };
 
-namespace cstr {
+namespace util {
 	const int CSTR_MAX = 100;
 	extern char cstr[CSTR_MAX];
 	std::string strtolower(const std::string& s);
+	int indexOf(const std::string& needle, const std::vector<std::string>& haystack);
 } // end cstr
 
 namespace log {
@@ -52,5 +53,5 @@ namespace map {
 } // end map
 
 // macros
-#define strprintf(...)  snprintf(cstr::cstr, cstr::CSTR_MAX, __VA_ARGS__), cstr::cstr
-#define lprintf(...)  log::log( (snprintf(cstr::cstr, cstr::CSTR_MAX, __VA_ARGS__), cstr::cstr) )
+#define strprintf(...)  snprintf(util::cstr, util::CSTR_MAX, __VA_ARGS__), util::cstr
+#define lprintf(...)  log::log( (snprintf(util::cstr, util::CSTR_MAX, __VA_ARGS__), util::cstr) )

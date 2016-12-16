@@ -12,7 +12,6 @@ void switchmode(GAME_MODE mode);
 void parse(const std::string& input);
 int  doattack();
 // member vars
-const vector<char> WALKABLE = { '.', '/' };
 Mob  guy("guy"), spider("spider");
 GAME_MODE gamemode = MODE_NONE;
 int running = 1;
@@ -57,14 +56,6 @@ static void keycb(int key, int status) {
 	// printf("%d\n", key);
 }
 
-template <class T>
-static int indexOf(const T& needle, const vector<T>& haystack) {
-	for (int i = 0; i < haystack.size(); i++)
-		if (haystack[i] == needle)
-			return i;
-	return -1;
-}
-
 
 void switchmode(GAME_MODE mode) {
 	switch (mode) {
@@ -82,7 +73,7 @@ void parse(const string& input) {
 	// get command
 	string cmd;
 	ss >> cmd;
-	cmd = cstr::strtolower(cmd);
+	cmd = util::strtolower(cmd);
 	// parse
 	if (cmd == "quit")  running = 0;
 	else if (cmd == "x") {
@@ -97,7 +88,7 @@ void parse(const string& input) {
 		if    (gamemode == MODE_FIGHT)  lprintf("look out! %s!", spider.name.c_str());
 		else  lprintf("(%s)  a room", map::exitstr().c_str());
 	}
-	else if (indexOf(cmd, { "n", "north", "s", "south", "e", "east", "w", "west", "d", "down" }) > -1) {
+	else if (util::indexOf(cmd, { "n", "north", "s", "south", "e", "east", "w", "west", "d", "down" }) > -1) {
 		if    (gamemode == MODE_EXPLORE) {
 			if (map::movepos(cmd[0]))  parse("look");
 			else  lprintf("oof. wall.");
@@ -142,78 +133,3 @@ int doattack() {
 	}
 	return 0;
 }
-
-
-namespace map {
-	static int id = 0;
-	int posx = 0, posy = 0;
-	vector<string> umap, map;
-
-	int isexit(char c) {
-		switch (c) {
-		case 'n':  if (posy > 0                  && indexOf(map[posy-1][posx], WALKABLE) > -1)  return 1;  break;
-		case 's':  if (posy < map.size()-1       && indexOf(map[posy+1][posx], WALKABLE) > -1)  return 1;  break;
-		case 'w':  if (posx > 0                  && indexOf(map[posy][posx-1], WALKABLE) > -1)  return 1;  break;
-		case 'e':  if (posx < map[posy].size()-1 && indexOf(map[posy][posx+1], WALKABLE) > -1)  return 1;  break;
-		case 'd':  if (map[posy][posx] == '/')  return 1;  break;
-		}
-		return 0;
-	}
-	int movepos(char c) {
-		int mv = 0;
-		switch (c) {
-		case 'n':  if (isexit('n'))  posy--, mv = 1;  break;
-		case 's':  if (isexit('s'))  posy++, mv = 1;  break;
-		case 'e':  if (isexit('e'))  posx++, mv = 1;  break;
-		case 'w':  if (isexit('w'))  posx--, mv = 1;  break;
-		case 'd':  if (isexit('d'))  lprintf("you go down");  nextmap();  mv = 1;  break;
-		}
-		umap[posy][posx] = map[posy][posx];
-		return mv;
-	}
-
-	void showmap() {
-		lprintf("+%s+", string(map::umap[0].size(), '-').c_str());
-		for (int y = 0; y < map::umap.size(); y++)
-			if (y == map::posy)  lprintf("|%s|", string(map::umap[y]).replace(map::posx, 1, "@").c_str());
-			else  lprintf("|%s|", map::umap[y].c_str());
-		lprintf("+%s+", string(map::umap.back().size(), '-').c_str());
-	}
-
-	void nextmap() {
-		id++;
-		switch (id) {
-		case 1:
-			map = {
-				"./.  ",
-				"  .  ",
-				" ... ",
-				" . . ",
-				"   . ",
-				".... "
-			};
-			posx = posy = 0;
-			break;
-		case 2:
-			map = {
-				" . ",
-				"...",
-				" . "
-			};
-			posx = 1, posy = 0;
-			break;
-		} // end switch
-		// create user map
-		umap = {};
-		for (const auto& s : map)
-			umap.push_back( string(s.length(), ' ') );
-		movepos(0);  // fill first position
-	}
-
-	string exitstr() {
-		string e, dir = "nsewd";
-		for (auto c : dir)
-			if (isexit(c))  e += c;
-		return e;
-	}
-} // end map
