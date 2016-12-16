@@ -81,7 +81,6 @@ namespace log {
 
 
 namespace map {
-	static const vector<char> WALKABLE = { '.', '/' };
 	static int id = 0;
 	int posx = 0, posy = 0;
 	vector<string> umap, map;
@@ -110,11 +109,13 @@ namespace map {
 	}
 
 	void showmap() {
-		lprintf("+%s+", string(map::umap[0].size(), '-').c_str());
-		for (int y = 0; y < map::umap.size(); y++)
-			if (y == map::posy)  lprintf("|%s|", string(map::umap[y]).replace(map::posx, 1, "@").c_str());
-			else  lprintf("|%s|", map::umap[y].c_str());
-		lprintf("+%s+", string(map::umap.back().size(), '-').c_str());
+		lprintf("+%s+", string(map::umap[0].size(), '-').c_str());  // top
+		for (int y = 0; y < map::umap.size(); y++) {
+			string s = map::umap[y];
+			if (y == map::posy)  s[map::posx] = '@';
+			lprintf("|%s|", s.c_str());
+		}
+		lprintf("+%s+", string(map::umap.back().size(), '-').c_str());  // bottom
 	}
 
 	void nextmap() {
@@ -122,19 +123,19 @@ namespace map {
 		switch (id) {
 		case 1:
 			map = {
-				"./.  ",
+				"...  ",
 				"  .  ",
-				" ... ",
-				" . . ",
+				" ..x ",
+				" x . ",
 				"   . ",
-				".... "
+				"./.. "
 			};
 			posx = posy = 0;
 			break;
 		case 2:
 			map = {
 				" . ",
-				"...",
+				"..x",
 				" . "
 			};
 			posx = 1, posy = 0;
@@ -145,6 +146,19 @@ namespace map {
 		for (const auto& s : map)
 			umap.push_back( string(s.length(), ' ') );
 		movepos(0);  // fill first position
+	}
+
+	char current() {
+		return map[posy][posx];
+	}
+
+	string roomdesc() {
+		switch (current()) {
+		case '.':  return "dark room";
+		case 'x':  return "webbed room";
+		case '/':  return "staircase";
+		default:   return "??";
+		} // end switch
 	}
 
 	string exitstr() {

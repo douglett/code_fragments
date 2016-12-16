@@ -49,6 +49,8 @@ namespace map {
 	int         movepos(char dir);
 	void        showmap();
 	void        nextmap();
+	char        current();
+	std::string roomdesc();
 	std::string exitstr();
 } // end map
 

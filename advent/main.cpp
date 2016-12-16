@@ -59,7 +59,7 @@ static void keycb(int key, int status) {
 
 void switchmode(GAME_MODE mode) {
 	switch (mode) {
-	case MODE_FIGHT:    log::title = { "fight!", 0x990000ff };  lprintf("a spider appears!");  break;
+	case MODE_FIGHT:    log::title = { "fight!", 0x990000ff };  spider = Mob("spider");  lprintf("a %s appears!", spider.name.c_str());  break;
 	case MODE_EXPLORE:  log::title = { "explore!", 0x000099ff };  lprintf("time to go...");  parse("l");  break;
 	default:            log::title = { "...", 0 };  lprintf("r to re-live");  break;
 	}
@@ -86,11 +86,14 @@ void parse(const string& input) {
 	}
 	else if (cmd == "l" || cmd == "look") {
 		if    (gamemode == MODE_FIGHT)  lprintf("look out! %s!", spider.name.c_str());
-		else  lprintf("(%s)  a room", map::exitstr().c_str());
+		else  lprintf("(%s)  %s", map::exitstr().c_str(), map::roomdesc().c_str());
 	}
 	else if (util::indexOf(cmd, { "n", "north", "s", "south", "e", "east", "w", "west", "d", "down" }) > -1) {
-		if    (gamemode == MODE_EXPLORE) {
-			if (map::movepos(cmd[0]))  parse("look");
+		if  (gamemode == MODE_EXPLORE) {
+			if  (map::movepos(cmd[0])) {
+				parse("look");
+				if (map::current() == 'x')  switchmode(MODE_FIGHT);
+			}
 			else  lprintf("oof. wall.");
 		}
 		else  lprintf("trapped!");
