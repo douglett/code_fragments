@@ -7,6 +7,23 @@
 using namespace std;
 
 
+//*** Mob class ***
+Mob::Mob(std::string name) {
+	// set up initial stats
+	if (name == "guy")
+		maxhp = 10,
+		atk = 2,
+		lck = 30;
+	else if (name == "spider")
+		maxhp = 5,
+		atk = 1,
+		lck = 10;
+	// init
+	this->name = name;
+	hp = maxhp;
+}
+
+
 namespace util {
 	// const int CSTR_MAX = 100;
 	char cstr[CSTR_MAX];
@@ -35,6 +52,10 @@ namespace log {
 
 	void log(const string& s) {
 		vlog.push_back(s);
+		dirty = 1;
+	}
+	void cls() {
+		vlog.erase(vlog.begin(), vlog.end());
 		dirty = 1;
 	}
 	void paint() {
@@ -102,7 +123,7 @@ namespace map {
 		case 's':  if (isexit('s'))  posy++, mv = 1;  break;
 		case 'e':  if (isexit('e'))  posx++, mv = 1;  break;
 		case 'w':  if (isexit('w'))  posx--, mv = 1;  break;
-		case 'd':  if (isexit('d'))  lprintf("you go down");  nextmap();  mv = 1;  break;
+		case 'd':  if (isexit('d'))  log::cls(), lprintf("you go down"), nextmap(), mv = 1;  break;
 		}
 		umap[posy][posx] = map[posy][posx];
 		return mv;
@@ -121,7 +142,7 @@ namespace map {
 	void nextmap() {
 		id++;
 		switch (id) {
-		case 1:
+		case 1:  posx = posy = 0;
 			map = {
 				"...  ",
 				"  .  ",
@@ -130,15 +151,13 @@ namespace map {
 				"   . ",
 				"./.. "
 			};
-			posx = posy = 0;
 			break;
-		case 2:
+		case 2:  posx = 1, posy = 0;
 			map = {
 				" . ",
 				"..x",
 				" . "
 			};
-			posx = 1, posy = 0;
 			break;
 		} // end switch
 		// create user map
@@ -162,7 +181,7 @@ namespace map {
 	}
 
 	string exitstr() {
-		string e, dir = "nsewd";
+		string e, dir = "wnsed";
 		for (auto c : dir)
 			if (isexit(c))  e += c;
 		return e;

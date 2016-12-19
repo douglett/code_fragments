@@ -11,11 +11,11 @@ enum GAME_MODE {
 };
 // structs
 struct Mob {
-	int maxhp  = 10,
+	int maxhp  = 2,
 		hp     = 0,
-		atk    = 2,
+		atk    = 1,
 		def    = 0,
-		lck    = 50;
+		lck    = 5;
 	std::string name;
 	Mob(std::string name);
 };
@@ -35,6 +35,7 @@ namespace log {
 	extern std::pair<std::string, uint32_t> title;
 
 	void log(const std::string& s);
+	void cls();
 	void paint();
 	void inputc(char c);
 	void delc();

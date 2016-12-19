@@ -17,12 +17,6 @@ GAME_MODE gamemode = MODE_NONE;
 int running = 1;
 
 
-//*** Mob class ***
-Mob::Mob(std::string name) {
-	this->name = name;
-	hp = maxhp;
-}
-
 
 //*** main stuff ***
 int main() {
@@ -58,12 +52,12 @@ static void keycb(int key, int status) {
 
 
 void switchmode(GAME_MODE mode) {
+	gamemode = mode;
 	switch (mode) {
 	case MODE_FIGHT:    log::title = { "fight!", 0x990000ff };  spider = Mob("spider");  lprintf("a %s appears!", spider.name.c_str());  break;
 	case MODE_EXPLORE:  log::title = { "explore!", 0x000099ff };  lprintf("time to go...");  parse("l");  break;
 	default:            log::title = { "...", 0 };  lprintf("r to re-live");  break;
 	}
-	gamemode = mode;
 }
 
 
@@ -80,7 +74,7 @@ void parse(const string& input) {
 		if    (gamemode == MODE_FIGHT)  switchmode(MODE_EXPLORE);
 		else  lprintf("can't escape fate...");
 	}
-	else if (cmd == "stat" || cmd == "status") {
+	else if (cmd == "st" || cmd == "stat" || cmd == "status") {
 		lprintf("  hp %d/%d", guy.hp, guy.maxhp);
 		lprintf("  atk %d  def %d  lck %d", guy.atk, guy.def, guy.lck);
 	}
