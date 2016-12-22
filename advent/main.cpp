@@ -11,6 +11,8 @@ static void keycb(int key, int status);
 void switchmode(GAME_MODE mode);
 void parse(const std::string& input);
 int  doattack();
+void startgame();
+void endgame();
 // member vars
 Mob  guy("guy"), spider("spider");
 GAME_MODE gamemode = MODE_NONE;
@@ -27,8 +29,8 @@ int main() {
 	xd::screen::keycb = keycb;
 	// move to first map
 	map::nextmap();
-	switchmode(MODE_EXPLORE);
-	lprintf("(press h for help)");
+	startgame();
+	// endgame();
 	// guy.hp = 1;
 
 	while (running) {
@@ -57,7 +59,10 @@ static void keycb(int key, int status) {
 void switchmode(GAME_MODE mode) {
 	gamemode = mode;
 	switch (mode) {
-	case MODE_FIGHT:    log::title = { "fight!", 0x990000ff };  spider = Mob("spider");  lprintf("a %s appears!", spider.name.c_str());  break;
+	case MODE_FIGHT:
+		if (map::current() == 'y')  spider = Mob("yheti");
+		else  spider = Mob("spider");
+		log::title = { "fight!", 0x990000ff };  lprintf("a %s appears!", spider.name.c_str());  break;
 	case MODE_EXPLORE:  log::title = { "explore!", 0x000099ff };  lprintf("time to go...");  parse("l");  break;
 	default:            log::title = { "...", 0 };  break;
 	}
@@ -83,7 +88,10 @@ void parse(const string& input) {
 		lprintf(" (n) (s) (e) (w)");
 	}
 	else if (cmd == "x") {
-		if       (gamemode == MODE_FIGHT)  switchmode(MODE_EXPLORE);
+		if       (gamemode == MODE_FIGHT) {
+			if      (map::current() == 'x')  switchmode(MODE_EXPLORE);
+			else if (map::current() == 'y')  endgame();
+		}
 		else if  (gamemode == MODE_NONE)   running = 0;
 		else     lprintf("can't escape fate...");
 	}
@@ -99,7 +107,7 @@ void parse(const string& input) {
 		if  (gamemode == MODE_EXPLORE) {
 			if  (map::movepos(cmd[0])) {
 				parse("look");
-				if (map::current() == 'x')  switchmode(MODE_FIGHT);
+				if (map::current() == 'x' || map::current() == 'y')  switchmode(MODE_FIGHT);
 			}
 			else  lprintf("oof. wall.");
 		}
@@ -143,4 +151,39 @@ int doattack() {
 		return 2;
 	}
 	return 0;
+}
+
+
+void startgame() {
+	log::cls();
+	//      |-----------------------------|
+	lprintf("");
+	lprintf("");
+	lprintf("the yheti darts out of sight");
+	lprintf("down into the dark caverns.");
+	lprintf("you steel yourself");
+	lprintf("hand on hunting-knife hilt");
+	lprintf("and begin the chase...");
+	lprintf("");
+	lprintf("(press h for help)");
+	lprintf("");
+	switchmode(MODE_EXPLORE);
+}
+void endgame() {
+	switchmode(MODE_NONE);
+	log::cls();
+	//      |-----------------------------|
+	lprintf("");
+	lprintf("");
+	lprintf("the quarrey subdued, you");
+	lprintf("sigh in relief.");
+	lprintf("hunting-knife in hand, you");
+	lprintf("cut away his thick hide, it's");
+	lprintf("magic finally yours.");
+	lprintf("");
+	lprintf("");
+	lprintf("you win!");
+	lprintf("");
+	lprintf("");
+	lprintf("(x to exit)");
 }

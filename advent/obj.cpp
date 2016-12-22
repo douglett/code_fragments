@@ -11,13 +11,17 @@ using namespace std;
 Mob::Mob(std::string name) {
 	// set up initial stats
 	if (name == "guy")
-		maxhp = 10,
-		atk = 2,
+		maxhp = 25,
+		atk = 4,
 		lck = 30;
 	else if (name == "spider")
-		maxhp = 5,
-		atk = 1,
+		maxhp = 6,
+		atk = 2,
 		lck = 10;
+	else if (name == "yheti")
+		maxhp = 14,
+		atk = 2,
+		lck = 30;
 	// init
 	this->name = name;
 	hp = maxhp;
@@ -144,9 +148,9 @@ namespace map {
 		switch (id) {
 		case 1:  posx = posy = 0;
 			map = {
-				"..y  ",
+				"...  ",
 				"  .  ",
-				" ..x ",
+				" ... ",
 				" x . ",
 				"   . ",
 				"./.. "
@@ -155,21 +159,35 @@ namespace map {
 		case 2:  posx = 1, posy = 0;
 			map = {
 				" . ",
-				"..x",
+				"/.x",
 				" . "
 			};
 			break;
 		case 3:  posx = 4, posy = 0;
 			map = {
-				"/.. .",
-				"  . .",
-				".x...",
+				"/.  .",
+				" .  .",
+				"..x..",
 				".  . ",
 				".... "
 			};
 			break;
-		// case 4:
-		// case 5:
+		case 4:  posx = 0, posy = 3;
+			map = {
+				"  ...",
+				"/.. .",
+				"  x..",
+				".... "
+			};
+			break;
+		case 5:  posx = 0, posy = 2;
+			map = {
+				"y...",
+				"  . ",
+				"....",
+				"  x "
+			};
+			break;
 		} // end switch
 		// create user map
 		umap = {};
@@ -187,6 +205,7 @@ namespace map {
 		case '.':  return "dark room";
 		case 'x':  return "webbed room";
 		case '/':  return "staircase";
+		case 'y':  return "dark cave";
 		default:   return "??";
 		} // end switch
 	}
