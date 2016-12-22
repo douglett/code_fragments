@@ -144,7 +144,7 @@ namespace map {
 		switch (id) {
 		case 1:  posx = posy = 0;
 			map = {
-				"...  ",
+				"..y  ",
 				"  .  ",
 				" ..x ",
 				" x . ",
@@ -159,6 +159,17 @@ namespace map {
 				" . "
 			};
 			break;
+		case 3:  posx = 4, posy = 0;
+			map = {
+				"/.. .",
+				"  . .",
+				".x...",
+				".  . ",
+				".... "
+			};
+			break;
+		// case 4:
+		// case 5:
 		} // end switch
 		// create user map
 		umap = {};
