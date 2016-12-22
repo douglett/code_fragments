@@ -72,7 +72,16 @@ void parse(const string& input) {
 	ss >> cmd;
 	cmd = util::strtolower(cmd);
 	// parse
-	if (cmd == "quit")  running = 0;
+	if (cmd == "qu" || cmd == "quit")  running = 0;
+	else if (cmd == "h" || cmd == "help") {
+		lprintf(" (qu)it");
+		lprintf(" (h)elp");
+		lprintf(" (st)atus");
+		lprintf(" (l)ook");
+		lprintf(" (m)ap");
+		lprintf(" (a)ttack");
+		lprintf(" (n) (s) (e) (w)");
+	}
 	else if (cmd == "x") {
 		if       (gamemode == MODE_FIGHT)  switchmode(MODE_EXPLORE);
 		else if  (gamemode == MODE_NONE)   running = 0;
