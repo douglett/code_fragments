@@ -21,12 +21,15 @@ int running = 1;
 //*** main stuff ***
 int main() {
 	cout << "hello" << endl;
+	srand(time(NULL));
 	xd::screen::init();
 	xd::screen::getinfo(&log::screenw, &log::screenh, NULL);
 	xd::screen::keycb = keycb;
 	// move to first map
 	map::nextmap();
 	switchmode(MODE_EXPLORE);
+	lprintf("(press h for help)");
+	// guy.hp = 1;
 
 	while (running) {
 		log::paint();  // paints if dirty
@@ -56,7 +59,7 @@ void switchmode(GAME_MODE mode) {
 	switch (mode) {
 	case MODE_FIGHT:    log::title = { "fight!", 0x990000ff };  spider = Mob("spider");  lprintf("a %s appears!", spider.name.c_str());  break;
 	case MODE_EXPLORE:  log::title = { "explore!", 0x000099ff };  lprintf("time to go...");  parse("l");  break;
-	default:            log::title = { "...", 0 };  lprintf("r to re-live");  break;
+	default:            log::title = { "...", 0 };  break;
 	}
 }
 
@@ -71,8 +74,9 @@ void parse(const string& input) {
 	// parse
 	if (cmd == "quit")  running = 0;
 	else if (cmd == "x") {
-		if    (gamemode == MODE_FIGHT)  switchmode(MODE_EXPLORE);
-		else  lprintf("can't escape fate...");
+		if       (gamemode == MODE_FIGHT)  switchmode(MODE_EXPLORE);
+		else if  (gamemode == MODE_NONE)   running = 0;
+		else     lprintf("can't escape fate...");
 	}
 	else if (cmd == "st" || cmd == "stat" || cmd == "status") {
 		lprintf("  hp %d/%d", guy.hp, guy.maxhp);
@@ -126,6 +130,7 @@ int doattack() {
 	lprintf("%s attacks [%d dmg]", spider.name.c_str(), dmg);
 	if (guy.hp <= 0) {
 		lprintf("you die");
+		lprintf("(x to exit)");
 		return 2;
 	}
 	return 0;
