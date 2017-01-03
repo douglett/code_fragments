@@ -12,21 +12,22 @@ string getrow(int row);
 void move(int d);
 void corridor();
 void repaint();
-void back_row();
-void mid_row();
-void front_row();
+void back_row(uint32_t* dat);
+void mid_row(uint32_t* dat);
+void front_row(uint32_t* dat);
 void maketiles();
 // consts
 // const int ROWLEN[] = { 5, 5, 5 };
 // vars
-uint32_t* tiles[3][3] = { {NULL} };
 int running = 1;
+uint32_t* tiles[3][3] = { {NULL} };
+xd::screen::Sprite* eye = NULL;
 vector<string> map = {
-	".....",
-	".   .",
-	". . .",
-	".   .",
-	".....",
+	".........",
+	".       .",
+	". ..    .",
+	".       .",
+	".........",
 };
 int posx = 1, posy = 2, dir = 0;
 namespace gmap {
@@ -40,6 +41,7 @@ int main() {
 	cout << "start" << endl;
 	xd::screen::init();
 	xd::screen::keycb = keycb;
+	eye = xd::screen::makesprite(100, 100, "eye");
 	maketiles();
 	repaint();
 
@@ -112,8 +114,15 @@ void move(int d) {
 			else if (dir == 3)  posx--, repaint();
 		}
 		break;
+	case 2:
+		if (gmap::is_empty(getrow(-1)[2])) {
+			if      (dir == 0)  posy++, repaint();
+			else if (dir == 1)  posx--, repaint();
+			else if (dir == 2)  posy--, repaint();
+			else if (dir == 3)  posx++, repaint();
+		}
+		break;
 	case 1:  dir = (dir + 1) % 4;  repaint();  break;
-	case 2:  break;
 	case 3:  dir = (dir + 3) % 4;  repaint();  break;
 	default:  assert("wrong dir" == NULL);
 	}
@@ -132,38 +141,23 @@ void corridor() {
 }
 
 void repaint() {
-	auto* dat = xd::screen::backbuffer->getdata();
-	xd::draw::clear(dat);
-	xd::draw::fillrect(dat, 0, 0, 100, 100, 0x0000ffff);
 	printf("x:%d y:%d  d:%d\n", posx, posy, dir);
-	back_row(), mid_row(), front_row();
+	auto* dat = eye->getdata();
+	xd::draw::fillrect(dat, 0, 0, 100, 100, 0x0000ffff);
+	back_row(dat);
+	mid_row(dat);
+	front_row(dat);
 }
 
-void back_row() {
-	auto* dat = xd::screen::backbuffer->getdata();
-	uint32_t c = 0x770000ff;
-	// xd::draw::tracerect(dat, 37, 37, 26, 26, c);
-	// xd::draw::tracerect(dat, 37-25, 37, 26, 26, c);
-	// xd::draw::tracerect(dat, 37+25, 37, 26, 26, c);
-	// xd::draw::tracerect(dat, 37-25*2, 37, 26, 26, c);
-	// xd::draw::tracerect(dat, 37+25*2, 37, 26, 26, c);
+void back_row(uint32_t* dat) {
 	string row = getrow(2);
 	printf("back_row : [%s]\n", row.c_str());
-	// for (int i = 0; i < 5; i++)
-	// 	if (gmap::is_nothing(row[i]))  continue;
-	// 	// else if (i == 1)  xd::draw::tracepoly(dat, 28, 28, {{0, 0}, {9, 9}, {9, 34}, {0, 43}, {0, 0}, {-43, 0}, {-43, 43}, {0, 43}}, c);  // left row 2
-	// 	// else if (i == 2)  xd::draw::tracerect(dat, 28, 28, 44, 44, c);  // mid row 2
-	// 	else if (i == 1)  xd::draw::blit(tiles[2][0], dat, 0, 28);  // left row 2
-	// 	else if (i == 2)  xd::draw::blit(tiles[2][1], dat, 28, 28);  // mid row 2
-	// 	else if (i == 3)  xd::draw::tracepoly(dat, 99-28, 28, {{0, 0}, {-9, 9}, {-9, 34}, {0, 43}, {0, 0}, {43, 0}, {43, 43}, {0, 43}}, c);  // right row 2
-	
 	if (row[1] == '.')  xd::draw::blit(tiles[2][0], dat, 0, 28);  // left row 2
+	if (row[3] == '.')  xd::draw::blit(tiles[2][2], dat, 99-28-9, 28);  // right row 2
 	if (row[2] == '.')  xd::draw::blit(tiles[2][1], dat, 28, 28);  // mid row 2
-	if (row[3] == '.')  xd::draw::blit(tiles[2][2], dat, 99-28, 28);  // right row 2
 }
 
-void mid_row() {
-	auto* dat = xd::screen::backbuffer->getdata();
+void mid_row(uint32_t* dat) {
 	string row = getrow(1);
 	printf("mid_row  : [%s]\n", row.c_str());
 	if (row[1] == '.')  xd::draw::blit(tiles[1][0], dat, 0, 13);  // left row 1
@@ -171,8 +165,7 @@ void mid_row() {
 	if (row[2] == '.')  xd::draw::blit(tiles[1][1], dat, 13, 13);  // mid row 1
 }
 
-void front_row() {
-	auto* dat = xd::screen::backbuffer->getdata();
+void front_row(uint32_t* dat) {
 	string row = getrow(0);
 	printf("front_row: [%s]\n", row.c_str());
 	if (row[1] == '.')  xd::draw::blit(tiles[0][0], dat, 0, 0);  // left row 0
@@ -226,5 +219,5 @@ void maketiles() {
 	xd::draw::tracerect(dat, 0, 0, 44, 44, c);
 	xd::draw::fill(dat, 1, 2, b);
 	// row-2 : right
-	tiles[2][2] = unknown;
+	tiles[2][2] = dupflip(tiles[2][0]);
 }
