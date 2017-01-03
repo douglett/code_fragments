@@ -2,13 +2,13 @@
 #include <vector>
 #include <cassert>
 #include "xdlib/xdlib.h"
+#include "game.h"
 
 using namespace std;
 
 
 // functions
 static void keycb(int key, int state);
-string getrow(int row);
 void move(int d);
 void corridor();
 void repaint();
@@ -22,19 +22,6 @@ void maketiles();
 int running = 1;
 uint32_t* tiles[3][3] = { {NULL} };
 xd::screen::Sprite* eye = NULL;
-vector<string> map = {
-	".........",
-	".       .",
-	". ..    .",
-	".       .",
-	".........",
-};
-int posx = 1, posy = 2, dir = 0;
-namespace gmap {
-	int is_empty(char c)   { return c == ' '; }
-	int is_null(char c)    { return c == 'x'; }
-	int is_nothing(char c) { return is_empty(c) || is_null(c); }
-}
 
 
 int main() {
@@ -64,47 +51,8 @@ static void keycb(int key, int state) {
 	}
 }
 
-string getrow(int row) {
-	string r;
-	int  xx = posx,  yy = posy,  rsize = 2;
-	// make row
-	switch (dir) {
-	case 0:  // north
-		yy -= row;
-		for (int x = -rsize; x <= rsize; x++)
-			if (yy < 0 || yy >= map.size() || xx+x < 0 || xx+x >= map[yy].size())  r += 'x';
-			else  r += map[yy][xx+x];
-		break;
-	case 1:  // east
-		xx += row;
-		for (int y = -rsize; y <= rsize; y++)
-			if (yy+y < 0 || yy+y >= map.size() || xx < 0 || xx >= map[yy+y].size())  r += 'x';
-			else  r += map[yy+y][xx];
-		break;
-	case 2:  // south
-		yy += row;
-		for (int x = rsize; x >= -rsize; x--)
-			if (yy < 0 || yy >= map.size() || xx+x < 0 || xx+x >= map[yy].size())  r += 'x';
-			else  r += map[yy][xx+x];
-		break;
-	case 3:  // west
-		xx -= row;
-		for (int y = rsize; y >= -rsize; y--)
-			if (yy+y < 0 || yy+y >= map.size() || xx < 0 || xx >= map[yy+y].size())  r += 'x';
-			else  r += map[yy+y][xx];
-		break;
-	}
-	// format row
-	// for (int i = 0; i < r.length(); i++) {
-	// 	if (r[i] != '.')  continue;
-	// 	else if (i > 0 && gmap::is_empty(r[i-1]))  r[i] = '\\';
-	// 	else if (i < r.length()-1 && gmap::is_empty(r[i+1]))  r[i] = '/';
-	// 	else  r[i] = '_';
-	// }
-	return r;
-}
-
 void move(int d) {
+	using namespace gmap;
 	switch (d) {
 	case 0:
 		if (gmap::is_empty(getrow(1)[2])) {
@@ -141,7 +89,7 @@ void corridor() {
 }
 
 void repaint() {
-	printf("x:%d y:%d  d:%d\n", posx, posy, dir);
+	printf("x:%d y:%d  d:%d\n", gmap::posx, gmap::posy, gmap::dir);
 	auto* dat = eye->getdata();
 	xd::draw::fillrect(dat, 0, 0, 100, 100, 0x0000ffff);
 	back_row(dat);
@@ -150,7 +98,7 @@ void repaint() {
 }
 
 void back_row(uint32_t* dat) {
-	string row = getrow(2);
+	string row = gmap::getrow(2);
 	printf("back_row : [%s]\n", row.c_str());
 	if (row[1] == '.')  xd::draw::blit(tiles[2][0], dat, 0, 28);  // left row 2
 	if (row[3] == '.')  xd::draw::blit(tiles[2][2], dat, 99-28-9, 28);  // right row 2
@@ -158,7 +106,7 @@ void back_row(uint32_t* dat) {
 }
 
 void mid_row(uint32_t* dat) {
-	string row = getrow(1);
+	string row = gmap::getrow(1);
 	printf("mid_row  : [%s]\n", row.c_str());
 	if (row[1] == '.')  xd::draw::blit(tiles[1][0], dat, 0, 13);  // left row 1
 	if (row[3] == '.')  xd::draw::blit(tiles[1][2], dat, 70, 13);  // right row 1
@@ -166,7 +114,7 @@ void mid_row(uint32_t* dat) {
 }
 
 void front_row(uint32_t* dat) {
-	string row = getrow(0);
+	string row = gmap::getrow(0);
 	printf("front_row: [%s]\n", row.c_str());
 	if (row[1] == '.')  xd::draw::blit(tiles[0][0], dat, 0, 0);  // left row 0
 	if (row[3] == '.')  xd::draw::blit(tiles[0][2], dat, 86, 0);  // right row 0
