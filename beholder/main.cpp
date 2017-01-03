@@ -15,9 +15,11 @@ void repaint();
 void back_row();
 void mid_row();
 void front_row();
+void maketiles();
 // consts
 // const int ROWLEN[] = { 5, 5, 5 };
 // vars
+uint32_t* tiles[3][3] = { {NULL} };
 int running = 1;
 vector<string> map = {
 	".....",
@@ -38,6 +40,7 @@ int main() {
 	cout << "start" << endl;
 	xd::screen::init();
 	xd::screen::keycb = keycb;
+	maketiles();
 	repaint();
 
 	while (running) {
@@ -178,6 +181,33 @@ void front_row() {
 	printf("front_row: [%s]\n", row.c_str());
 	for (int i = 1; i <= 3; i++)
 		if (gmap::is_nothing(row[i]))  continue;
-		else if (i == 1)  xd::draw::tracepoly(dat, 0, 0,  {{0, 0}, {13, 13}, {13, 86}, {0, 99}},  c);  // left row 0
+		// else if (i == 1)  xd::draw::tracepoly(dat, 0, 0,  {{0, 0}, {13, 13}, {13, 86}, {0, 99}},  c);  // left row 0
+		else if (i == 1)  xd::draw::blit(tiles[0][0], dat, 0, 0);
 		else if (i == 3)  xd::draw::tracepoly(dat, 99, 0,  {{0, 0}, {-13, 13}, {-13, 86}, {0, 99}},  c);  // right row 0
+}
+
+void maketiles() {
+	uint32_t c = 0xaa0000ff, b = 0x999999ff;
+	uint32_t* dat;
+	// left row 0
+	dat = tiles[0][0] = xd::draw::make_img(14, 100);
+	xd::draw::clear(dat);
+	xd::draw::tracepoly(dat, 0, 0,  {{0, 0}, {13, 13}, {13, 86}, {0, 99}},  c);
+	xd::draw::fill(dat, 0, 1, b);
+	// left row 1
+	dat = tiles[1][0] = xd::draw::make_img(16, 74);
+	xd::draw::tracepoly(dat, 13, 13,  {{0, 0}, {15, 15}, {15, 58}, {0, 73}, {0, 0}, {-14, 0}, {-14, 73}, {0, 73}},  c);
+	xd::draw::fill(dat, 0, 1, b);
+	// mid row 1
+	dat = tiles[1][1] = xd::draw::make_img(74, 74);
+	xd::draw::tracerect(dat, 13, 13, 74, 74, c);
+	xd::draw::fill(dat, 0, 1, b);
+	// left row 2
+	dat = tiles[2][0] = xd::draw::make_img(10, 44);
+	xd::draw::tracepoly(dat, 28, 28, {{0, 0}, {9, 9}, {9, 34}, {0, 43}, {0, 0}, {-43, 0}, {-43, 43}, {0, 43}}, c);
+	xd::draw::fill(dat, 0, 1, b);
+	// mid row 2
+	dat = tiles[2][1] = xd::draw::make_img(44, 44);
+	xd::draw::tracerect(dat, 28, 28, 44, 44, c);
+	xd::draw::fill(dat, 0, 1, b);
 }
