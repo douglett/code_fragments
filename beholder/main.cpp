@@ -160,9 +160,10 @@ void back_row() {
 	printf("back_row : [%s]\n", row.c_str());
 	for (int i = 0; i < 5; i++)
 		if (gmap::is_nothing(row[i]))  continue;
-		else if (row[i] == '/')   xd::draw::tracepoly(dat, 28, 28,  {{0, 0}, {0, 43}, {9, 34}, {9, 9}, {0, 0}},  c);  // left row 3
-		else if (row[i] == '\\')  xd::draw::tracepoly(dat, 99-28, 28,  {{0, 0}, {0, 43}, {-9, 34}, {-9, 9}, {0, 0}},  c);  // right row 3
-		else  xd::draw::tracerect(dat, 37+(25 * (i-2)), 37, 26, 26, c);
+		else if (row[i] == '/')   xd::draw::tracepoly(dat, 28, 28,  {{0, 0}, {0, 43}, {9, 34}, {9, 9}, {0, 0}},  c);  // left row 2
+		else if (row[i] == '\\')  xd::draw::tracepoly(dat, 99-28, 28,  {{0, 0}, {0, 43}, {-9, 34}, {-9, 9}, {0, 0}},  c);  // right row 2
+		// else  xd::draw::tracerect(dat, 37+(25 * (i-2)), 37, 26, 26, c);  // mid row 2
+		else  xd::draw::tracerect(dat, 28+(43 * (i-1)), 28, 44, 44, c);  // mid row 1
 }
 
 void mid_row() {
@@ -175,9 +176,10 @@ void mid_row() {
 	printf("mid_row  :  [%s]\n", row.c_str());
 	for (int i = 0; i < 3; i++)
 		if (gmap::is_nothing(row[i]))  continue;
-		else if (row[i] == '/')   xd::draw::tracepoly(dat, 13, 13,  {{0, 0}, {15, 15}, {15, 58}, {0, 73}, {0, 0}},  c);  // left row 2
-		else if (row[i] == '\\')  xd::draw::tracepoly(dat, 99-13, 13,  {{0, 0}, {-15, 15}, {-15, 58}, {0, 73}, {0, 0}},  c);  // right row 2
-		else  xd::draw::tracerect(dat, 28+(43 * (i-1)), 28, 44, 44, c);
+		else if (row[i] == '/')   xd::draw::tracepoly(dat, 13, 13,  {{0, 0}, {15, 15}, {15, 58}, {0, 73}, {0, 0}},  c);  // left row 1
+		else if (row[i] == '\\')  xd::draw::tracepoly(dat, 99-13, 13,  {{0, 0}, {-15, 15}, {-15, 58}, {0, 73}, {0, 0}},  c);  // right row 1
+		// else  xd::draw::tracerect(dat, 28+(43 * (i-1)), 28, 44, 44, c);
+		else  xd::draw::tracerect(dat, 13+(73 * (i-1)), 13, 74, 74, c);  // mid row 0
 }
 
 void front_row() {
@@ -190,7 +192,7 @@ void front_row() {
 	printf("front_row:  [%s]\n", row.c_str());
 	for (int i = 0; i < 3; i++)
 		if (gmap::is_nothing(row[i]))  continue;
-		else if (row[i] == '/')   xd::draw::tracepoly(dat, 0, 0,  {{0, 0}, {13, 13}, {13, 86}, {0, 99}},  c);  // left row 1
-		else if (row[i] == '\\')  xd::draw::tracepoly(dat, 99, 0,  {{0, 0}, {-13, 13}, {-13, 86}, {0, 99}},  c);  // right row 1
-		else  xd::draw::tracerect(dat, 13+(73 * (i-1)), 13, 74, 74, c);
+		else if (row[i] == '/')   xd::draw::tracepoly(dat, 0, 0,  {{0, 0}, {13, 13}, {13, 86}, {0, 99}},  c);  // left row 0
+		else if (row[i] == '\\')  xd::draw::tracepoly(dat, 99, 0,  {{0, 0}, {-13, 13}, {-13, 86}, {0, 99}},  c);  // right row 0
+		// else  xd::draw::tracerect(dat, 13+(73 * (i-1)), 13, 74, 74, c);
 }
