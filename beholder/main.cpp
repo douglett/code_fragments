@@ -16,6 +16,7 @@ void back_row();
 void mid_row();
 void front_row();
 // vars
+int running = 1;
 vector<string> map = {
 	".....",
 	".   .",
@@ -24,6 +25,11 @@ vector<string> map = {
 	".....",
 };
 int posx = 1, posy = 2, dir = 0;
+namespace gmap {
+	int is_empty(char c)   { return c == ' '; }
+	int is_null(char c)    { return c == 'x'; }
+	int is_nothing(char c) { return is_empty(c) || is_null(c); }
+}
 
 
 int main() {
@@ -46,7 +52,7 @@ int main() {
 	// front_row();
 	repaint();
 
-	while (true) {
+	while (running) {
 		if (xd::screen::paint())  break;
 	}
 
@@ -56,6 +62,7 @@ int main() {
 static void keycb(int key, int state) {
 	if (state != 1)  return;
 	switch (key) {
+	case 27:  running = 0;  break;
 	case 0x40000052:  move(0);  break;  // up
 	case 0x40000051:  move(2);  break;  // down
 	case 0x4000004f:  move(1);  break;  // right
@@ -66,7 +73,8 @@ static void keycb(int key, int state) {
 
 string getrow(int row) {
 	string r;
-	int xx = posx, yy = posy, rsize = (row == 2 ? 2 : 1);
+	int  xx = posx,  yy = posy,  rsize = (row == 2 ? 2 : 1);
+	// make row
 	switch (dir) {
 	case 0:  // north
 		yy -= row;
@@ -92,6 +100,13 @@ string getrow(int row) {
 			if (yy+y < 0 || yy+y >= map.size() || xx < 0 || xx >= map[yy+y].size())  r += 'x';
 			else  r += map[yy+y][xx];
 		break;
+	}
+	// format row
+	for (int i = 0; i < r.length(); i++) {
+		if (r[i] != '.')  continue;
+		else if (i > 0 && gmap::is_empty(r[i-1]))  r[i] = '\\';
+		else if (i < r.length()-1 && gmap::is_empty(r[i+1]))  r[i] = '/';
+		else  r[i] = '_';
 	}
 	return r;
 }
@@ -144,8 +159,10 @@ void back_row() {
 	string row = getrow(2);
 	printf("back_row : [%s]\n", row.c_str());
 	for (int i = 0; i < 5; i++)
-		if (row[i] == '.')
-			xd::draw::tracerect(dat, 37+(25 * (i-2)), 37, 26, 26, c);
+		if (gmap::is_nothing(row[i]))  continue;
+		else if (row[i] == '/')   xd::draw::tracepoly(dat, 28, 28,  {{0, 0}, {0, 43}, {9, 34}, {9, 9}, {0, 0}},  c);  // left row 3
+		else if (row[i] == '\\')  xd::draw::tracepoly(dat, 99-28, 28,  {{0, 0}, {0, 43}, {-9, 34}, {-9, 9}, {0, 0}},  c);  // right row 3
+		else  xd::draw::tracerect(dat, 37+(25 * (i-2)), 37, 26, 26, c);
 }
 
 void mid_row() {
@@ -155,10 +172,12 @@ void mid_row() {
 	// xd::draw::tracerect(dat, 28-43, 28, 44, 44, c);
 	// xd::draw::tracerect(dat, 28+43, 28, 44, 44, c);
 	string row = getrow(1);
-	printf("mid_row  : [%s]\n", row.c_str());
+	printf("mid_row  :  [%s]\n", row.c_str());
 	for (int i = 0; i < 3; i++)
-		if (row[i] == '.')
-			xd::draw::tracerect(dat, 28+(43 * (i-1)), 28, 44, 44, c);
+		if (gmap::is_nothing(row[i]))  continue;
+		else if (row[i] == '/')   xd::draw::tracepoly(dat, 13, 13,  {{0, 0}, {15, 15}, {15, 58}, {0, 73}, {0, 0}},  c);  // left row 2
+		else if (row[i] == '\\')  xd::draw::tracepoly(dat, 99-13, 13,  {{0, 0}, {-15, 15}, {-15, 58}, {0, 73}, {0, 0}},  c);  // right row 2
+		else  xd::draw::tracerect(dat, 28+(43 * (i-1)), 28, 44, 44, c);
 }
 
 void front_row() {
@@ -168,8 +187,10 @@ void front_row() {
 	// xd::draw::tracerect(dat, 13-73, 13, 74, 74, c);
 	// xd::draw::tracerect(dat, 13+73, 13, 74, 74, c);
 	string row = getrow(0);
-	printf("front_row: [%s]\n", row.c_str());
+	printf("front_row:  [%s]\n", row.c_str());
 	for (int i = 0; i < 3; i++)
-		if (row[i] == '.')
-			xd::draw::tracerect(dat, 13+(73 * (i-1)), 13, 74, 74, c);
+		if (gmap::is_nothing(row[i]))  continue;
+		else if (row[i] == '/')   xd::draw::tracepoly(dat, 0, 0,  {{0, 0}, {13, 13}, {13, 86}, {0, 99}},  c);  // left row 1
+		else if (row[i] == '\\')  xd::draw::tracepoly(dat, 99, 0,  {{0, 0}, {-13, 13}, {-13, 86}, {0, 99}},  c);  // right row 1
+		else  xd::draw::tracerect(dat, 13+(73 * (i-1)), 13, 74, 74, c);
 }
