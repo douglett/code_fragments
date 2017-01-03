@@ -137,8 +137,8 @@ void repaint() {
 }
 
 void back_row() {
-	// auto* dat = xd::screen::backbuffer->getdata();
-	// uint32_t c = 0x770000ff;
+	auto* dat = xd::screen::backbuffer->getdata();
+	uint32_t c = 0x770000ff;
 	// xd::draw::tracerect(dat, 37, 37, 26, 26, c);
 	// xd::draw::tracerect(dat, 37-25, 37, 26, 26, c);
 	// xd::draw::tracerect(dat, 37+25, 37, 26, 26, c);
@@ -146,10 +146,11 @@ void back_row() {
 	// xd::draw::tracerect(dat, 37+25*2, 37, 26, 26, c);
 	string row = getrow(2);
 	printf("back_row : [%s]\n", row.c_str());
-	// for (int i = 0; i < ROWLEN[2]; i++)
-	// 	if (gmap::is_nothing(row[i]))  continue;
-	// 	else  xd::draw::tracerect(dat, 37+(25 * (i-ROWLEN[2]/2)), 37, 26, 26, c);  // mid row 2
-	// 	// else  xd::draw::tracerect(dat, 28+(43 * (i-1)), 28, 44, 44, c);  // mid row 1
+	for (int i = 0; i < 5; i++)
+		if (gmap::is_nothing(row[i]))  continue;
+		else if (i == 1)  xd::draw::tracepoly(dat, 28, 28, {{0, 0}, {9, 9}, {9, 34}, {0, 43}, {0, 0}, {-43, 0}, {-43, 43}, {0, 43}}, c);  // left row 2
+		else if (i == 2)  xd::draw::tracerect(dat, 28, 28, 44, 44, c);  // mid row 2
+		else if (i == 3)  xd::draw::tracepoly(dat, 99-28, 28, {{0, 0}, {-9, 9}, {-9, 34}, {0, 43}, {0, 0}, {43, 0}, {43, 43}, {0, 43}}, c);  // right row 2
 }
 
 void mid_row() {
