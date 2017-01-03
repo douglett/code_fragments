@@ -166,8 +166,10 @@ void mid_row() {
 	printf("mid_row  : [%s]\n", row.c_str());
 	for (int i = 0; i < 5; i++)
 		if (gmap::is_nothing(row[i]))  continue;
-		else if (i == 1)  xd::draw::tracepoly(dat, 13, 13,  {{0, 0}, {15, 15}, {15, 58}, {0, 73}, {0, 0}, {-14, 0}, {-14, 73}, {0, 73}},  c);  // left row 1
-		else if (i == 2)  xd::draw::tracerect(dat, 13, 13, 74, 74, c);  // mid row 1
+		// else if (i == 1)  xd::draw::tracepoly(dat, 13, 13,  {{0, 0}, {15, 15}, {15, 58}, {0, 73}, {0, 0}, {-14, 0}, {-14, 73}, {0, 73}},  c);  // left row 1
+		// else if (i == 2)  xd::draw::tracerect(dat, 13, 13, 74, 74, c);  // mid row 1
+		else if (i == 1)  xd::draw::blit(tiles[1][0], dat, 0, 13);  // left row 1
+		else if (i == 2)  xd::draw::blit(tiles[1][1], dat, 13, 13);  // mid row 1
 		else if (i == 3)  xd::draw::tracepoly(dat, 86, 13,  {{0, 0}, {-15, 15}, {-15, 58}, {0, 73}, {0, 0}, {14, 0}, {14, 73}, {0, 73}},  c);  // right row 1
 }
 
@@ -182,7 +184,7 @@ void front_row() {
 	for (int i = 1; i <= 3; i++)
 		if (gmap::is_nothing(row[i]))  continue;
 		// else if (i == 1)  xd::draw::tracepoly(dat, 0, 0,  {{0, 0}, {13, 13}, {13, 86}, {0, 99}},  c);  // left row 0
-		else if (i == 1)  xd::draw::blit(tiles[0][0], dat, 0, 0);
+		else if (i == 1)  xd::draw::blit(tiles[0][0], dat, 0, 0);  // left row 0
 		else if (i == 3)  xd::draw::tracepoly(dat, 99, 0,  {{0, 0}, {-13, 13}, {-13, 86}, {0, 99}},  c);  // right row 0
 }
 
@@ -193,15 +195,18 @@ void maketiles() {
 	dat = tiles[0][0] = xd::draw::make_img(14, 100);
 	xd::draw::clear(dat);
 	xd::draw::tracepoly(dat, 0, 0,  {{0, 0}, {13, 13}, {13, 86}, {0, 99}},  c);
-	xd::draw::fill(dat, 0, 1, b);
+	xd::draw::fill(dat, 1, 2, b);
 	// left row 1
-	dat = tiles[1][0] = xd::draw::make_img(16, 74);
-	xd::draw::tracepoly(dat, 13, 13,  {{0, 0}, {15, 15}, {15, 58}, {0, 73}, {0, 0}, {-14, 0}, {-14, 73}, {0, 73}},  c);
-	xd::draw::fill(dat, 0, 1, b);
+	dat = tiles[1][0] = xd::draw::make_img(30, 74);
+	xd::draw::clear(dat);
+	xd::draw::tracepoly(dat, 13, 0,  {{0, 0}, {15, 15}, {15, 58}, {0, 73}, {0, 0}, {-14, 0}, {-14, 73}, {0, 73}},  c);
+	xd::draw::fill(dat, 1, 2, b);
+	xd::draw::fill(dat, 14, 3, b);
 	// mid row 1
 	dat = tiles[1][1] = xd::draw::make_img(74, 74);
-	xd::draw::tracerect(dat, 13, 13, 74, 74, c);
-	xd::draw::fill(dat, 0, 1, b);
+	xd::draw::clear(dat);
+	xd::draw::tracerect(dat, 0, 0, 74, 74, c);
+	xd::draw::fill(dat, 1, 2, b);
 	// left row 2
 	dat = tiles[2][0] = xd::draw::make_img(10, 44);
 	xd::draw::tracepoly(dat, 28, 28, {{0, 0}, {9, 9}, {9, 34}, {0, 43}, {0, 0}, {-43, 0}, {-43, 43}, {0, 43}}, c);
