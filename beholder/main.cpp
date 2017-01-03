@@ -160,29 +160,27 @@ void back_row() {
 
 void mid_row() {
 	auto* dat = xd::screen::backbuffer->getdata();
-	uint32_t c = 0xaa0000ff;
-	// xd::draw::tracerect(dat, 28, 28, 44, 44, c);
-	// xd::draw::tracerect(dat, 28-43, 28, 44, 44, c);
-	// xd::draw::tracerect(dat, 28+43, 28, 44, 44, c);
 	string row = getrow(1);
 	printf("mid_row  : [%s]\n", row.c_str());
-	for (int i = 0; i < 5; i++)
-		if (gmap::is_nothing(row[i]))  continue;
-		// else if (i == 1)  xd::draw::tracepoly(dat, 13, 13,  {{0, 0}, {15, 15}, {15, 58}, {0, 73}, {0, 0}, {-14, 0}, {-14, 73}, {0, 73}},  c);  // left row 1
-		// else if (i == 2)  xd::draw::tracerect(dat, 13, 13, 74, 74, c);  // mid row 1
-		else if (i == 1)  xd::draw::blit(tiles[1][0], dat, 0, 13);  // left row 1
-		else if (i == 2)  xd::draw::blit(tiles[1][1], dat, 13, 13);  // mid row 1
-		else if (i == 3)  xd::draw::tracepoly(dat, 86, 13,  {{0, 0}, {-15, 15}, {-15, 58}, {0, 73}, {0, 0}, {14, 0}, {14, 73}, {0, 73}},  c);  // right row 1
+	if (row[1] == '.')  xd::draw::blit(tiles[1][0], dat, 0, 13);  // left row 1
+	if (row[3] == '.')  xd::draw::blit(tiles[1][2], dat, 70, 13);  // right row 1
+	if (row[2] == '.')  xd::draw::blit(tiles[1][1], dat, 13, 13);  // mid row 1
 }
 
 void front_row() {
 	auto* dat = xd::screen::backbuffer->getdata();
 	string row = getrow(0);
 	printf("front_row: [%s]\n", row.c_str());
-	for (int i = 1; i <= 3; i++)
-		if (gmap::is_nothing(row[i]))  continue;
-		else if (i == 1)  xd::draw::blit(tiles[0][0], dat, 0, 0);  // left row 0
-		else if (i == 3)  xd::draw::blit(tiles[0][2], dat, 86, 0);  // right row 0
+	if (row[1] == '.')  xd::draw::blit(tiles[0][0], dat, 0, 0);  // left row 0
+	if (row[3] == '.')  xd::draw::blit(tiles[0][2], dat, 86, 0);  // right row 0
+}
+
+uint32_t* dupflip(const uint32_t* src) {
+	auto* dat = xd::draw::make_img(src[0], src[1]);
+	xd::draw::clear(dat);
+	xd::draw::blit(src, dat, 0, 0);
+	xd::draw::flip_h(dat);
+	return dat;
 }
 
 void maketiles() {
@@ -198,21 +196,20 @@ void maketiles() {
 	// row-0 : mid
 	tiles[0][1] = unknown;
 	// row-0 : right
-	dat = tiles[0][2] = xd::draw::make_img(14, 100);
-	xd::draw::clear(dat);
-	xd::draw::blit(tiles[0][0], dat, 0, 0);
-	xd::draw::flip_h(dat);
-	// left row 1
+	tiles[0][2] = dupflip(tiles[0][0]);
+	// row-1 : left
 	dat = tiles[1][0] = xd::draw::make_img(30, 74);
 	xd::draw::clear(dat);
 	xd::draw::tracepoly(dat, 13, 0,  {{0, 0}, {15, 15}, {15, 58}, {0, 73}, {0, 0}, {-14, 0}, {-14, 73}, {0, 73}},  c);
 	xd::draw::fill(dat, 1, 2, b);
 	xd::draw::fill(dat, 14, 3, b);
-	// mid row 1
+	// row-1 : mid
 	dat = tiles[1][1] = xd::draw::make_img(74, 74);
 	xd::draw::clear(dat);
 	xd::draw::tracerect(dat, 0, 0, 74, 74, c);
 	xd::draw::fill(dat, 1, 2, b);
+	// row-1 : right
+	tiles[1][2] = dupflip(tiles[1][0]);
 	// left row 2
 	dat = tiles[2][0] = xd::draw::make_img(38, 44);
 	xd::draw::clear(dat);
