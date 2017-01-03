@@ -12,6 +12,7 @@ static void keycb(int key, int state);
 void move(int d);
 void corridor();
 void repaint();
+void far_row(uint32_t* dat);
 void back_row(uint32_t* dat);
 void mid_row(uint32_t* dat);
 void front_row(uint32_t* dat);
@@ -20,7 +21,7 @@ void maketiles();
 // const int ROWLEN[] = { 5, 5, 5 };
 // vars
 int running = 1;
-uint32_t* tiles[3][3] = { {NULL} };
+uint32_t* tiles[4][3] = { {NULL} };
 xd::screen::Sprite* eye = NULL;
 
 
@@ -29,6 +30,7 @@ int main() {
 	xd::screen::init();
 	xd::screen::keycb = keycb;
 	eye = xd::screen::makesprite(100, 100, "eye");
+	eye->pos(10, 10);
 	maketiles();
 	repaint();
 
@@ -92,9 +94,20 @@ void repaint() {
 	printf("x:%d y:%d  d:%d\n", gmap::posx, gmap::posy, gmap::dir);
 	auto* dat = eye->getdata();
 	xd::draw::fillrect(dat, 0, 0, 100, 100, 0x0000ffff);
+	far_row(dat);
 	back_row(dat);
 	mid_row(dat);
 	front_row(dat);
+}
+
+void far_row(uint32_t* dat) {
+	string row = gmap::getrow(3);
+	printf("far_row  : [%s]\n", row.c_str());
+	for (int i = 1; i <= 3; i++)
+		if (row[i] == '.')  xd::draw::blit(tiles[3][1], dat, 37+(25*(i-2)), 37);
+	// draw edges only if flush
+	if (row[0] == '.' && row[1] == '.')  xd::draw::blit(tiles[3][1], dat, 37+(25*-2), 37);
+	if (row[4] == '.' && row[3] == '.')  xd::draw::blit(tiles[3][1], dat, 37+(25* 2), 37);
 }
 
 void back_row(uint32_t* dat) {
@@ -168,4 +181,12 @@ void maketiles() {
 	xd::draw::fill(dat, 1, 2, b);
 	// row-2 : right
 	tiles[2][2] = dupflip(tiles[2][0]);
+	// row-3 : left
+	tiles[3][0] = unknown;
+	// row-3 : mid
+	dat = tiles[3][1] = xd::draw::make_img(26, 26);
+	xd::draw::fillrect(dat, 0, 0, 26, 26, b);
+	xd::draw::tracerect(dat, 0, 0, 26, 26, c);
+	// row-3 : right
+	tiles[3][2] = unknown;
 }
