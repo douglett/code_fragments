@@ -177,17 +177,12 @@ void mid_row() {
 
 void front_row() {
 	auto* dat = xd::screen::backbuffer->getdata();
-	uint32_t c = 0xff0000ff;
-	// xd::draw::tracerect(dat, 13, 13, 74, 74, c);
-	// xd::draw::tracerect(dat, 13-73, 13, 74, 74, c);
-	// xd::draw::tracerect(dat, 13+73, 13, 74, 74, c);
 	string row = getrow(0);
 	printf("front_row: [%s]\n", row.c_str());
 	for (int i = 1; i <= 3; i++)
 		if (gmap::is_nothing(row[i]))  continue;
-		// else if (i == 1)  xd::draw::tracepoly(dat, 0, 0,  {{0, 0}, {13, 13}, {13, 86}, {0, 99}},  c);  // left row 0
 		else if (i == 1)  xd::draw::blit(tiles[0][0], dat, 0, 0);  // left row 0
-		else if (i == 3)  xd::draw::tracepoly(dat, 99, 0,  {{0, 0}, {-13, 13}, {-13, 86}, {0, 99}},  c);  // right row 0
+		else if (i == 3)  xd::draw::blit(tiles[0][2], dat, 86, 0);  // right row 0
 }
 
 void maketiles() {
@@ -203,7 +198,10 @@ void maketiles() {
 	// row-0 : mid
 	tiles[0][1] = unknown;
 	// row-0 : right
-	tiles[0][2] = unknown;
+	dat = tiles[0][2] = xd::draw::make_img(14, 100);
+	xd::draw::clear(dat);
+	xd::draw::blit(tiles[0][0], dat, 0, 0);
+	xd::draw::flip_h(dat);
 	// left row 1
 	dat = tiles[1][0] = xd::draw::make_img(30, 74);
 	xd::draw::clear(dat);
