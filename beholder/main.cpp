@@ -149,13 +149,17 @@ void back_row() {
 	// xd::draw::tracerect(dat, 37+25*2, 37, 26, 26, c);
 	string row = getrow(2);
 	printf("back_row : [%s]\n", row.c_str());
-	for (int i = 0; i < 5; i++)
-		if (gmap::is_nothing(row[i]))  continue;
-		// else if (i == 1)  xd::draw::tracepoly(dat, 28, 28, {{0, 0}, {9, 9}, {9, 34}, {0, 43}, {0, 0}, {-43, 0}, {-43, 43}, {0, 43}}, c);  // left row 2
-		// else if (i == 2)  xd::draw::tracerect(dat, 28, 28, 44, 44, c);  // mid row 2
-		else if (i == 1)  xd::draw::blit(tiles[2][0], dat, 0, 28);  // left row 2
-		else if (i == 2)  xd::draw::blit(tiles[2][1], dat, 28, 28);  // mid row 2
-		else if (i == 3)  xd::draw::tracepoly(dat, 99-28, 28, {{0, 0}, {-9, 9}, {-9, 34}, {0, 43}, {0, 0}, {43, 0}, {43, 43}, {0, 43}}, c);  // right row 2
+	// for (int i = 0; i < 5; i++)
+	// 	if (gmap::is_nothing(row[i]))  continue;
+	// 	// else if (i == 1)  xd::draw::tracepoly(dat, 28, 28, {{0, 0}, {9, 9}, {9, 34}, {0, 43}, {0, 0}, {-43, 0}, {-43, 43}, {0, 43}}, c);  // left row 2
+	// 	// else if (i == 2)  xd::draw::tracerect(dat, 28, 28, 44, 44, c);  // mid row 2
+	// 	else if (i == 1)  xd::draw::blit(tiles[2][0], dat, 0, 28);  // left row 2
+	// 	else if (i == 2)  xd::draw::blit(tiles[2][1], dat, 28, 28);  // mid row 2
+	// 	else if (i == 3)  xd::draw::tracepoly(dat, 99-28, 28, {{0, 0}, {-9, 9}, {-9, 34}, {0, 43}, {0, 0}, {43, 0}, {43, 43}, {0, 43}}, c);  // right row 2
+	
+	if (row[1] == '.')  xd::draw::blit(tiles[2][0], dat, 0, 28);  // left row 2
+	if (row[2] == '.')  xd::draw::blit(tiles[2][1], dat, 28, 28);  // mid row 2
+	if (row[3] == '.')  xd::draw::blit(tiles[2][2], dat, 99-28, 28);  // right row 2
 }
 
 void mid_row() {
@@ -210,15 +214,17 @@ void maketiles() {
 	xd::draw::fill(dat, 1, 2, b);
 	// row-1 : right
 	tiles[1][2] = dupflip(tiles[1][0]);
-	// left row 2
+	// row-2 : left
 	dat = tiles[2][0] = xd::draw::make_img(38, 44);
 	xd::draw::clear(dat);
 	xd::draw::tracepoly(dat, 28, 0, {{0, 0}, {9, 9}, {9, 34}, {0, 43}, {0, 0}, {-43, 0}, {-43, 43}, {0, 43}}, c);
 	xd::draw::fill(dat, 1, 3, b);
 	xd::draw::fill(dat, 29, 3, b);
-	// mid row 2
+	// row-2 : mid
 	dat = tiles[2][1] = xd::draw::make_img(44, 44);
 	xd::draw::clear(dat);
 	xd::draw::tracerect(dat, 0, 0, 44, 44, c);
 	xd::draw::fill(dat, 1, 2, b);
+	// row-2 : right
+	tiles[2][2] = unknown;
 }
