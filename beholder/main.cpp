@@ -29,6 +29,7 @@ int main() {
 	cout << "start" << endl;
 	xd::screen::init();
 	xd::screen::keycb = keycb;
+	// xd::draw::clear(xd::screen::backbuffer->getdata(), 0xff0000ff);
 	eye = xd::screen::makesprite(100, 100, "eye");
 	eye->pos(10, 10);
 	maketiles();
@@ -78,7 +79,6 @@ void move(int d) {
 	}
 }
 
-
 void corridor() {
 	auto* dat = xd::screen::backbuffer->getdata();
 	uint32_t c = 0xffffffff;
@@ -90,6 +90,23 @@ void corridor() {
 	xd::draw::tracepoly(dat, 99-28, 28,  {{0, 0}, {0, 43}, {-9, 34}, {-9, 9}, {0, 0}},  c);  // right row 3
 }
 
+void anim_test() {
+	xd::screen::keycb = NULL;
+	int sx = eye->x;
+	int i = 0;
+	while (running) {
+		i = min(i + 8, 255);
+		// eye->pos(sx + i, eye->y);
+		auto* dat = eye->getdata();
+		for (int j = 2; j < 2 + dat[0]*dat[1]; j++)
+			dat[j] = (dat[j] & 0xffffff00) | i;
+		if (i >= 255)  break;
+		if (xd::screen::paint())  running = 0;
+	}
+	eye->x = sx;
+	xd::screen::keycb = keycb;
+}
+
 void repaint() {
 	printf("x:%d y:%d  d:%d\n", gmap::posx, gmap::posy, gmap::dir);
 	auto* dat = eye->getdata();
@@ -98,6 +115,7 @@ void repaint() {
 	back_row(dat);
 	mid_row(dat);
 	front_row(dat);
+	// anim_test();
 }
 
 void far_row(uint32_t* dat) {
