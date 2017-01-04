@@ -17,12 +17,13 @@ void back_row(uint32_t* dat);
 void mid_row(uint32_t* dat);
 void front_row(uint32_t* dat);
 void maketiles();
+void draw_compass();
 // consts
 // const int ROWLEN[] = { 5, 5, 5 };
 // vars
 int running = 1;
 uint32_t* tiles[4][3] = { {NULL} };
-xd::screen::Sprite* eye = NULL;
+xd::screen::Sprite  *eye = NULL,  *compass = NULL;
 
 
 int main() {
@@ -32,6 +33,8 @@ int main() {
 	// xd::draw::clear(xd::screen::backbuffer->getdata(), 0xff0000ff);
 	eye = xd::screen::makesprite(100, 100, "eye");
 	eye->pos(10, 10);
+	compass = xd::screen::makesprite(40, 40, "compass");
+	compass->pos(120, 10);
 	maketiles();
 	repaint();
 
@@ -116,6 +119,7 @@ void repaint() {
 	mid_row(dat);
 	front_row(dat);
 	// anim_test();
+	draw_compass();
 }
 
 void far_row(uint32_t* dat) {
@@ -160,9 +164,13 @@ uint32_t* dupflip(const uint32_t* src) {
 }
 
 void maketiles() {
-	uint32_t c = 0xaa0000ff, b = 0x999999ff;
-	uint32_t* unknown = xd::draw::make_img(10, 10);
+	static uint32_t* unknown = NULL;
+	// simple rerun test
+	assert(unknown == NULL);
+	unknown = xd::draw::make_img(10, 10);
 	xd::draw::clear(unknown, 0xff00ffff);
+	// 
+	uint32_t c = 0xaa0000ff, b = 0x999999ff;
 	uint32_t* dat;
 	// row-0 : left
 	dat = tiles[0][0] = xd::draw::make_img(14, 100);
@@ -207,4 +215,35 @@ void maketiles() {
 	xd::draw::tracerect(dat, 0, 0, 26, 26, c);
 	// row-3 : right
 	tiles[3][2] = unknown;
+}
+
+
+static vector<pair<int, int>> getborder(int w, int h) {
+	return {
+		{1, 0}, {w-2, 0}, {w-2, 1}, {w-1, 1}, 
+		{w-1, h-2}, {w-2, h-2}, {w-2, h-1},
+		{1, h-1}, {1, h-2}, {0, h-2}, 
+		{0, 1}, {1, 1}
+	};
+}
+
+void draw_compass() {
+	auto* dat = compass->getdata();
+	int w = dat[0], h = dat[1];
+	xd::draw::clear(dat);
+	// xd::draw::clear(dat, 0xff0000ff);
+	// border
+	xd::draw::tracepoly(dat, 0, 0, getborder(w, h), 0xaaaaaaff);
+	xd::draw::tracepoly(dat, 1, 1, getborder(w-2, h-2), 0xffffffff);
+	xd::draw::fill(dat, 3, 3, 0x770000ff);
+	// mid cross
+	xd::draw::traceline(dat, w/2-5, h/2, w/2+5, h/2, 0xffffffff);
+	xd::draw::traceline(dat, w/2, h/2+5, w/2, h/2-5, 0xffffffff);
+	// north dir
+	switch (gmap::dir) {
+	case 0:  xd::text::print(dat, "N", w/2 - 4, h/2 - (8+8));  break;  // north
+	case 1:  xd::text::print(dat, "N", w/2 - (8+8), h/2 - 4);  break;  // east
+	case 2:  xd::text::print(dat, "N", w/2 - 4, h/2 + 8+2);    break;  // south
+	case 3:  xd::text::print(dat, "N", w/2 + 8+2, h/2 - 4);    break;  // west
+	}
 }
