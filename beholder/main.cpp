@@ -16,32 +16,38 @@ void far_row(uint32_t* dat);
 void back_row(uint32_t* dat);
 void mid_row(uint32_t* dat);
 void front_row(uint32_t* dat);
-void maketiles();
+void make_tiles();
+void draw_vmap();
 void draw_compass();
 // consts
 // const int ROWLEN[] = { 5, 5, 5 };
 // vars
 int running = 1;
 uint32_t* tiles[4][3] = { {NULL} };
-xd::screen::Sprite  *eye = NULL,  *compass = NULL;
+xd::screen::Sprite  *eye = NULL,  *compass = NULL,  *vmap = NULL;
 
 
 int main() {
 	cout << "start" << endl;
+	// init
 	xd::screen::init();
 	xd::screen::keycb = keycb;
 	// xd::draw::clear(xd::screen::backbuffer->getdata(), 0xff0000ff);
+	// make sprites
 	eye = xd::screen::makesprite(100, 100, "eye");
 	eye->pos(10, 10);
 	compass = xd::screen::makesprite(40, 40, "compass");
 	compass->pos(120, 10);
-	maketiles();
+	vmap = xd::screen::makesprite(40, 40, "vmap");
+	vmap->pos(120, 60);
+	make_tiles();
+	// first paint
 	repaint();
-
+	// mainloop
 	while (running) {
 		if (xd::screen::paint())  break;
 	}
-
+	// cleanup
 	xd::screen::quit();
 }
 
@@ -120,6 +126,7 @@ void repaint() {
 	front_row(dat);
 	// anim_test();
 	draw_compass();
+	draw_vmap();
 }
 
 void far_row(uint32_t* dat) {
@@ -163,7 +170,7 @@ uint32_t* dupflip(const uint32_t* src) {
 	return dat;
 }
 
-void maketiles() {
+void make_tiles() {
 	static uint32_t* unknown = NULL;
 	// simple rerun test
 	assert(unknown == NULL);
@@ -217,6 +224,23 @@ void maketiles() {
 	tiles[3][2] = unknown;
 }
 
+void draw_vmap() {
+	// sizing
+	int  mapw = gmap::gmap[0].length(),  maph = gmap::gmap.size();
+	auto* dat = vmap->getdata();
+	// clear
+	xd::draw::clear(dat, 0x000099ff);
+	xd::draw::tracerect(dat, 0, 0, mapw*2 + 2, maph*2 + 2, 0xff0000ff);
+	// repaint
+	for (int y = 0; y < maph; y++)
+		for (int x = 0; x < mapw; x++)
+			if (gmap::gmap[y][x] == ' ') {
+				uint32_t c = 0xffffffff;
+				if (x == gmap::posx && y == gmap::posy)  c = 0xff00ffff;  // player pos
+				xd::draw::fillrect(dat, 1 + 2*x, 1 + 2*y, 2, 2, c);
+			}
+}
+
 
 static vector<pair<int, int>> getborder(int w, int h) {
 	return {
@@ -235,7 +259,7 @@ void draw_compass() {
 	// border
 	xd::draw::tracepoly(dat, 0, 0, getborder(w, h), 0xaaaaaaff);
 	xd::draw::tracepoly(dat, 1, 1, getborder(w-2, h-2), 0xffffffff);
-	xd::draw::fill(dat, 3, 3, 0x770000ff);
+	// xd::draw::fill(dat, 3, 3, 0x770000ff);
 	// mid cross
 	xd::draw::traceline(dat, w/2-5, h/2, w/2+5, h/2, 0xffffffff);
 	xd::draw::traceline(dat, w/2, h/2+5, w/2, h/2-5, 0xffffffff);
