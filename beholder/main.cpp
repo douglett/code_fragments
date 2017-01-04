@@ -10,21 +10,29 @@ using namespace std;
 // functions
 static void keycb(int key, int state);
 void move(int d);
-void corridor();
+// void corridor();
 void repaint();
 void far_row(uint32_t* dat);
 void back_row(uint32_t* dat);
 void mid_row(uint32_t* dat);
 void front_row(uint32_t* dat);
 void make_tiles();
+void draw_border();
 void draw_vmap();
 void draw_compass();
 // consts
 // const int ROWLEN[] = { 5, 5, 5 };
+const uint32_t 
+		COL_G1 = 0x00cc00ff,
+		COL_G2 = 0x005500ff;
 // vars
 int running = 1;
 uint32_t* tiles[4][3] = { {NULL} };
-xd::screen::Sprite  *eye = NULL,  *compass = NULL,  *vmap = NULL;
+xd::screen::Sprite 
+		*eye = NULL,  
+		*eyebg = NULL, 
+		*compass = NULL,  
+		*vmap = NULL;
 
 
 int main() {
@@ -36,10 +44,28 @@ int main() {
 	// make sprites
 	eye = xd::screen::makesprite(100, 100, "eye");
 	eye->pos(10, 10);
+	eye->zindex(10);
 	compass = xd::screen::makesprite(40, 40, "compass");
 	compass->pos(120, 10);
 	vmap = xd::screen::makesprite(40, 40, "vmap");
 	vmap->pos(120, 60);
+	// eye background
+	eyebg = xd::screen::makesprite(102, 102, "eyebg");
+	eyebg->pos(9, 9);
+	{
+		auto* dat = eyebg->getdata();
+		int  w = dat[0],  h = dat[1];
+		// xd::draw::clear(dat, 0x222222ff);
+		xd::draw::clear(dat, 0x000000ff);
+		uint32_t c = COL_G2;
+		for (int i = 0, j = 9; i < h/2; i += j, j--) {
+			xd::draw::traceline(dat, 0, i, w, i, c);
+			xd::draw::traceline(dat, 0, h-1-i, w, h-1-i, c);
+		}
+		xd::draw::traceline(dat, 0, 0, 0, h, c);
+		xd::draw::traceline(dat, w-1, 0, w-1, h, c);
+	}
+	// tiles
 	make_tiles();
 	// first paint
 	repaint();
@@ -88,16 +114,16 @@ void move(int d) {
 	}
 }
 
-void corridor() {
-	auto* dat = xd::screen::backbuffer->getdata();
-	uint32_t c = 0xffffffff;
-	xd::draw::tracepoly(dat, 0, 0,  {{0, 0}, {13, 13}, {13, 86}, {0, 99}},  c);  // left row 1
-	xd::draw::tracepoly(dat, 99, 0,  {{0, 0}, {-13, 13}, {-13, 86}, {0, 99}},  c);  // right row 1
-	xd::draw::tracepoly(dat, 13, 13,  {{0, 0}, {15, 15}, {15, 58}, {0, 73}, {0, 0}},  c);  // left row 2
-	xd::draw::tracepoly(dat, 99-13, 13,  {{0, 0}, {-15, 15}, {-15, 58}, {0, 73}, {0, 0}},  c);  // right row 2
-	xd::draw::tracepoly(dat, 28, 28,  {{0, 0}, {0, 43}, {9, 34}, {9, 9}, {0, 0}},  c);  // left row 3
-	xd::draw::tracepoly(dat, 99-28, 28,  {{0, 0}, {0, 43}, {-9, 34}, {-9, 9}, {0, 0}},  c);  // right row 3
-}
+// void corridor() {
+// 	auto* dat = xd::screen::backbuffer->getdata();
+// 	uint32_t c = 0xffffffff;
+// 	xd::draw::tracepoly(dat, 0, 0,  {{0, 0}, {13, 13}, {13, 86}, {0, 99}},  c);  // left row 1
+// 	xd::draw::tracepoly(dat, 99, 0,  {{0, 0}, {-13, 13}, {-13, 86}, {0, 99}},  c);  // right row 1
+// 	xd::draw::tracepoly(dat, 13, 13,  {{0, 0}, {15, 15}, {15, 58}, {0, 73}, {0, 0}},  c);  // left row 2
+// 	xd::draw::tracepoly(dat, 99-13, 13,  {{0, 0}, {-15, 15}, {-15, 58}, {0, 73}, {0, 0}},  c);  // right row 2
+// 	xd::draw::tracepoly(dat, 28, 28,  {{0, 0}, {0, 43}, {9, 34}, {9, 9}, {0, 0}},  c);  // left row 3
+// 	xd::draw::tracepoly(dat, 99-28, 28,  {{0, 0}, {0, 43}, {-9, 34}, {-9, 9}, {0, 0}},  c);  // right row 3
+// }
 
 void anim_test() {
 	xd::screen::keycb = NULL;
@@ -119,7 +145,9 @@ void anim_test() {
 void repaint() {
 	printf("x:%d y:%d  d:%d\n", gmap::posx, gmap::posy, gmap::dir);
 	auto* dat = eye->getdata();
-	xd::draw::fillrect(dat, 0, 0, 100, 100, 0x0000ffff);
+	// xd::draw::clear(dat, 0x0000ffff);
+	xd::draw::clear(dat);
+	// draw foreground
 	far_row(dat);
 	back_row(dat);
 	mid_row(dat);
@@ -177,7 +205,8 @@ void make_tiles() {
 	unknown = xd::draw::make_img(10, 10);
 	xd::draw::clear(unknown, 0xff00ffff);
 	// 
-	uint32_t c = 0xaa0000ff, b = 0x999999ff;
+	// uint32_t c = 0xaa0000ff, b = 0x999999ff;
+	uint32_t c = COL_G1, b = 0x000000ff;
 	uint32_t* dat;
 	// row-0 : left
 	dat = tiles[0][0] = xd::draw::make_img(14, 100);
@@ -224,50 +253,59 @@ void make_tiles() {
 	tiles[3][2] = unknown;
 }
 
+// static vector<pair<int, int>> getborder(int w, int h) {
+// 	return {
+// 		{1, 0}, {w-2, 0}, {w-2, 1}, {w-1, 1}, 
+// 		{w-1, h-2}, {w-2, h-2}, {w-2, h-1},
+// 		{1, h-1}, {1, h-2}, {0, h-2}, 
+// 		{0, 1}, {1, 1}
+// 	};
+// }
+void draw_border(uint32_t* dat, int x, int y, int w, int h, uint32_t c) {
+	xd::draw::tracepoly(dat, x, y,  {
+		{1, 0}, {w-2, 0}, {w-2, 1}, {w-1, 1}, 
+		{w-1, h-2}, {w-2, h-2}, {w-2, h-1},
+		{1, h-1}, {1, h-2}, {0, h-2}, 
+		{0, 1}, {1, 1}
+	},  c);
+}
+
 void draw_vmap() {
 	// sizing
-	int  mapw = gmap::gmap[0].length(),  maph = gmap::gmap.size();
+	const int  spc = 3,  mapw = gmap::gmap[0].length(),  maph = gmap::gmap.size();
 	auto* dat = vmap->getdata();
 	// clear
 	xd::draw::clear(dat, 0x000099ff);
-	xd::draw::tracerect(dat, 0, 0, mapw*2 + 2, maph*2 + 2, 0xff0000ff);
+	// xd::draw::tracerect(dat, 0, 0, mapw*spc + spc, maph*spc + spc, 0xff0000ff);
+	draw_border(dat, 0, 0, mapw*spc + spc, maph*spc + spc, 0xff0000ff);
 	// repaint
 	for (int y = 0; y < maph; y++)
 		for (int x = 0; x < mapw; x++)
 			if (gmap::gmap[y][x] == ' ') {
 				uint32_t c = 0xffffffff;
 				if (x == gmap::posx && y == gmap::posy)  c = 0xff00ffff;  // player pos
-				xd::draw::fillrect(dat, 1 + 2*x, 1 + 2*y, 2, 2, c);
+				xd::draw::fillrect(dat, 1 + spc*x, 1 + spc*y, spc, spc, c);
 			}
-}
-
-
-static vector<pair<int, int>> getborder(int w, int h) {
-	return {
-		{1, 0}, {w-2, 0}, {w-2, 1}, {w-1, 1}, 
-		{w-1, h-2}, {w-2, h-2}, {w-2, h-1},
-		{1, h-1}, {1, h-2}, {0, h-2}, 
-		{0, 1}, {1, 1}
-	};
 }
 
 void draw_compass() {
 	auto* dat = compass->getdata();
 	int w = dat[0], h = dat[1];
+	// uint32_t c = 0xffffffff, c2 = 0xaaaaaaff;
+	uint32_t  c = COL_G1,  c2 = COL_G2;
 	xd::draw::clear(dat);
-	// xd::draw::clear(dat, 0xff0000ff);
 	// border
-	xd::draw::tracepoly(dat, 0, 0, getborder(w, h), 0xaaaaaaff);
-	xd::draw::tracepoly(dat, 1, 1, getborder(w-2, h-2), 0xffffffff);
+	draw_border(dat, 0, 0, w, h, c2);
+	draw_border(dat, 1, 1, w-2, h-2, c);
 	// xd::draw::fill(dat, 3, 3, 0x770000ff);
 	// mid cross
-	xd::draw::traceline(dat, w/2-5, h/2, w/2+5, h/2, 0xffffffff);
-	xd::draw::traceline(dat, w/2, h/2+5, w/2, h/2-5, 0xffffffff);
+	xd::draw::traceline(dat, w/2-5, h/2, w/2+5, h/2, c);
+	xd::draw::traceline(dat, w/2, h/2+5, w/2, h/2-5, c);
 	// north dir
 	switch (gmap::dir) {
-	case 0:  xd::text::print(dat, "N", w/2 - 4, h/2 - (8+8));  break;  // north
-	case 1:  xd::text::print(dat, "N", w/2 - (8+8), h/2 - 4);  break;  // east
-	case 2:  xd::text::print(dat, "N", w/2 - 4, h/2 + 8+2);    break;  // south
-	case 3:  xd::text::print(dat, "N", w/2 + 8+2, h/2 - 4);    break;  // west
+	case 0:  xd::text::print(dat, "N", w/2 - 4, h/2 - (8+8), c);  break;  // north
+	case 1:  xd::text::print(dat, "N", w/2 - (8+8), h/2 - 4, c);  break;  // east
+	case 2:  xd::text::print(dat, "N", w/2 - 4, h/2 + 8+2, c);    break;  // south
+	case 3:  xd::text::print(dat, "N", w/2 + 8+2, h/2 - 4, c);    break;  // west
 	}
 }
