@@ -13,7 +13,7 @@ namespace gmap {
 	std::string getrow(int row);
 } // end gmap
 
-namespace draw {
+namespace gdraw {
 	extern uint32_t* tiles[4][3];
 	extern xd::screen::Sprite  *eye, *eyebg, *compass, *vmap;
 	void init();
@@ -26,4 +26,4 @@ namespace draw {
 	// helpers
 	uint32_t* dupflip(const uint32_t* src);
 	void      draw_border(uint32_t* dat, int x, int y, int w, int h, uint32_t c);
-} // end draw
+} // end gdraw

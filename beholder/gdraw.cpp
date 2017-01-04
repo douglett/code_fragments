@@ -4,7 +4,7 @@
 using namespace std;
 
 
-namespace draw {
+namespace gdraw {
 	// predef
 	static void draw_eyebg();
 	static void make_tiles();
@@ -209,4 +209,4 @@ namespace draw {
 		},  c);
 	}
 
-} // end draw
+} // end gdraw

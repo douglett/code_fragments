@@ -20,7 +20,7 @@ int main() {
 	// init
 	xd::screen::init();
 	xd::screen::keycb = keycb;
-	draw::init();
+	gdraw::init();
 	repaint();  // first paint
 	// mainloop
 	while (running) {
@@ -97,15 +97,15 @@ void move(int d) {
 
 void repaint() {
 	printf("x:%d y:%d  d:%d\n", gmap::posx, gmap::posy, gmap::dir);
-	auto* dat = draw::eye->getdata();
+	auto* dat = gdraw::eye->getdata();
 	// xd::draw::clear(dat, 0x0000ffff);
 	xd::draw::clear(dat);
 	// draw foreground
-	draw::far_row(dat);
-	draw::back_row(dat);
-	draw::mid_row(dat);
-	draw::front_row(dat);
+	gdraw::far_row(dat);
+	gdraw::back_row(dat);
+	gdraw::mid_row(dat);
+	gdraw::front_row(dat);
 	// anim_test();
-	draw::draw_compass();
-	draw::draw_vmap();
+	gdraw::draw_compass();
+	gdraw::draw_vmap();
 }
