@@ -20,7 +20,8 @@ public:
 	std::vector<uint16_t> frames;
 	CPU();
 	void        reset();
-	uint16_t    op(int o, int a, int b);
+	void        loadprog(const std::vector<uint16_t>& prog);
+	uint16_t    op(uint16_t o, uint16_t a, uint16_t b);
 	uint16_t    stack(uint16_t val);
 	uint16_t    stack(const std::string& s);
 	uint16_t    get(uint16_t p);

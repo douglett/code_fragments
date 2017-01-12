@@ -11,10 +11,15 @@ void CPU::reset() {
 	frames = {};
 	top = MEM_SIZE - 1;
 }
+void CPU::loadprog(const vector<uint16_t>& prog) {
+	reset();
+	for (int i = 0; i < prog.size(); i++)
+		mem[i] = prog[i];
+}
 
 
 // opcodes
-uint16_t CPU::op(int o, int a, int b) {
+uint16_t CPU::op(uint16_t o, uint16_t a, uint16_t b) {
 	switch (o) {
 	case OP_NOOP:  break;
 	case OP_ADD:   mem[a] += mem[b];  break;
