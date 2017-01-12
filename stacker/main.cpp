@@ -28,11 +28,12 @@ void test_math() {
 	printf("a: %d\n", cpu.mem[a]);
 	cpu.op(OP_MUL, a, b);
 	printf("a: %d\n", cpu.mem[a]);
+	cpu.reset();
 }
 
 
 int main() {
 	cout << "CPU test" << endl;
-	// test_stack();
-	test_math();
+	test_stack();
+	// test_math();
 }

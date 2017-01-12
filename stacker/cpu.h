@@ -21,7 +21,7 @@ public:
 	CPU();
 	void        reset();
 	uint16_t    op(int o, int a, int b);
-	uint16_t    stack(uint16_t v);
+	uint16_t    stack(uint16_t val);
 	uint16_t    stack(const std::string& s);
 	uint16_t    get(uint16_t p);
 	std::string getstr(uint16_t p);

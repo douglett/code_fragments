@@ -28,24 +28,25 @@ uint16_t CPU::op(int o, int a, int b) {
 
 
 // helpers
-uint16_t CPU::stack(uint16_t v) {
-	mem[top] = v;
-	return top--;
+uint16_t CPU::stack(uint16_t val) {
+	mem[top] = val;
+	return frames.back() - top--;
 }
 uint16_t CPU::stack(const string& s) {
 	auto start = top;
-	mem[top--] = s.length();
+	mem[top--] = s.length();  // set length
 	for (auto c : s)
-		mem[top--] = c;
-	return start;
+		mem[top--] = c;  // set values
+	return frames.back() - start;  // return frame offset
 }
 uint16_t CPU::get(uint16_t p) {
-	return mem[p];
+	return mem[frames.back() - p];  // val at frame offset
 }
 string CPU::getstr(uint16_t p) {
 	string s;
-	int len = mem[p--];
+	int pos = frames.back() - p;  // get frame offset
+	int len = mem[pos--];  // string length
 	for (int i = 0; i < len; i++)
-		s.push_back(mem[p - i]);
+		s.push_back(mem[pos - i]);  // add each char to string
 	return s;
 }
