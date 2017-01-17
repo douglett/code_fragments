@@ -4,12 +4,16 @@
 */
 #pragma once
 
+#include <vector>
 #include <GL/glew.h>
 
 namespace common {
 	extern GLuint  vbufferID, cbufferID;
+	int    setCol(GLfloat r, GLfloat g, GLfloat b);
 	int    addVertex(GLfloat x, GLfloat y, GLfloat z);
-	int    addVertex(GLfloat x, GLfloat y, GLfloat z, GLfloat r, GLfloat g, GLfloat b);
+	int    addVertexCol(GLfloat x, GLfloat y, GLfloat z,  GLfloat r, GLfloat g, GLfloat b);
+	int    addTri(const std::vector<GLfloat>& tri);
 	int    sendVertexes();
+	int    clearVertexes();
 	GLuint vbufferSize();
 } // end common
