@@ -4,7 +4,13 @@
 */
 #pragma once
 
-#include <GL/glew.h>
+// GL Includes
+#include <GL/glew.h>     // Include GLEW
+#include <GLFW/glfw3.h>  // Include GLFW
+#include <glm/glm.hpp>   // Include GLM
+// local includes
+#include "shader.h"
+#include "objects.h"
 
 namespace common {
 	extern int running;

@@ -14,6 +14,6 @@ namespace common {
 		SHADER_COLOR
 	};
 	GLuint SelectShaders(SHADERS shader);
-	GLuint LoadShaders  (const std::string& VertexFilePath, const std::string& FragmentFilePath);
+	GLuint LoadShaders  (const std::string& VertexFilePath,   const std::string& FragmentFilePath);
 	GLuint BuildShaders (const std::string& VertexShaderCode, const std::string& FragmentShaderCode);
 } // end common

@@ -1,4 +1,4 @@
-SRC = shader.cpp core.cpp
+SRC = core.cpp shader.cpp objects.cpp
 OUT = libcommon.dylib
 INSTALL_NAME =-install_name,`pwd`/$(OUT)
 

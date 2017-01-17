@@ -1,12 +1,9 @@
 #include <iostream>
-// GL
-#include <GL/glew.h>     // Include GLEW
-#include <GLFW/glfw3.h>  // Include GLFW
-#include <glm/glm.hpp>   // Include GLM
-#include <glm/gtc/matrix_transform.hpp>
 // local
 #include "core.h"
 #include "shader.h"
+// GL extensions
+#include <glm/gtc/matrix_transform.hpp>
 
 using namespace std;
 
@@ -112,7 +109,36 @@ namespace common {
 		// Send our transformation to the currently bound shader, in the "MVP" uniform
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		// draw objects here
-		// ...
+		if (vbufferID > 0 && cbufferID > 0) {
+			// 1st attribute buffer : vertices
+			glEnableVertexAttribArray(0);
+			glBindBuffer(GL_ARRAY_BUFFER, vbufferID);
+			glVertexAttribPointer(
+				0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
+				3,                  // size
+				GL_FLOAT,           // type
+				GL_FALSE,           // normalized?
+				0,                  // stride
+				(void*)0            // array buffer offset
+			);
+
+			// 2nd attribute buffer : colors
+			glEnableVertexAttribArray(1);
+			glBindBuffer(GL_ARRAY_BUFFER, cbufferID);
+			glVertexAttribPointer(
+				1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+				3,                                // size
+				GL_FLOAT,                         // type
+				GL_FALSE,                         // normalized?
+				0,                                // stride
+				(void*)0                          // array buffer offset
+			);
+			// Draw the triangle !
+			glDrawArrays(GL_TRIANGLES, 0, vbufferSize()); // 12*3 indices starting at 0 -> 12 triangles
+			// unset vertex attribs
+			glDisableVertexAttribArray(0);
+			glDisableVertexAttribArray(1);
+		}
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
