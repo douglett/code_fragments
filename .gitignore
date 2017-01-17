@@ -1,4 +1,5 @@
 #ignore binaries
 *.o
 *.out
+*.dylib
 Frameworks
