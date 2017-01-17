@@ -18,7 +18,8 @@ namespace common {
 
 	GLuint SelectShaders(SHADERS shader) {
 		switch (shader) {
-		case SHADER_DEFAULT:  return BuildShaders(VertexShaders[0], FragmentShaders[0]);
+		case SHADER_FLAT:     return BuildShaders(VertexShaders[0], FragmentShaders[0]);
+		case SHADER_DEFAULT:  // default is SHADER_COLOR
 		case SHADER_COLOR:    return BuildShaders(VertexShaders[1], FragmentShaders[1]);
 		}
 		return 0;

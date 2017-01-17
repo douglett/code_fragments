@@ -9,7 +9,8 @@
 
 namespace common {
 	enum SHADERS {
-		SHADER_DEFAULT,
+		SHADER_DEFAULT,   // default = SHADER_COLOR
+		SHADER_FLAT,
 		SHADER_COLOR
 	};
 	GLuint SelectShaders(SHADERS shader);
