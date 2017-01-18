@@ -1,8 +1,8 @@
 #include <iostream>
-// #include <GL/glu.h>
-#include <GL/glew.h>
+// #include <GL/glew.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <OpenGL/glu.h>
 
 using namespace std;
 
@@ -33,15 +33,18 @@ int init() {
 	// SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK,   SDL_GL_CONTEXT_PROFILE_CORE );
 	// SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION,  3 );
 	// SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION,  2 );
-	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER,           1 );
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	ctx = SDL_GL_CreateContext(win);
 
 	// set up perspective
-	// glMatrixMode( GL_PROJECTION );  /* change to the projection matrix and set our viewing volume. */
-	// glLoadIdentity();
-	gluPerspective( 45.0f, 1.0f, 0.0f, -10.0f );  /* Set our perspective */
-	// glMatrixMode( GL_MODELVIEW );  /* Make sure we're chaning the model view and not the projection */
-	// glLoadIdentity();
+	glMatrixMode(GL_PROJECTION); 	// change to the projection matrix
+	glLoadIdentity();  				// reset matrix to identity position
+	gluPerspective(90.0f, 512/512, 0.1f, 100.0f);  // Set our perspective
+	glMatrixMode(GL_MODELVIEW); 	// Make sure we're chaning the model from here on
+	glLoadIdentity(); 				// reset matrix to identity position
+
+	// set some defaults
+	glClearColor(0.0, 0.0, 0.0, 1.0);
 	
 	return 0;
 }
@@ -50,14 +53,10 @@ int init() {
 int rot = 0;
 
 int draw() {
-	glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
-    glLoadIdentity();
+    glLoadIdentity();  // reset matrix
 
-    // glOrtho(-1, 1, 1, -1, 0, 10);
-	// glTranslatef(-1.5f, 0.0f, -6.0f);  // Move Left 1.5 Units And Into The Screen 6.0
-	// glTranslatef(0.5f, 0, 0);
-	glTranslatef( 0, 0, -1.1 );
+	glTranslatef( 0, 0, -2 );
 	glRotatef(rot, 0, -1, 0);
 	glBegin(GL_TRIANGLES);                      // Drawing Using Triangles
 		glColor3f(1.0f, 0.0f, 0.0f);
