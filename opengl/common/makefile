@@ -1,4 +1,4 @@
-SRC = core.cpp shader.cpp objects.cpp objects2.cpp
+SRC = core.cpp shader.cpp globj.cpp
 OUT = libcommon.dylib
 
 $(OUT): $(SRC)

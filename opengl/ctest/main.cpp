@@ -5,34 +5,8 @@
 using namespace std;
 
 
-void test1() {
-	// box
-	vector<GLfloat> vl = {
-		-1.0f,-1.0f,-1.0f,   -1.0f,-1.0f, 1.0f,   -1.0f, 1.0f, 1.0f,
-		 1.0f, 1.0f,-1.0f,   -1.0f,-1.0f,-1.0f,   -1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f, 1.0f,   -1.0f,-1.0f,-1.0f,    1.0f,-1.0f,-1.0f,
-
-		 1.0f, 1.0f,-1.0f,    1.0f,-1.0f,-1.0f,   -1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,   -1.0f, 1.0f, 1.0f,   -1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f, 1.0f,   -1.0f,-1.0f, 1.0f,   -1.0f,-1.0f,-1.0f,
-		
-		-1.0f, 1.0f, 1.0f,   -1.0f,-1.0f, 1.0f,    1.0f,-1.0f, 1.0f,
-		 1.0f, 1.0f, 1.0f,    1.0f,-1.0f,-1.0f,    1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f,-1.0f,    1.0f, 1.0f, 1.0f,    1.0f,-1.0f, 1.0f,
-		
-		 1.0f, 1.0f, 1.0f,    1.0f, 1.0f,-1.0f,   -1.0f, 1.0f,-1.0f,
-		 1.0f, 1.0f, 1.0f,   -1.0f, 1.0f,-1.0f,   -1.0f, 1.0f, 1.0f,
-		 1.0f, 1.0f, 1.0f,   -1.0f, 1.0f, 1.0f,    1.0f,-1.0f, 1.0f
-	};
-	for (int i = 0; i < vl.size(); i += 3)
-		common::addVertex( vl[i], vl[i+1], vl[i+2] );
-	// simple tri
-	common::addTri({ 1.5f,1.5f,2.0f,    2.0f,2.0f,2.0f,    2.0f,1.5f,2.0f });
-	// send
-	common::sendVertexes();
-}
-
 common::GLobj obj, obj2;
+
 
 void test2() {
 	printf("test2\n");
@@ -75,8 +49,7 @@ int main() {
 	test2();
 
 	while (common::running) {
-		// common::paint();
-		common::paint2();
+		common::paint();
 	}
 	common::quit();
 }

@@ -10,8 +10,7 @@
 #include <glm/glm.hpp>   // Include GLM
 // local includes
 #include "shader.h"
-#include "objects.h"
-#include "objects2.h"
+#include "globj.h"
 
 namespace common {
 	extern int running;
@@ -19,5 +18,4 @@ namespace common {
 	int init();
 	int quit();
 	int paint();
-	int paint2();
 } // end common

@@ -1,6 +1,6 @@
 #include <vector>
 #include <GL/glew.h>
-#include "objects2.h"
+#include "globj.h"
 
 using namespace std;
 
@@ -42,7 +42,7 @@ namespace common {
 		glBufferData(GL_ARRAY_BUFFER, (sizeof(GLfloat) * color.size()), &color[0], GL_STATIC_DRAW);
 		// finish & report
 		vbufferlen = vert.size();
-		printf("vbufferID: %d    cbufferID: %d    vbufferlen: %d \n", vbufferID, cbufferID, vbufferlen);
+		printf("sendVertexes ::    vbufferID: %d    cbufferID: %d    vbufferlen: %d \n", vbufferID, cbufferID, vbufferlen);
 		return  vbufferlen;
 	}
 
