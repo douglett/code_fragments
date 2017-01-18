@@ -5,11 +5,13 @@
 using namespace std;
 
 
-common::GLobj obj, obj2;
+// common::GLobj obj, obj2;
+shared_ptr<common::GLobj> obj, obj2;
 
 
 void test2() {
 	printf("test2\n");
+	obj = common::makeGLobj();
 	// box
 	vector<GLfloat> vl = {
 		-1.0f,-1.0f,-1.0f,   -1.0f,-1.0f, 1.0f,   -1.0f, 1.0f, 1.0f,
@@ -29,15 +31,16 @@ void test2() {
 		 1.0f, 1.0f, 1.0f,   -1.0f, 1.0f, 1.0f,    1.0f,-1.0f, 1.0f
 	};
 	for (int i = 0; i < vl.size(); i += 3)
-		obj.addVertex( vl[i], vl[i+1], vl[i+2] );
+		obj->addVertex( vl[i], vl[i+1], vl[i+2] );
 	// send
-	obj.sendBuffer();
-	common::objlist.push_back(&obj);
+	obj->sendBuffer();
+	// common::objlist.push_back(&obj);
 
 	// simple tri
-	obj2.addTri({ 1.5f,1.5f,2.0f,    2.0f,2.0f,2.0f,    2.0f,1.5f,2.0f });
-	obj2.sendBuffer();
-	common::objlist.push_back(&obj2);
+	obj2 = common::makeGLobj();
+	obj2->addTri({ 1.5f,1.5f,2.0f,    2.0f,2.0f,2.0f,    2.0f,1.5f,2.0f });
+	obj2->sendBuffer();
+	// common::objlist.push_back(&obj2);
 }
 
 
@@ -45,13 +48,12 @@ int main() {
 	printf("start\n");
 	common::init();
 
-	// test1();
 	test2();
 
 	while (common::running) {
 		common::paint();
 	}
-	obj.deleteBuffer();
-	obj2.deleteBuffer();
+	// obj.deleteBuffer();
+	// obj2.deleteBuffer();
 	common::quit();
 }

@@ -14,8 +14,9 @@
 
 namespace common {
 	extern int running;
-	extern std::vector<GLobj*> objlist;
+	// extern std::vector<GLobj*> objlist;
 	int init();
 	int quit();
+	std::shared_ptr<GLobj> makeGLobj();
 	int paint();
 } // end common

@@ -8,7 +8,15 @@
 #include <GL/glew.h>
 
 namespace common {
-	class GLobj {
+	class non_copyable {
+	protected:
+		non_copyable()  = default;
+		~non_copyable() = default;
+		non_copyable(non_copyable const &)    = delete;
+		void operator=(non_copyable const &x) = delete;
+	};
+
+	class GLobj : non_copyable {
 	private:
 		std::vector<GLfloat>  vert, color;
 		GLuint  vbufferlen = 0;

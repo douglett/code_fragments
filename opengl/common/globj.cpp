@@ -42,13 +42,14 @@ namespace common {
 		glBufferData(GL_ARRAY_BUFFER, (sizeof(GLfloat) * color.size()), &color[0], GL_STATIC_DRAW);
 		// finish & report
 		vbufferlen = vert.size();
-		printf("sendVertexes ::    vbufferID: %d    cbufferID: %d    vbufferlen: %d \n", vbufferID, cbufferID, vbufferlen);
+		printf("sendBuffer   :: vbufferID  %d : cbufferID  %d : vbufferlen  %d \n", vbufferID, cbufferID, vbufferlen);
 		return  vbufferlen;
 	}
 
 	int GLobj::deleteBuffer() {
 		glDeleteBuffers(1, &vbufferID);
 		glDeleteBuffers(1, &cbufferID);
+		printf("deleteBuffer :: vbufferID  %d : cbufferID  %d \n", vbufferID, cbufferID);
 		return  vbufferlen;
 	}
 

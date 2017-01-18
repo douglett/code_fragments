@@ -15,11 +15,11 @@ namespace common {
 	static GLFWwindow*  window;
 	static GLuint       VertexArrayID, programID, MatrixID;
 	static glm::mat4    Projection, View, Model, MVP;
+	static vector<shared_ptr<GLobj>>  objlist;
 	// public vars
 	int running = 1;
 	string winName = "opengl common window";
 	int screenWidth = 1024, screenHeight = 768;
-	vector<GLobj*> objlist;
 
 
 	
@@ -93,13 +93,24 @@ namespace common {
 
 	int quit() {
 		// delete objects
-		// ...
+		while (objlist.size()) {
+			objlist[0]->deleteBuffer();
+			objlist.erase(objlist.begin());
+		}
 		// delete program
 		glDeleteProgram(programID);
 		glDeleteVertexArrays(1, &VertexArrayID);
 		// Close OpenGL window and terminate GLFW
 		glfwTerminate();
 		return 0;
+	}
+
+
+
+	shared_ptr<GLobj> makeGLobj() {
+		shared_ptr<GLobj> obj = make_shared<GLobj>();
+		objlist.push_back(obj);
+		return obj;
 	}
 
 
