@@ -31,12 +31,12 @@ void test2() {
 	for (int i = 0; i < vl.size(); i += 3)
 		obj.addVertex( vl[i], vl[i+1], vl[i+2] );
 	// send
-	obj.sendVertexes();
+	obj.sendBuffer();
 	common::objlist.push_back(&obj);
 
 	// simple tri
 	obj2.addTri({ 1.5f,1.5f,2.0f,    2.0f,2.0f,2.0f,    2.0f,1.5f,2.0f });
-	obj2.sendVertexes();
+	obj2.sendBuffer();
 	common::objlist.push_back(&obj2);
 }
 
@@ -51,5 +51,7 @@ int main() {
 	while (common::running) {
 		common::paint();
 	}
+	obj.deleteBuffer();
+	obj2.deleteBuffer();
 	common::quit();
 }

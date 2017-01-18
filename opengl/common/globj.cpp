@@ -31,7 +31,7 @@ namespace common {
 		return  0;
 	}
 
-	int GLobj::sendVertexes() {
+	int GLobj::sendBuffer() {
 		// send vertex positions
 		glGenBuffers(1, &vbufferID);
 		glBindBuffer(GL_ARRAY_BUFFER, vbufferID);
@@ -43,6 +43,12 @@ namespace common {
 		// finish & report
 		vbufferlen = vert.size();
 		printf("sendVertexes ::    vbufferID: %d    cbufferID: %d    vbufferlen: %d \n", vbufferID, cbufferID, vbufferlen);
+		return  vbufferlen;
+	}
+
+	int GLobj::deleteBuffer() {
+		glDeleteBuffers(1, &vbufferID);
+		glDeleteBuffers(1, &cbufferID);
 		return  vbufferlen;
 	}
 

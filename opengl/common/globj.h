@@ -18,7 +18,8 @@ namespace common {
 		int    setCol(GLfloat r, GLfloat g, GLfloat b);
 		int    addVertex(GLfloat x, GLfloat y, GLfloat z);
 		int    addTri(const std::vector<GLfloat>& tri);
-		int    sendVertexes();
+		int    sendBuffer();
+		int    deleteBuffer();
 		int    clearVertexes();
 		GLuint bufferID(char t);
 		GLuint vbufferSize();
