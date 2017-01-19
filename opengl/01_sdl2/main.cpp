@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <OpenGL/glu.h>
+#include "globj.h"
 
 using namespace std;
 
@@ -49,9 +50,10 @@ int init() {
 }
 
 
-int rot = 0;
+int drawtest1() {
+	static int rot = 0;
+	rot++;
 
-int draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();  // reset matrix
 
@@ -82,14 +84,38 @@ int draw() {
 }
 
 
+int make_obj() {
+	// first tri
+	GLobj* o = globj::mkobj();
+	o->tris.push_back({ { 0,0,0,  0,1,0,  1,0,0 }, {.8,.8,.8} });
+	o->z = -3;
+	// second tri
+	o = globj::mkobj();
+	o->tris.push_back({ { 0,0,0,  0,1,0,  1,0,0 }, {.8,.8,.8} });
+	o->translate(-1,0,-3);
+	// third tri
+	glbuild::make();
+	glbuild::col(1, 0, 1);
+	glbuild::tri({ -1,0,0,  +1,0,0,  0,+1,0 });
+	o = glbuild::finalize();
+	o->translate(-2, 0, -3);
+	return 0;
+}
+
+
 int main() {
 	printf("start\n");
 	if (init())  return 1;
+	make_obj();
 
 	while (running) {
-		rot++;
-		draw();
-		SDL_Delay(16);
+		
+		// drawtest1();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		globj::paintall();
+		SDL_GL_SwapWindow(win);
+
+		// get keys
 		SDL_Event e;
 		while (SDL_PollEvent(&e)) {
 			switch (e.type) {
