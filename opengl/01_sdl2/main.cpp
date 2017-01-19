@@ -3,7 +3,8 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <OpenGL/glu.h>
-#include "globj.h"
+// #include "globj.h"
+#include "gllib.h"
 
 using namespace std;
 
@@ -87,11 +88,11 @@ int drawtest1() {
 int make_obj() {
 	// first tri
 	GLobj* o = globj::mkobj();
-	o->tris.push_back({ { 0,0,0,  0,1,0,  1,0,0 }, {.8,.8,.8} });
+	o->tris.push_back({ { 0,0,0,  0,1,0,  1,0,0 }, {.8,.8,.8,1} });
 	o->z = -3;
 	// second tri
 	o = globj::mkobj();
-	o->tris.push_back({ { 0,0,0,  0,1,0,  1,0,0 }, {.8,.8,.8} });
+	o->tris.push_back({ { 0,0,0,  0,1,0,  1,0,0 }, {.8,.8,.8,1} });
 	o->translate(-1,0,-3);
 	// third tri
 	glbuild::make();
@@ -103,37 +104,71 @@ int make_obj() {
 }
 
 
-int make_box() {
+int mkbox() {
 	glbuild::make();
-	glbuild::col(1,0,0);
-	glbuild::tri({ -1,-1,-1,  +1,-1,-1,  +1,+1,-1 });
-	glbuild::tri({ +1,+1,-1,  -1,+1,-1,  -1,-1,-1 });
-	// glbuild::tri({ -1,-1,+1,  +1,-1,+1,  +1,+1,+1 });
-	// glbuild::tri({ +1,+1,+1,  -1,+1,+1,  -1,-1,+1 });
-	glbuild::col(0,0,1);
+	glbuild::col (1,0,0);
+	glbuild::tri ({ -1,-1,-1,  +1,-1,-1,  +1,+1,-1 });
+	glbuild::tri ({ +1,+1,-1,  -1,+1,-1,  -1,-1,-1 });
+	glbuild::col (0,0,1);
 	glbuild::quad({ -1,-1,-1,  +1,-1,-1,  +1,-1,+1,  -1,-1,+1 });
-	glbuild::col(1,1,0);
+	glbuild::col (1,1,0);
 	glbuild::quad({ -1,-1,-1,  -1,-1,+1,  -1,+1,+1,  -1,+1,-1 });
-
-	GLobj* o = glbuild::finalize();
-	o->translate(0,0,-4);
+	// GLobj* o = 
+	glbuild::finalize();
 	return 0;
 }
+
+
+int mkcam() {
+	glbuild::make();
+	glbuild::col (1,0,0,0.5);
+	glbuild::quad({ -1,-1,0,  +1,-1,0,  +1,+1,0,  -1,+1,0 });
+	glbuild::tris({ 
+		-1,-1,0,  +1,-1,0,  0,0,2,
+		+1,-1,0,  +1,+1,0,  0,0,2,
+		+1,+1,0,  -1,+1,0,  0,0,2,
+		-1,+1,0,  -1,-1,0,  0,0,2,
+	});
+	GLobj* o = glbuild::finalize();
+	o->translate(-4,4,0);
+
+	o = globj::clone(o);
+	o->translate(4,0,0);
+	o->rotate(0,1,0,90);
+	o = globj::clone(o);
+	o->translate(0,-6,0);
+	o->rotate(1,0,0,90);
+
+	return 0;
+}
+
+
+GLobj def;
+GLobj cam;
 
 
 int main() {
 	printf("start\n");
 	if (init())  return 1;
 	// make_obj();
-	make_box();
-	float rotspeed = 2, rot = 0;
-	int xaxis = 1;
+	cam.translate(0, 0, 6);
+	cam.rotate(1, 0, 0, 65.0);
+	def = cam;
+	mkbox();
+	mkcam();
+	float rotspeed = 2, rot = 0, crot = 0;
+	int xaxis = 0;
 
 	while (running) {
-		// repaint
-		// drawtest1();
+		// reset
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glLoadIdentity();  // clear matrix stack
+		glRotatef( cam.rot, cam.rx, cam.ry, cam.rz );
+		glTranslatef( -cam.x, -cam.y, -cam.z );
+		glPushMatrix();
+		// repaint
 		globj::paintall();
+		// swap
 		SDL_GL_SwapWindow(win);
 
 		// get keys
@@ -146,21 +181,30 @@ int main() {
 				case SDLK_ESCAPE:  running = 0;  break;
 				case SDLK_LEFT:    xaxis = -1;  break;
 				case SDLK_RIGHT:   xaxis = +1;  break;
+				
+				case '1':  cam = def;  break;
+				case '2':  cam.translate(1, 0, 4);  crot = 0;    break;
+				case '3':  cam.translate(0, 0, 1);  crot = 0;    break;
+				case '4':  cam.translate(4, 0, 0);  crot = 270;  break;
+				
 				default:  printf("%x\n", e.key.keysym.sym);  break;
 				}
 				break;
 			case SDL_KEYUP:
 				switch (e.key.keysym.sym) {
-				// case SDLK_LEFT:    xaxis = 0;  break;
-				// case SDLK_RIGHT:   xaxis = 0;  break;
+				case SDLK_LEFT:    xaxis = 0;  break;
+				case SDLK_RIGHT:   xaxis = 0;  break;
 				}
 				break;
 			}
 		}
 
-		// 
-		rot += rotspeed * xaxis;
+		// apply rotation
+		crot += rotspeed * xaxis;
+		cam.rotate(0, 1, 0, crot);
+		rot += rotspeed;
 		globj::objlist[0].rotate(0, 1, 0, rot);
+		globj::objlist[1].rotate(0, 1, 0, rot);
 	}
 
 	SDL_Quit();

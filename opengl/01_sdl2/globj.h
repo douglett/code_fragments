@@ -2,13 +2,10 @@
 
 #include <vector>
 
-// struct GLvec3 { float  x, y, z; };
-// struct GLvec4 { float  x, y, z, a; };
-
 struct GLtri {
 public:
 	float  vec[9]; // = {0};
-	float  col[3]; // = {0};
+	float  col[4]; // = {0};
 };
 
 class GLobj {
@@ -30,7 +27,10 @@ namespace globj {
 namespace glbuild {
 	void    make();
 	GLobj*  finalize();
-	void    col (float r, float g, float b);
-	void    tri (std::vector<float> v);
-	void    quad(std::vector<float> v);
+	void    col  (float r, float g, float b);
+	void    col  (float r, float g, float b, float a);
+	void    tri  (const std::vector<float>& v);
+	void    quad (const std::vector<float>& v);
+	void    tris (const std::vector<float>& v);
+	void    quads(const std::vector<float>& v);
 }  // end glbuild
