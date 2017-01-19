@@ -76,4 +76,18 @@ namespace glbuild {
 			{ c[0],c[1],c[2] }
 		});
 	}
+	void quad(std::vector<float> v) {
+		if (v.size() != 12) {
+			fprintf(stderr, "wrong number of verticies passed for quad.\n");
+			return;
+		}
+		obj.tris.push_back({
+			{ v[0],v[1],v[2],  v[3],v[4],v[5],    v[6],v[7],v[8] },
+			{ c[0],c[1],c[2] }
+		});
+		obj.tris.push_back({
+			{ v[6],v[7],v[8],  v[9],v[10],v[11],  v[0],v[1],v[2] },
+			{ c[0],c[1],c[2] }
+		});
+	}
 }  // end glbuild

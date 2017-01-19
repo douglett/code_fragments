@@ -103,10 +103,31 @@ int make_obj() {
 }
 
 
+int make_box() {
+	glbuild::make();
+	glbuild::col(1,0,0);
+	glbuild::tri({ -1,-1,-1,  +1,-1,-1,  +1,+1,-1 });
+	glbuild::tri({ +1,+1,-1,  -1,+1,-1,  -1,-1,-1 });
+	// glbuild::tri({ -1,-1,+1,  +1,-1,+1,  +1,+1,+1 });
+	// glbuild::tri({ +1,+1,+1,  -1,+1,+1,  -1,-1,+1 });
+	glbuild::col(0,0,1);
+	glbuild::quad({ -1,-1,-1,  +1,-1,-1,  +1,-1,+1,  -1,-1,+1 });
+	glbuild::col(1,1,0);
+	glbuild::quad({ -1,-1,-1,  -1,-1,+1,  -1,+1,+1,  -1,+1,-1 });
+
+	GLobj* o = glbuild::finalize();
+	o->translate(0,0,-4);
+	return 0;
+}
+
+
 int main() {
 	printf("start\n");
 	if (init())  return 1;
-	make_obj();
+	// make_obj();
+	make_box();
+	float rotspeed = 2, rot = 0;
+	int xaxis = 1;
 
 	while (running) {
 		// repaint
@@ -123,11 +144,23 @@ int main() {
 			case SDL_KEYDOWN:
 				switch (e.key.keysym.sym) {
 				case SDLK_ESCAPE:  running = 0;  break;
-				default:  printf("%d\n", e.key.keysym.sym);  break;
+				case SDLK_LEFT:    xaxis = -1;  break;
+				case SDLK_RIGHT:   xaxis = +1;  break;
+				default:  printf("%x\n", e.key.keysym.sym);  break;
+				}
+				break;
+			case SDL_KEYUP:
+				switch (e.key.keysym.sym) {
+				// case SDLK_LEFT:    xaxis = 0;  break;
+				// case SDLK_RIGHT:   xaxis = 0;  break;
 				}
 				break;
 			}
 		}
+
+		// 
+		rot += rotspeed * xaxis;
+		globj::objlist[0].rotate(0, 1, 0, rot);
 	}
 
 	SDL_Quit();

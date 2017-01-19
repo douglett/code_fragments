@@ -30,6 +30,7 @@ namespace globj {
 namespace glbuild {
 	void    make();
 	GLobj*  finalize();
-	void    col(float r, float g, float b);
-	void    tri(std::vector<float> v);
+	void    col (float r, float g, float b);
+	void    tri (std::vector<float> v);
+	void    quad(std::vector<float> v);
 }  // end glbuild
