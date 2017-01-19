@@ -95,10 +95,10 @@ int make_obj() {
 	o->translate(-1,0,-3);
 	// third tri
 	glbuild::make();
-	glbuild::col(1, 0, 1);
+	glbuild::col(1,0,0);
 	glbuild::tri({ -1,0,0,  +1,0,0,  0,+1,0 });
 	o = glbuild::finalize();
-	o->translate(-2, 0, -3);
+	o->translate(-2,0,-3);
 	return 0;
 }
 
@@ -109,7 +109,7 @@ int main() {
 	make_obj();
 
 	while (running) {
-		
+		// repaint
 		// drawtest1();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		globj::paintall();

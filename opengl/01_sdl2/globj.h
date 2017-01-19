@@ -1,24 +1,23 @@
 #pragma once
 
 #include <vector>
-#include <OpenGL/gl.h>
 
-struct GLvec3 { GLfloat  x, y, z; };
-struct GLvec4 { GLfloat  x, y, z, a; };
+// struct GLvec3 { float  x, y, z; };
+// struct GLvec4 { float  x, y, z, a; };
 
 struct GLtri {
 public:
-	GLfloat  vec[9]; // = {0};
-	GLfloat  col[3]; // = {0};
+	float  vec[9]; // = {0};
+	float  col[3]; // = {0};
 };
 
 class GLobj {
 public:
-	GLfloat  x=0,   y=0,   z=0;
-	GLfloat  rx=0,  ry=0,  rz=0,  rot=0;
+	float  x=0,   y=0,   z=0;
+	float  rx=0,  ry=0,  rz=0,  rot=0;
 	std::vector<GLtri>  tris;
-	void translate (GLfloat x, GLfloat y, GLfloat z);
-	void rotate    (GLfloat x, GLfloat y, GLfloat z, GLfloat rot);
+	void translate (float x, float y, float z);
+	void rotate    (float x, float y, float z, float rot);
 };
 
 namespace globj {

@@ -1,13 +1,14 @@
+#include <OpenGL/gl.h>
 #include "globj.h"
 
 using namespace std;
 
 
 /*** GLobj class ***/
-void GLobj::translate (GLfloat nx, GLfloat ny, GLfloat nz) {
+void GLobj::translate (float nx, float ny, float nz) {
 	x=nx,  y=ny,  z=nz;
 }
-void GLobj::rotate (GLfloat x, GLfloat y, GLfloat z, GLfloat nrot) {
+void GLobj::rotate (float x, float y, float z, float nrot) {
 	rx=x,  ry=y,  rz=z,  rot=nrot;
 }
 
@@ -53,7 +54,7 @@ namespace globj {
 
 namespace glbuild {
 	static GLobj  obj;
-	static float  c;
+	static float  c[3] = {0.8f};
 	
 	void make() {
 		obj = GLobj();  // reset
@@ -63,7 +64,7 @@ namespace glbuild {
 		return  &globj::objlist.back();
 	}
 	void col(float r, float g, float b) {
-		c[0]=r,  c[0]=g,  c[0]=b;
+		c[0]=r,  c[1]=g,  c[2]=b;
 	}
 	void tri(std::vector<float> v) {
 		if (v.size() != 9) {
@@ -72,7 +73,7 @@ namespace glbuild {
 		}
 		obj.tris.push_back({
 			{ v[0],v[1],v[2],  v[3],v[4],v[5],  v[6],v[7],v[8] },
-			{ c[0],c[1],c[1] }
+			{ c[0],c[1],c[2] }
 		});
 	}
 }  // end glbuild
