@@ -21,7 +21,7 @@ namespace gllib {
 			return 1;
 		}
 		// Create our window centered at 512x512 resolution
-		const auto  C = SDL_WINDOWPOS_CENTERED,  W = 512,  H = 512;
+		const int  C = SDL_WINDOWPOS_CENTERED,  W = 512,  H = 512;
 		win = SDL_CreateWindow( "My Game", C, C, W, H, SDL_WINDOW_OPENGL );
 		if (!win) {
 			fprintf(stderr, "Failed to open SDL2 window\n");

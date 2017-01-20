@@ -39,7 +39,7 @@ int mkcam() {
 		// +1,+1,0,  -1,+1,0,  0,0,2,
 		-1,+1,0,  -1,-1,0,  0,0,2,
 	});
-	glbuild::col (1.0, 0.6, 0.6, 0.5);
+	glbuild::col (0.0, 1.0, 0.0, 0.5);
 	glbuild::tris({ +1,+1,0,  -1,+1,0,  0,0,2 });
 	GLobj* o = glbuild::finalize();
 	o->translate(-4,4,0);
