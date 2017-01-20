@@ -10,7 +10,9 @@ using namespace std;
 namespace gllib {
 	static SDL_Window* win = NULL;
 	static SDL_GLContext ctx;
+	static vector<uint32_t> keys;
 	GLobj cam;
+	int running = 1;
 	
 	int init() {
 		// init sdl2
@@ -43,7 +45,8 @@ namespace gllib {
 
 		// set some defaults
 		glClearColor(0.0, 0.0, 0.0, 1.0);
-		globj::objlist.reserve(100);
+		keys.reserve(128);
+		globj::objlist.reserve(128);
 		cam.translate(0, 0, 6);
 		
 		return 0;
@@ -65,5 +68,32 @@ namespace gllib {
 	int flip() {
 		SDL_GL_SwapWindow(win);
 		return 0;
+	}
+
+	static int indexOf(const vector<uint32_t>& v, uint32_t k) {
+		for (int i = 0; i < v.size(); i++)
+			if (v[i] == k)
+				return i;
+		return -1;
+	}
+
+	const vector<uint32_t>& getkeys() {
+		SDL_Event  e;
+		uint32_t   sym;
+		int        ii;
+		while (SDL_PollEvent(&e)) {
+			switch (e.type) {
+			case SDL_QUIT:  running = 0;  break;
+			case SDL_KEYDOWN:
+				sym = e.key.keysym.sym;
+				if (indexOf(keys, sym) == -1)  keys.push_back(sym);
+				break;
+			case SDL_KEYUP:
+				sym = e.key.keysym.sym;
+				if ((ii = indexOf(keys, sym)) > -1)   keys.erase(keys.begin() + ii);
+				break;
+			}
+		}
+		return keys;
 	}
 } // end gllib
