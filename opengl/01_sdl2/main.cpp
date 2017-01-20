@@ -10,6 +10,7 @@ using namespace std;
 
 
 // globals
+GLobj* cam[3] = { NULL };
 
 
 int mkbox() {
@@ -21,8 +22,8 @@ int mkbox() {
 	glbuild::quad({ -1,-1,-1,  +1,-1,-1,  +1,-1,+1,  -1,-1,+1 });
 	glbuild::col (1,1,0);
 	glbuild::quad({ -1,-1,-1,  -1,-1,+1,  -1,+1,+1,  -1,+1,-1 });
-	// GLobj* o = 
-	glbuild::finalize();
+	GLobj* o = glbuild::finalize();
+	o->translate(0,0,0);
 	return 0;
 }
 
@@ -35,19 +36,24 @@ int mkcam() {
 	glbuild::tris({ 
 		-1,-1,0,  +1,-1,0,  0,0,2,
 		+1,-1,0,  +1,+1,0,  0,0,2,
-		+1,+1,0,  -1,+1,0,  0,0,2,
+		// +1,+1,0,  -1,+1,0,  0,0,2,
 		-1,+1,0,  -1,-1,0,  0,0,2,
 	});
+	glbuild::col (1.0, 0.6, 0.6, 0.5);
+	glbuild::tris({ +1,+1,0,  -1,+1,0,  0,0,2 });
 	GLobj* o = glbuild::finalize();
 	o->translate(-4,4,0);
+	cam[0] = o;
 	// clone second camera
 	o = globj::clone(o);
 	o->translate(4,0,0);
-	o->rotate(0,1,0,90);
+	o->rotate(90,0,1,0);
+	cam[1] = o;
 	// clone third camera
 	o = globj::clone(o);
 	o->translate(0,-6,0);
-	o->rotate(1,0,0,90);
+	o->rotate(90,1,0,0);
+	cam[2] = o;
 	return 0;
 }
 
@@ -55,20 +61,19 @@ int mkcam() {
 int main() {
 	printf("start\n");
 	if (gllib::init())  return 1;
-
-	mkbox();
-	mkcam();
+	mkbox(),  mkcam();
 	
-	float  rotspeed = 2,  box_rot = 0,  cam_rot = 0;
-
+	float  rotspeed = 2,  box_rot = 0;
+	int    cam_follow = -1;
 	while (gllib::running) {
-		// apply camera rotation
-		gllib::cam.rotate(0, 1, 0, cam_rot);
+		// reapply camera position
+		if (cam_follow > -1)  gllib::cam = *cam[cam_follow];
 
 		// rotate box
 		box_rot += rotspeed;
-		globj::objlist[0].rotate(0, 1, 0, box_rot);
-		globj::objlist[1].rotate(0, 1, 0, box_rot);  // also rotate camera 1
+		globj::objlist[0].rotate(box_rot, 0, 1, 0);
+		// globj::objlist[1].rotate(box_rot, 0, 1, 0);  // also rotate camera 1
+		cam[0]->rotate(box_rot, 0, 1, 0);  // also rotate camera 1
 
 		// redraw
 		gllib::paint();
@@ -76,9 +81,22 @@ int main() {
 		// get keys
 		for (auto k : gllib::getkeys())
 			switch (k) {
+			// quit
 			case SDLK_ESCAPE:  gllib::running = 0;  break;
-			case SDLK_LEFT:    cam_rot += rotspeed * -1;  break;
-			case SDLK_RIGHT:   cam_rot += rotspeed * +1;  break;
+			// movement
+			// case SDLK_LEFT:    cam_rot += rotspeed * -1;  break;
+			// case SDLK_RIGHT:   cam_rot += rotspeed * +1;  break;
+			case SDLK_LEFT:    gllib::cam.rot += rotspeed * +1;  break;
+			case SDLK_RIGHT:   gllib::cam.rot += rotspeed * -1;  break;
+			// cameras
+			case '1':
+				gllib::cam.translate(0, 0, 6);
+				gllib::cam.rotate(0, 0, 0, 0);
+				cam_follow = -1;
+				break;
+			case '2':  gllib::cam = *cam[1];  cam_follow = -1;  break;
+			case '3':  gllib::cam = *cam[2];  cam_follow = -1;  break;
+			case '4':  cam_follow = 0;  break;
 			}
 	}
 

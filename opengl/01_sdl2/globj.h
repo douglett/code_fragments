@@ -14,7 +14,7 @@ public:
 	float  rx=0,  ry=0,  rz=0,  rot=0;
 	std::vector<GLtri>  tris;
 	void translate (float x, float y, float z);
-	void rotate    (float x, float y, float z, float rot);
+	void rotate    (float rot, float x, float y, float z);
 };
 
 namespace globj {

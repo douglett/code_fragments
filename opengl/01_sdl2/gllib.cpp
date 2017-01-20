@@ -56,7 +56,8 @@ namespace gllib {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// reset cam
 		glLoadIdentity();  // clear matrix stack
-		glRotatef( cam.rot, cam.rx, cam.ry, cam.rz );
+		// glRotatef( cam.rot, cam.rx, cam.ry, cam.rz );
+		glRotatef( cam.rot, -cam.rx, -cam.ry, -cam.rz );
 		glTranslatef( -cam.x, -cam.y, -cam.z );
 		glPushMatrix();
 		// repaint

@@ -8,8 +8,8 @@ using namespace std;
 void GLobj::translate (float nx, float ny, float nz) {
 	x=nx,  y=ny,  z=nz;
 }
-void GLobj::rotate (float x, float y, float z, float nrot) {
-	rx=x,  ry=y,  rz=z,  rot=nrot;
+void GLobj::rotate (float nrot, float x, float y, float z) {
+	rot=nrot,  rx=x,  ry=y,  rz=z;
 }
 
 
