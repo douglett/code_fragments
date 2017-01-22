@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 struct GLtri {
@@ -21,6 +22,8 @@ namespace globj {
 	extern std::vector<GLobj>  objlist;
 	GLobj* mkobj();
 	GLobj* clone(const GLobj* obj);
+	std::string serialize(const GLobj* obj);
+	GLobj* deserialize(const std::string& s);
 	int    paintall();
 } // end globj
 

@@ -45,8 +45,8 @@ namespace gllib {
 
 		// set some defaults
 		glClearColor(0.0, 0.0, 0.0, 1.0);
-		keys.reserve(128);
-		globj::objlist.reserve(128);
+		keys.reserve(256);
+		globj::objlist.reserve(256);
 		cam.translate(0, 0, 6);
 		
 		return 0;

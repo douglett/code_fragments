@@ -10,6 +10,7 @@ using namespace std;
 
 
 // globals
+GLobj* box = NULL;
 GLobj* cam[3] = { NULL };
 
 
@@ -22,8 +23,8 @@ int mkbox() {
 	glbuild::quad({ -1,-1,-1,  +1,-1,-1,  +1,-1,+1,  -1,-1,+1 });
 	glbuild::col (1,1,0);
 	glbuild::quad({ -1,-1,-1,  -1,-1,+1,  -1,+1,+1,  -1,+1,-1 });
-	GLobj* o = glbuild::finalize();
-	o->translate(0,0,0);
+	box = glbuild::finalize();
+	box->translate(0,0,0);
 	return 0;
 }
 
@@ -32,15 +33,15 @@ int mkcam() {
 	// build first camera
 	glbuild::make();
 	glbuild::col (1,0,0,0.5);
-	glbuild::quad({ -1,-1,0,  +1,-1,0,  +1,+1,0,  -1,+1,0 });
-	glbuild::tris({ 
+	glbuild::quad({ -1,-1,0,  +1,-1,0,  +1,+1,0,  -1,+1,0 });  // face
+	glbuild::tris({   // sides
 		-1,-1,0,  +1,-1,0,  0,0,2,
 		+1,-1,0,  +1,+1,0,  0,0,2,
 		// +1,+1,0,  -1,+1,0,  0,0,2,
 		-1,+1,0,  -1,-1,0,  0,0,2,
 	});
 	glbuild::col (0.0, 1.0, 0.0, 0.5);
-	glbuild::tris({ +1,+1,0,  -1,+1,0,  0,0,2 });
+	glbuild::tris({ +1,+1,0,  -1,+1,0,  0,0,2 });  // top triangle
 	GLobj* o = glbuild::finalize();
 	o->translate(-4,4,0);
 	cam[0] = o;
@@ -62,6 +63,7 @@ int main() {
 	printf("start\n");
 	if (gllib::init())  return 1;
 	mkbox(),  mkcam();
+	cout << globj::serialize(box) << endl;
 	
 	float  rotspeed = 2,  box_rot = 0;
 	int    cam_follow = -1;
@@ -71,8 +73,8 @@ int main() {
 
 		// rotate box
 		box_rot += rotspeed;
-		globj::objlist[0].rotate(box_rot, 0, 1, 0);
-		// globj::objlist[1].rotate(box_rot, 0, 1, 0);  // also rotate camera 1
+		// globj::objlist[0].rotate(box_rot, 0, 1, 0);
+		box->rotate(box_rot, 0, 1, 0);
 		cam[0]->rotate(box_rot, 0, 1, 0);  // also rotate camera 1
 
 		// redraw

@@ -1,3 +1,5 @@
+#include <sstream>
+#include <iomanip>
 #include <OpenGL/gl.h>
 #include "globj.h"
 
@@ -24,6 +26,35 @@ namespace globj {
 	GLobj* clone(const GLobj* obj) {
 		objlist.push_back(*obj);
 		return  &objlist.back();
+	}
+
+	string serialize(const GLobj* obj) {
+		const int COLW = 15;
+		stringstream ss, s2;
+		vector<string> cols;
+		for (const auto t : obj->tris) {
+			// vertexes, in groups of 3
+			for (int i = 0; i < 3; i++) {
+				s2.str(""), s2.clear();
+				for (int j = 0; j < 3; j++)
+					s2 << t.vec[i*3+j] << ' ';
+				ss << setw(COLW) << left << s2.str();
+			}
+			// colors
+			s2.str(""), s2.clear();
+			for (int i = 0; i < 3; i++)
+				s2 << t.col[i] << ' ';
+			ss << setw(COLW) << left << s2.str() << endl;
+		}
+		// return result
+		return ss.str();
+	}
+
+	GLobj* deserialize(const string& s) {
+		// float f;
+		// stringstream ss(s);
+		// while (ss >> f)
+		return NULL;
 	}
 
 	int paintall() {
