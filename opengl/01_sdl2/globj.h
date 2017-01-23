@@ -18,22 +18,16 @@ public:
 	void rotate    (float rot, float x, float y, float z);
 };
 
-namespace globj {
-	extern std::vector<GLobj>  objlist;
-	GLobj* mkobj();
-	GLobj* clone(const GLobj* obj);
-	std::string serialize(const GLobj* obj);
-	GLobj* deserialize(const std::string& s);
-	int    paintall();
-} // end globj
-
 namespace glbuild {
 	void    make();
 	GLobj*  finalize();
+	GLobj*  clone(const GLobj* obj);
 	void    col  (float r, float g, float b);
 	void    col  (float r, float g, float b, float a);
 	void    tri  (const std::vector<float>& v);
 	void    quad (const std::vector<float>& v);
 	void    tris (const std::vector<float>& v);
 	void    quads(const std::vector<float>& v);
+	std::string  serialize(const GLobj* obj);
+	GLobj*       deserialize(const std::string& s);
 }  // end glbuild

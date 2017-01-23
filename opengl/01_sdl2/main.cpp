@@ -46,12 +46,12 @@ int mkcam() {
 	o->translate(-4,4,0);
 	cam[0] = o;
 	// clone second camera
-	o = globj::clone(o);
+	o = glbuild::clone(o);
 	o->translate(4,0,0);
 	o->rotate(90,0,1,0);
 	cam[1] = o;
 	// clone third camera
-	o = globj::clone(o);
+	o = glbuild::clone(o);
 	o->translate(0,-6,0);
 	o->rotate(90,1,0,0);
 	cam[2] = o;
@@ -63,7 +63,7 @@ int main() {
 	printf("start\n");
 	if (gllib::init())  return 1;
 	mkbox(),  mkcam();
-	cout << globj::serialize(box) << endl;
+	cout << glbuild::serialize(box) << endl;
 	
 	float  rotspeed = 2,  box_rot = 0;
 	int    cam_follow = -1;
@@ -93,7 +93,7 @@ int main() {
 			// cameras
 			case '1':
 				gllib::cam.translate(0, 0, 6);
-				gllib::cam.rotate(0, 0, 0, 0);
+				gllib::cam.rotate(0, 0, 1, 0);
 				cam_follow = -1;
 				break;
 			case '2':  gllib::cam = *cam[1];  cam_follow = -1;  break;

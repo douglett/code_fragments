@@ -11,6 +11,7 @@ namespace gllib {
 	static SDL_Window* win = NULL;
 	static SDL_GLContext ctx;
 	static vector<uint32_t> keys;
+	std::vector<GLobj>  camlist,  objlist;
 	GLobj cam;
 	int running = 1;
 	
@@ -46,7 +47,8 @@ namespace gllib {
 		// set some defaults
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		keys.reserve(256);
-		globj::objlist.reserve(256);
+		objlist.reserve(256);
+		camlist.reserve(256);
 		cam.translate(0, 0, 6);
 		
 		return 0;
@@ -60,10 +62,36 @@ namespace gllib {
 		glRotatef( cam.rot, -cam.rx, -cam.ry, -cam.rz );
 		glTranslatef( -cam.x, -cam.y, -cam.z );
 		glPushMatrix();
-		// repaint
-		globj::paintall();
+		// repaint objects
+		paintobjs();
 		// flip
 		return flip();
+	}
+
+	int paintobjs() {
+		// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// draw objects
+		for (const auto& o : objlist) {
+			// glLoadIdentity();
+			glPushMatrix();
+			glTranslatef( o.x, o.y, o.z );
+			glRotatef( o.rot, o.rx, o.ry, o.rz );
+			// draw each tri
+			for (const auto& t : o.tris) {
+				const auto& c = t.col;  // col reference
+				const auto& v = t.vec;  // vec reference
+				glBegin(GL_TRIANGLES);
+					glColor4f ( c[0], c[1], c[2], c[3] );
+					glVertex3f( v[0], v[1], v[2] );
+					glVertex3f( v[3], v[4], v[5] );
+					glVertex3f( v[6], v[7], v[8] );
+				glEnd();
+			}
+			glPopMatrix();
+		}
+		// swap backbuffer
+		// SDL_GL_SwapWindow(win);
+		return 0;
 	}
 
 	int flip() {
