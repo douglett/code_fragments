@@ -15,6 +15,7 @@ void GLobj::rotate (float nrot, float x, float y, float z) {
 }
 
 
+
 namespace globj {
 	std::vector<GLobj>  objlist;
 
@@ -85,6 +86,7 @@ namespace globj {
 }; // end globj
 
 
+
 namespace glbuild {
 	static GLobj  obj;
 	static float  c[4] = {0.8f, 0.8f, 0.8f, 0.8f};
@@ -92,16 +94,20 @@ namespace glbuild {
 	void make() {
 		obj = GLobj();  // reset
 	}
+
 	GLobj* finalize() {
 		globj::objlist.push_back(obj);
 		return  &globj::objlist.back();
 	}
+
 	void col(float r, float g, float b) {
 		c[0]=r,  c[1]=g,  c[2]=b,  c[3]=1;
 	}
+
 	void col(float r, float g, float b, float a) {
 		c[0]=r,  c[1]=g,  c[2]=b,  c[3]=a;
 	}
+
 	void tri(const std::vector<float>& v) {
 		if (v.size() != 9) {
 			fprintf(stderr, "wrong number of verticies passed for tri.\n");
@@ -112,6 +118,7 @@ namespace glbuild {
 			{ c[0],c[1],c[2],c[3] }
 		});
 	}
+
 	void quad(const std::vector<float>& v) {
 		if (v.size() != 12) {
 			fprintf(stderr, "wrong number of verticies passed for quad.\n");
@@ -126,6 +133,7 @@ namespace glbuild {
 			{ c[0],c[1],c[2],c[3] }
 		});
 	}
+
 	void tris(const std::vector<float>& v) {
 		if (v.size() == 0 || v.size() % 9 != 0) {
 			fprintf(stderr, "wrong number of verticies passed for tri. must be a multiple of 9. found: %d\n", (int)v.size());
@@ -134,6 +142,7 @@ namespace glbuild {
 		for (int i = 0; i < v.size(); i += 9)
 			tri( vector<float>( &v[i], &v[i+9] ) );
 	}
+
 	void quads(const std::vector<float>& v) {
 		if (v.size() == 0 || v.size() % 12 != 0) {
 			fprintf(stderr, "wrong number of verticies passed for quad. must be a multiple of 12. found: %d\n", (int)v.size());

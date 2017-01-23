@@ -31,17 +31,17 @@ int mkbox() {
 
 int mkcam() {
 	// build first camera
+	const float s = 0.7;
 	glbuild::make();
 	glbuild::col (1,0,0,0.5);
-	glbuild::quad({ -1,-1,0,  +1,-1,0,  +1,+1,0,  -1,+1,0 });  // face
+	glbuild::quad({ -s,-s,0,  +s,-s,0,  +s,+s,0,  -s,+s,0 });  // face
 	glbuild::tris({   // sides
-		-1,-1,0,  +1,-1,0,  0,0,2,
-		+1,-1,0,  +1,+1,0,  0,0,2,
-		// +1,+1,0,  -1,+1,0,  0,0,2,
-		-1,+1,0,  -1,-1,0,  0,0,2,
+		-s,-s,0,  +s,-s,0,  0,0,2*s,
+		+s,-s,0,  +s,+s,0,  0,0,2*s,
+		-s,+s,0,  -s,-s,0,  0,0,2*s,
 	});
 	glbuild::col (0.0, 1.0, 0.0, 0.5);
-	glbuild::tris({ +1,+1,0,  -1,+1,0,  0,0,2 });  // top triangle
+	glbuild::tris({ +s,+s,0,  -s,+s,0,  0,0,2*s });  // top triangle
 	GLobj* o = glbuild::finalize();
 	o->translate(-4,4,0);
 	cam[0] = o;
