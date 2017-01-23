@@ -13,7 +13,7 @@ namespace gllib {
 	int init();
 	GLobj* mkcam();
 	int paint();
-	int paintobjs();
+	int paintobjs(const std::vector<GLobj>& olist);
 	int flip();
 	const std::vector<uint32_t>& getkeys();
 } // end gllib

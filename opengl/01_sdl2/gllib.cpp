@@ -80,21 +80,19 @@ namespace gllib {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// reset cam
 		glLoadIdentity();  // clear matrix stack
-		// glRotatef( cam.rot, -cam.rx, -cam.ry, -cam.rz );
-		// glTranslatef( -cam.x, -cam.y, -cam.z );
 		glRotatef( cam->rot, -cam->rx, -cam->ry, -cam->rz );
 		glTranslatef( -cam->x, -cam->y, -cam->z );
 		glPushMatrix();
 		// repaint objects
-		paintobjs();
+		paintobjs(objlist);
+		paintobjs(camlist);
 		// flip
 		return flip();
 	}
 
-	int paintobjs() {
-		// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	int paintobjs(const vector<GLobj>& olist) {
 		// draw objects
-		for (const auto& o : objlist) {
+		for (const auto& o : olist) {
 			// glLoadIdentity();
 			glPushMatrix();
 			glTranslatef( o.x, o.y, o.z );
@@ -113,7 +111,6 @@ namespace gllib {
 			glPopMatrix();
 		}
 		// swap backbuffer
-		// SDL_GL_SwapWindow(win);
 		return 0;
 	}
 
