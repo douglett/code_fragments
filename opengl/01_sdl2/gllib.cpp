@@ -12,7 +12,7 @@ namespace gllib {
 	static SDL_GLContext ctx;
 	static vector<uint32_t> keys;
 	std::vector<GLobj>  camlist,  objlist;
-	GLobj cam;
+	GLobj* cam = NULL;
 	int running = 1;
 	
 	int init() {
@@ -46,21 +46,44 @@ namespace gllib {
 
 		// set some defaults
 		glClearColor(0.0, 0.0, 0.0, 1.0);
-		keys.reserve(256);
+		keys.reserve(64);
+		camlist.reserve(64);
 		objlist.reserve(256);
-		camlist.reserve(256);
-		cam.translate(0, 0, 6);
+		cam = mkcam();  // first camera
+		cam->translate(0, 0, 6);  // first cam position
 		
 		return 0;
+	}
+
+	GLobj* mkcam() {
+		const float s = 0.7;
+		// build it
+		glbuild::make();
+		glbuild::col (1,0,0,0.5);
+		glbuild::quad({ -s,-s,0,  +s,-s,0,  +s,+s,0,  -s,+s,0 });  // face
+		glbuild::tris({   // sides
+			-s,-s,0,  +s,-s,0,  0,0,2*s,
+			+s,-s,0,  +s,+s,0,  0,0,2*s,
+			-s,+s,0,  -s,-s,0,  0,0,2*s,
+		});
+		glbuild::col (0.0, 1.0, 0.0, 0.5);
+		glbuild::tris({ +s,+s,0,  -s,+s,0,  0,0,2*s });  // top triangle
+		// add to cam list
+		camlist.push_back( *glbuild::finalize() );
+		objlist.pop_back();  // remove built item from objlist
+		GLobj* cam = &camlist.back();
+		cam->translate(0, 0, 0);  // center
+		return cam;
 	}
 
 	int paint() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// reset cam
 		glLoadIdentity();  // clear matrix stack
-		// glRotatef( cam.rot, cam.rx, cam.ry, cam.rz );
-		glRotatef( cam.rot, -cam.rx, -cam.ry, -cam.rz );
-		glTranslatef( -cam.x, -cam.y, -cam.z );
+		// glRotatef( cam.rot, -cam.rx, -cam.ry, -cam.rz );
+		// glTranslatef( -cam.x, -cam.y, -cam.z );
+		glRotatef( cam->rot, -cam->rx, -cam->ry, -cam->rz );
+		glTranslatef( -cam->x, -cam->y, -cam->z );
 		glPushMatrix();
 		// repaint objects
 		paintobjs();

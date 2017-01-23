@@ -8,9 +8,10 @@ struct gvec4 { float  x, y, z, a; };
 
 namespace gllib {
 	extern std::vector<GLobj>  camlist,  objlist;
-	extern GLobj cam;
+	extern GLobj* cam;
 	extern int running;
 	int init();
+	GLobj* mkcam();
 	int paint();
 	int paintobjs();
 	int flip();
