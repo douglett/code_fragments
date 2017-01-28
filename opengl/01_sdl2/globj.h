@@ -12,10 +12,10 @@ public:
 class GLobj {
 public:
 	float  x=0,   y=0,   z=0;
-	float  rx=0,  ry=0,  rz=0,  rot=0;
+	float  pitch=0,  yaw=0;
 	std::vector<GLtri>  tris;
 	void translate (float x, float y, float z);
-	void rotate    (float rot, float x, float y, float z);
+	// void rotate    (float rot, float x, float y, float z);
 };
 
 namespace glbuild {

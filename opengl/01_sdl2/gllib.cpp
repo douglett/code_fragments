@@ -80,13 +80,15 @@ namespace gllib {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// reset cam
 		glLoadIdentity();  // clear matrix stack
-		glRotatef( cam->rot, -cam->rx, -cam->ry, -cam->rz );
+		glRotatef( cam->pitch,  -1, 0,0 );
+		glRotatef( cam->yaw,     0,-1,0 );
 		glTranslatef( -cam->x, -cam->y, -cam->z );
 		glPushMatrix();
 		// repaint objects
 		paintobjs(objlist);
 		paintobjs(camlist);
 		// flip
+		glPopMatrix();
 		return flip();
 	}
 
@@ -96,7 +98,8 @@ namespace gllib {
 			// glLoadIdentity();
 			glPushMatrix();
 			glTranslatef( o.x, o.y, o.z );
-			glRotatef( o.rot, o.rx, o.ry, o.rz );
+			glRotatef( o.yaw,   0,1,0 );
+			glRotatef( o.pitch, 1,0,0 );
 			// draw each tri
 			for (const auto& t : o.tris) {
 				const auto& c = t.col;  // col reference

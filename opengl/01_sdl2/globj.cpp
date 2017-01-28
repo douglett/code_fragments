@@ -11,9 +11,9 @@ using namespace std;
 void GLobj::translate (float nx, float ny, float nz) {
 	x=nx,  y=ny,  z=nz;
 }
-void GLobj::rotate (float nrot, float x, float y, float z) {
-	rot=nrot,  rx=x,  ry=y,  rz=z;
-}
+// void GLobj::rotate (float nrot, float x, float y, float z) {
+// 	rot=nrot,  rx=x,  ry=y,  rz=z;
+// }
 
 
 
@@ -23,7 +23,6 @@ namespace glbuild {
 	
 	void make() {
 		obj = GLobj();  // reset
-		obj.rotate(0,0,1,0);  // set default rotation (l-r)
 	}
 
 	GLobj* finalize() {
