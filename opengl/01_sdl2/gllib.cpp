@@ -8,12 +8,12 @@ using namespace std;
 
 
 namespace gllib {
-	static SDL_Window* win = NULL;
-	static SDL_GLContext ctx;
-	static vector<uint32_t> keys;
-	std::vector<GLobj>  camlist,  objlist;
-	GLobj* cam = NULL;
-	int running = 1;
+	static SDL_Window*       win = NULL;
+	static SDL_GLContext     ctx;
+	static vector<uint32_t>  keys;
+	list<GLobj>  camlist,  objlist;
+	GLobj*       cam = NULL;
+	int          running = 1,  showcam = 1;
 	
 	int init() {
 		// init sdl2
@@ -47,8 +47,6 @@ namespace gllib {
 		// set some defaults
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		keys.reserve(64);
-		camlist.reserve(64);
-		objlist.reserve(256);
 		cam = mkcam();  // first camera
 		cam->translate(0, 0, 6);  // first cam position
 		
@@ -56,7 +54,7 @@ namespace gllib {
 	}
 
 	GLobj* mkcam() {
-		const float s = 0.7;
+		const float s = 0.7;  // visible size
 		// build it
 		glbuild::make();
 		glbuild::col (1,0,0,0.5);
@@ -86,13 +84,13 @@ namespace gllib {
 		glPushMatrix();
 		// repaint objects
 		paintobjs(objlist);
-		paintobjs(camlist);
+		if (showcam)  paintobjs(camlist);
 		// flip
 		glPopMatrix();
 		return flip();
 	}
 
-	int paintobjs(const vector<GLobj>& olist) {
+	int paintobjs(const list<GLobj>& olist) {
 		// draw objects
 		for (const auto& o : olist) {
 			// glLoadIdentity();

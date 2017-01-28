@@ -28,6 +28,17 @@ int mkbox() {
 }
 
 
+template<typename T>
+T& listpos(std::list<T>& ls, int pos) {
+	if (pos <= 0)            return ls.front();
+	if (pos >= ls.size()-1)  return ls.back();
+	int i = 0;
+	for (auto& l : ls)
+		if (i++ == pos)  return l;
+	return ls.back();  // just make the compiler happy
+}
+
+
 int main() {
 	printf("start\n");
 	if (gllib::init())  return 1;
@@ -62,9 +73,9 @@ int main() {
 			case SDLK_LEFT:    gllib::cam->yaw += rotspeed;  break;
 			case SDLK_RIGHT:   gllib::cam->yaw -= rotspeed;  break;
 			// cameras
-			case '1':  gllib::cam = &gllib::camlist[0];  break;
-			case '2':  gllib::cam = &gllib::camlist[1];  break;
-			case '3':  gllib::cam = &gllib::camlist[2];  break;
+			case '1':  gllib::cam = &gllib::camlist.front();  break;
+			case '2':  gllib::cam = &listpos(gllib::camlist, 1);  break;
+			case '3':  gllib::cam = &listpos(gllib::camlist, 2);  break;
 			}
 	}
 
