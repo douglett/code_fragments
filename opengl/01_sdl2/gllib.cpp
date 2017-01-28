@@ -53,27 +53,6 @@ namespace gllib {
 		return 0;
 	}
 
-	GLobj* mkcam() {
-		const float s = 0.7;  // visible size
-		// build it
-		glbuild::make();
-		glbuild::col (1,0,0,0.5);
-		glbuild::quad({ -s,-s,0,  +s,-s,0,  +s,+s,0,  -s,+s,0 });  // face
-		glbuild::tris({   // sides
-			-s,-s,0,  +s,-s,0,  0,0,2*s,
-			+s,-s,0,  +s,+s,0,  0,0,2*s,
-			-s,+s,0,  -s,-s,0,  0,0,2*s,
-		});
-		glbuild::col (0.0, 1.0, 0.0, 0.5);
-		glbuild::tris({ +s,+s,0,  -s,+s,0,  0,0,2*s });  // top triangle
-		// add to cam list
-		camlist.push_back( *glbuild::finalize() );
-		objlist.pop_back();  // remove built item from objlist
-		GLobj* cam = &camlist.back();
-		cam->translate(0, 0, 0);  // center
-		return cam;
-	}
-
 	int paint() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// reset cam
@@ -120,6 +99,27 @@ namespace gllib {
 		return 0;
 	}
 
+	GLobj* mkcam() {
+		const float s = 0.7;  // visible size
+		// build it
+		glbuild::make();
+		glbuild::col (1,0,0,0.5);
+		glbuild::quad({ -s,-s,0,  +s,-s,0,  +s,+s,0,  -s,+s,0 });  // face
+		glbuild::tris({   // sides
+			-s,-s,0,  +s,-s,0,  0,0,2*s,
+			+s,-s,0,  +s,+s,0,  0,0,2*s,
+			-s,+s,0,  -s,-s,0,  0,0,2*s,
+		});
+		glbuild::col (0.0, 1.0, 0.0, 0.5);
+		glbuild::tris({ +s,+s,0,  -s,+s,0,  0,0,2*s });  // top triangle
+		// add to cam list
+		camlist.push_back( *glbuild::finalize() );
+		objlist.pop_back();  // remove built item from objlist
+		GLobj* cam = &camlist.back();
+		cam->translate(0, 0, 0);  // center
+		return cam;
+	}
+
 	static int indexOf(const vector<uint32_t>& v, uint32_t k) {
 		for (int i = 0; i < v.size(); i++)
 			if (v[i] == k)
@@ -146,4 +146,25 @@ namespace gllib {
 		}
 		return keys;
 	}
+
+	static GLobj* listpos(list<GLobj>& ls, int pos) {
+		int i = 0;
+		for (auto& o : ls) {
+			if (i > pos)  break;
+			if (i++ == pos)  return &o;
+		}
+		return NULL;  // just make the compiler happy
+	}
+
+	static GLobj* listid(list<GLobj>& ls, const string& id) {
+		for (auto& o : ls)
+			if (o.id == id)
+				return &o;
+		return NULL;
+	}
+
+	GLobj* getobj(int n) { return listpos(objlist, n); }
+	GLobj* getcam(int n) { return listpos(camlist, n); }
+	GLobj* getobj(const string& id) { return listid(objlist, id); }
+	GLobj* getcam(const string& id) { return listid(camlist, id); }
 } // end gllib

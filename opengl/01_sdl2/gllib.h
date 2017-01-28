@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 #include <list>
 #include "globj.h"
@@ -12,9 +13,13 @@ namespace gllib {
 	extern GLobj*  cam;
 	extern int  running, showcam;
 	int init();
-	GLobj* mkcam();
 	int paint();
 	int paintobjs(const std::list<GLobj>& olist);
 	int flip();
+	GLobj* mkcam();
 	const std::vector<uint32_t>& getkeys();
+	GLobj* getobj(int n);
+	GLobj* getcam(int n);
+	GLobj* getobj(const std::string& id);
+	GLobj* getcam(const std::string& id);
 } // end gllib
