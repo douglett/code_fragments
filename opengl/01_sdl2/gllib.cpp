@@ -53,15 +53,32 @@ namespace gllib {
 		return 0;
 	}
 
+	static int paint2d() {
+		glPushMatrix();
+			// glTranslatef( -0.09, 0.07, 0 );
+			float  w = 254/256.0,  z = -1.0;
+			glBegin(GL_QUADS);
+				glColor4f ( 1.0, 0.0, 0.0, 1.0 );
+				glVertex3f( 0, 0, z );
+				glVertex3f( w, 0, z );
+				glVertex3f( w, w, z );
+				glVertex3f( 0, w, z );
+			glEnd();
+		glPopMatrix();
+		return 0;
+	}
+
 	int paint() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// reset cam
 		glLoadIdentity();  // clear matrix stack
+		// repaint ui objects
+		paint2d();
+		// reset cam
 		glRotatef( cam->pitch,  -1, 0,0 );
 		glRotatef( cam->yaw,     0,-1,0 );
 		glTranslatef( -cam->x, -cam->y, -cam->z );
 		glPushMatrix();
-		// repaint objects
+		// repaint 3d objects
 		paintobjs(objlist);
 		if (showcam)  paintobjs(camlist);
 		// flip
