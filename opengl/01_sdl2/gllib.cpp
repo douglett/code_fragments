@@ -8,6 +8,7 @@ using namespace std;
 
 
 namespace gllib {
+	static const int  WIN_W = 512,  WIN_H = 512;
 	static SDL_Window*       win = NULL;
 	static SDL_GLContext     ctx;
 	static vector<uint32_t>  keys;
@@ -22,8 +23,8 @@ namespace gllib {
 			return 1;
 		}
 		// Create our window centered at 512x512 resolution
-		const int  C = SDL_WINDOWPOS_CENTERED,  W = 512,  H = 512;
-		win = SDL_CreateWindow( "My Game", C, C, W, H, SDL_WINDOW_OPENGL );
+		const int  C = SDL_WINDOWPOS_CENTERED;
+		win = SDL_CreateWindow( "My Game", C, C, WIN_W, WIN_H, SDL_WINDOW_OPENGL );
 		if (!win) {
 			fprintf(stderr, "Failed to open SDL2 window\n");
 			return 1;
@@ -37,34 +38,44 @@ namespace gllib {
 		glEnable(GL_DEPTH_TEST),  glDepthFunc(GL_LESS);  // stuff in background
 		glEnable(GL_BLEND),       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // transparency
 
-		// set up perspective
-		glMatrixMode(GL_PROJECTION); 	// change to the projection matrix
-		glLoadIdentity();  				// reset matrix to identity position
-		gluPerspective(90.0f, float(W)/H, 0.1f, 100.0f);  // Set our perspective. this will show a warning that we can ignore
-		glMatrixMode(GL_MODELVIEW); 	// Make sure we're changing the model from here on
-		glLoadIdentity(); 				// reset matrix to identity position
-
 		// set some defaults
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		keys.reserve(64);
 		cam = mkcam();  // first camera
 		cam->translate(0, 0, 6);  // first cam position
+		setPerspective("3d");  // set up perspective
 		
 		return 0;
 	}
 
+	int setPerspective(const string& per) {
+		if (per == "2d") {
+			glMatrixMode(GL_PROJECTION); 	// change to the projection matrix
+			glLoadIdentity();
+			glOrtho(0.0f, WIN_W, WIN_H, 0.0f, 0.0f, 1.0f);
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+		}
+		if (per == "3d") {
+			glMatrixMode(GL_PROJECTION); 	// change to the projection matrix
+			glLoadIdentity();  				// reset matrix to identity position
+			gluPerspective(90.0f, float(WIN_W)/WIN_H, 0.1f, 100.0f);  // Set our perspective. this will show a warning that we can ignore
+			glMatrixMode(GL_MODELVIEW); 	// Make sure we're changing the model from here on
+			glLoadIdentity(); 				// reset matrix to identity position
+		}
+		return 0;
+	}
+
 	static int paint2d() {
-		glPushMatrix();
-			// glTranslatef( -0.09, 0.07, 0 );
-			float  w = 254/256.0,  z = -1.0;
-			glBegin(GL_QUADS);
-				glColor4f ( 1.0, 0.0, 0.0, 1.0 );
-				glVertex3f( 0, 0, z );
-				glVertex3f( w, 0, z );
-				glVertex3f( w, w, z );
-				glVertex3f( 0, w, z );
-			glEnd();
-		glPopMatrix();
+		// setPerspective("2d");
+		float  w = 100,  z = 0;
+		glBegin(GL_QUADS);
+			glColor4f ( 1.0, 0.0, 0.0, 1.0 );
+			glVertex3f( 0, 0, z );
+			glVertex3f( w, 0, z );
+			glVertex3f( w, w, z );
+			glVertex3f( 0, w, z );
+		glEnd();
 		return 0;
 	}
 
@@ -72,8 +83,10 @@ namespace gllib {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity();  // clear matrix stack
 		// repaint ui objects
+		setPerspective("2d");
 		paint2d();
 		// reset cam
+		setPerspective("3d");
 		glRotatef( cam->pitch,  -1, 0,0 );
 		glRotatef( cam->yaw,     0,-1,0 );
 		glTranslatef( -cam->x, -cam->y, -cam->z );

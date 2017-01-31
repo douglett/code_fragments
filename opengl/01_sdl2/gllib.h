@@ -13,6 +13,7 @@ namespace gllib {
 	extern GLobj*  cam;
 	extern int  running, showcam;
 	int init();
+	int setPerspective(const std::string& per);
 	int paint();
 	int paintobjs(const std::list<GLobj>& olist);
 	int flip();
