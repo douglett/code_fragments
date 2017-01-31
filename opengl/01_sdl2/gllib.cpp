@@ -37,6 +37,7 @@ namespace gllib {
 		// set GL basic options
 		glEnable(GL_DEPTH_TEST),  glDepthFunc(GL_LESS);  // stuff in background
 		glEnable(GL_BLEND),       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  // transparency
+		glEnable(GL_TEXTURE_2D);  // allow textures
 
 		// set some defaults
 		glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -44,7 +45,13 @@ namespace gllib {
 		cam = mkcam();  // first camera
 		cam->translate(0, 0, 6);  // first cam position
 		setPerspective("3d");  // set up perspective
-		
+
+		// simple opengl error checking
+		GLenum error = glGetError();
+		if (error != GL_NO_ERROR) {
+			fprintf(stderr, "Error initialising OpenGL! %s\n", gluErrorString(error));
+			return 1;
+		}
 		return 0;
 	}
 
@@ -67,15 +74,39 @@ namespace gllib {
 	}
 
 	static int paint2d() {
-		// setPerspective("2d");
-		float  w = 100,  z = 0;
-		glBegin(GL_QUADS);
-			glColor4f ( 1.0, 0.0, 0.0, 1.0 );
-			glVertex3f( 0, 0, z );
-			glVertex3f( w, 0, z );
-			glVertex3f( w, w, z );
-			glVertex3f( 0, w, z );
-		glEnd();
+		static GLuint tex = 0;
+		const int TEX_W = 128;
+		// make texture
+		if (tex == 0) {
+			GLuint pixels[TEX_W * TEX_W];
+			fill_n(pixels, TEX_W * TEX_W, 0xffff00ff);
+			for (int y = 0; y < 20; y++)
+				for (int x = 0; x < 20; x++)
+					pixels[y * TEX_W + x] = 0xff0000ff;
+			glGenTextures( 1, &tex );
+			glBindTexture( GL_TEXTURE_2D, tex );
+				glTexImage2D   ( GL_TEXTURE_2D, 0, GL_RGBA, TEX_W, TEX_W, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, pixels );
+				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );  // simple pixel-perfect scaling
+				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );  // needed?
+			glBindTexture( GL_TEXTURE_2D, 0 );
+		}
+		// glBegin(GL_QUADS);
+			// glColor4f ( 1.0, 0.0, 0.0, 1.0 );
+		// 	glVertex3f( 0, 0, z );
+		// 	glVertex3f( w, 0, z );
+		// 	glVertex3f( w, w, z );
+		// 	glVertex3f( 0, w, z );
+		// glEnd();
+		glTranslatef(10, 10, 0);
+		glColor4f ( 1.0, 1.0, 1.0, 1.0 );  // always reset to white before texture
+		glBindTexture( GL_TEXTURE_2D, tex );
+			glBegin(GL_QUADS);
+				glTexCoord2f( 0, 0 );  glVertex2f( 0,     0 );
+				glTexCoord2f( 1, 0 );  glVertex2f( TEX_W, 0 );
+				glTexCoord2f( 1, 1 );  glVertex2f( TEX_W, TEX_W );
+				glTexCoord2f( 0, 1 );  glVertex2f( 0,     TEX_W );
+			glEnd();
+		glBindTexture( GL_TEXTURE_2D, 0 );
 		return 0;
 	}
 
@@ -90,12 +121,12 @@ namespace gllib {
 		glRotatef( cam->pitch,  -1, 0,0 );
 		glRotatef( cam->yaw,     0,-1,0 );
 		glTranslatef( -cam->x, -cam->y, -cam->z );
-		glPushMatrix();
 		// repaint 3d objects
-		paintobjs(objlist);
-		if (showcam)  paintobjs(camlist);
-		// flip
+		glPushMatrix();
+			paintobjs(objlist);
+			if (showcam)  paintobjs(camlist);
 		glPopMatrix();
+		// flip
 		return flip();
 	}
 
