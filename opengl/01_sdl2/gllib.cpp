@@ -84,6 +84,7 @@ namespace gllib {
 				for (int x = 0; x < 20; x++)
 					pixels[y * TEX_W + x] = 0xff0000ff;
 			glGenTextures( 1, &tex );
+			// glDeleteTextures( 1, &tex ),  tex = 0;  // later call this
 			glBindTexture( GL_TEXTURE_2D, tex );
 				glTexImage2D   ( GL_TEXTURE_2D, 0, GL_RGBA, TEX_W, TEX_W, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, pixels );
 				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );  // simple pixel-perfect scaling
