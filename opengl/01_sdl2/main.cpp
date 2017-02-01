@@ -1,9 +1,5 @@
 #include <iostream>
-// #include <GL/glew.h>
 #include <SDL.h>
-#include <SDL_opengl.h>
-#include <OpenGL/glu.h>
-// #include "globj.h"
 #include "gllib.h"
 
 using namespace std;
@@ -43,6 +39,8 @@ int main() {
 	// make game box
 	mkbox();
 	cout << glbuild::serialize(box) << endl;
+
+	gltex::generate("static", "greyscale_static");
 	
 	float  rotspeed = 2;
 	printf("yaw[%f]  pitch[%f]  roll[%f]\n", gllib::cam->yaw, gllib::cam->pitch, 0.0f);
