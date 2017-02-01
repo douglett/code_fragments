@@ -7,6 +7,8 @@
 using namespace std;
 
 
+namespace x3 {
+
 /*** GLobj class ***/
 void GLobj::translate (float nx, float ny, float nz) {
 	x=nx,  y=ny,  z=nz;
@@ -115,4 +117,6 @@ namespace glbuild {
 		// while (ss >> f)
 		return NULL;
 	}
-}  // end glbuild
+} // end glbuild
+
+} // end x3

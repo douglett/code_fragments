@@ -7,6 +7,7 @@
 #include "gllib.h"
 
 using namespace std;
+using namespace x3;
 
 
 // globals

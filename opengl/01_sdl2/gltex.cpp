@@ -1,6 +1,8 @@
 #include <cstdint>
 #include <stdlib.h>
+#include "gltex.h"
 
+namespace x3 {
 namespace gltex {
 
 	class Tex {
@@ -9,3 +11,4 @@ namespace gltex {
 	};
 
 } // end gltex
+}

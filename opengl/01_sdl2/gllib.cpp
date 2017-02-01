@@ -7,6 +7,7 @@
 using namespace std;
 
 
+namespace x3 {
 namespace gllib {
 	static const int  WIN_W = 512,  WIN_H = 512;
 	static SDL_Window*       win = NULL;
@@ -230,3 +231,4 @@ namespace gllib {
 	GLobj* getobj(const string& id) { return listid(objlist, id); }
 	GLobj* getcam(const string& id) { return listid(camlist, id); }
 } // end gllib
+} // end x3

@@ -5,6 +5,8 @@
 #include <list>
 #include "globj.h"
 
+namespace x3 {
+	
 struct gvec3 { float  x, y, z; };
 struct gvec4 { float  x, y, z, a; };
 
@@ -24,3 +26,4 @@ namespace gllib {
 	GLobj* getobj(const std::string& id);
 	GLobj* getcam(const std::string& id);
 } // end gllib
+} // end x3
