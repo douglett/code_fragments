@@ -12,6 +12,7 @@ GLobj* box = NULL;
 
 int mkbox() {
 	glbuild::make();
+	glbuild::tex ("static");
 	glbuild::col (1,0,0);
 	glbuild::tri ({ -1,-1,-1,  +1,-1,-1,  +1,+1,-1 });
 	glbuild::tri ({ +1,+1,-1,  -1,+1,-1,  -1,-1,-1 });
@@ -36,11 +37,11 @@ int main() {
 	o = gllib::mkcam();
 	o->translate(0,-4,0);
 	o->pitch = 90;
+	// make textures
+	gltex::generate("static", "greyscale_static");
 	// make game box
 	mkbox();
 	cout << glbuild::serialize(box) << endl;
-
-	gltex::generate("static", "greyscale_static");
 	
 	float  rotspeed = 2;
 	printf("yaw[%f]  pitch[%f]  roll[%f]\n", gllib::cam->yaw, gllib::cam->pitch, 0.0f);

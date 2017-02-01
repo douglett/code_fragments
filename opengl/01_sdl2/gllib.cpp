@@ -84,8 +84,8 @@ namespace gllib {
 		// 	glVertex3f( 0, w, z );
 		// glEnd();
 		glTranslatef(10, 10, 0);
-		// glColor4f ( 1.0, 1.0, 1.0, 1.0 );  // always reset to white before texture
-		glColor4f ( 1.0, 0.0, 0.0, 1.0 );  // always reset to white before texture
+		glColor4f ( 1.0, 1.0, 1.0, 1.0 );  // always reset to white before texture
+		// glColor4f ( 1.0, 0.0, 0.0, 1.0 );  // always reset to white before texture
 		glBindTexture( GL_TEXTURE_2D, gltex::gettexID("static") );
 			glBegin(GL_QUADS);
 				glTexCoord2f( 0, 0 );  glVertex2f( 0,     0 );
@@ -120,21 +120,37 @@ namespace gllib {
 	int paintobjs(const list<GLobj>& olist) {
 		// draw objects
 		for (const auto& o : olist) {
-			// glLoadIdentity();
 			glPushMatrix();
 			glTranslatef( o.x, o.y, o.z );
 			glRotatef( o.yaw,   0,1,0 );
 			glRotatef( o.pitch, 1,0,0 );
+			// draw using textures
+			if (o.texID) {
+				glBindTexture( GL_TEXTURE_2D, o.texID );
+				for (const auto& t : o.tris) {
+					const auto& c = t.col;  // col reference
+					const auto& v = t.vec;  // vec reference
+					glBegin(GL_TRIANGLES);
+						glColor4f ( c[0], c[1], c[2], c[3] );
+						glTexCoord2f(0, 0);  glVertex3f( v[0], v[1], v[2] );
+						glTexCoord2f(1, 0);  glVertex3f( v[3], v[4], v[5] );
+						glTexCoord2f(0, 1);  glVertex3f( v[6], v[7], v[8] );
+					glEnd();
+				}
+				glBindTexture( GL_TEXTURE_2D, 0 );
+			}
 			// draw each tri
-			for (const auto& t : o.tris) {
-				const auto& c = t.col;  // col reference
-				const auto& v = t.vec;  // vec reference
-				glBegin(GL_TRIANGLES);
-					glColor4f ( c[0], c[1], c[2], c[3] );
-					glVertex3f( v[0], v[1], v[2] );
-					glVertex3f( v[3], v[4], v[5] );
-					glVertex3f( v[6], v[7], v[8] );
-				glEnd();
+			else {
+				for (const auto& t : o.tris) {
+					const auto& c = t.col;  // col reference
+					const auto& v = t.vec;  // vec reference
+					glBegin(GL_TRIANGLES);
+						glColor4f ( c[0], c[1], c[2], c[3] );
+						glVertex3f( v[0], v[1], v[2] );
+						glVertex3f( v[3], v[4], v[5] );
+						glVertex3f( v[6], v[7], v[8] );
+					glEnd();
+				}
 			}
 			glPopMatrix();
 		}

@@ -45,6 +45,10 @@ namespace glbuild {
 		c[0]=r,  c[1]=g,  c[2]=b,  c[3]=a;
 	}
 
+	void tex(const string name) {
+		obj.texID = gltex::gettexID(name);
+	}
+
 	void tri(const std::vector<float>& v) {
 		if (v.size() != 9) {
 			fprintf(stderr, "wrong number of verticies passed for tri.\n");
