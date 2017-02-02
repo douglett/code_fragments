@@ -94,6 +94,16 @@ namespace gllib {
 				glTexCoord2f( 0, 1 );  glVertex2f( 0,     TEX_W );
 			glEnd();
 		glBindTexture( GL_TEXTURE_2D, 0 );
+		// 
+		glTranslatef(150, 0, 0);
+		glBindTexture( GL_TEXTURE_2D, gltex::gettexID("stripes") );
+			glBegin(GL_QUADS);
+				glTexCoord2f( 0, 0 );  glVertex2f( 0,     0 );
+				glTexCoord2f( 1, 0 );  glVertex2f( TEX_W, 0 );
+				glTexCoord2f( 1, 1 );  glVertex2f( TEX_W, TEX_W );
+				glTexCoord2f( 0, 1 );  glVertex2f( 0,     TEX_W );
+			glEnd();
+		glBindTexture( GL_TEXTURE_2D, 0 );
 		return 0;
 	}
 

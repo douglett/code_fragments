@@ -14,8 +14,8 @@ namespace gltex {
 
 	class Tex {
 	public:
-		string name;
 		uint32_t texID = 0;
+		string name;
 		vector<uint32_t> data;
 		// Tex()  {  }
 		~Tex() { erase(); }
@@ -38,6 +38,13 @@ namespace gltex {
 
 	static list<Tex> texlist;
 
+	uint32_t gettexID(const std::string& name) {
+		for (const auto& t : texlist )
+			if (t.name == name)
+				return t.texID;
+		return 0;
+	}
+
 	uint32_t generate(const std::string& name, const std::string& type) {
 		texlist.push_back(Tex());
 		Tex& t = texlist.back();
@@ -54,15 +61,20 @@ namespace gltex {
 				t.data[y * TEX_W + x] = c<<24 | c<<16 | c<<8 | 0xff;
 			}
 		}
+		else if (type == "greyscale_stripes") {
+			// fill_n(&t.data[0], TEX_W * TEX_W, 0xff00ffff);
+			for (int y = 0; y < TEX_W; y++) {
+				if (int(y / 10) % 2)  continue;
+				for (int x = 0; x < TEX_W; x++)
+					t.data[y * TEX_W + x] = 0xffffffff;
+			}
+			// for (int y = 10; y < 20; y++)
+			// 	for (int x = 0; x < TEX_W; x++)
+			// 		t.data[y * TEX_W + x] = 0xffffffff;
+		}
+		// finish
 		t.send();
 		return t.texID;
-	}
-
-	uint32_t gettexID(const std::string& name) {
-		for (const auto& t : texlist )
-			if (t.name == name)
-				return t.texID;
-		return 0;
 	}
 
 } // end gltex
