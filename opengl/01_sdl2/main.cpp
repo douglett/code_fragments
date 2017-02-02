@@ -26,6 +26,16 @@ int mkbox() {
 }
 
 
+int mksquares() {
+	GLsquare sq;
+	sq.w = sq.h = 128;
+	sq.x = sq.y = 10;
+	sq.texID = gltex::gettexID("static");
+	gllib::squarelist.push_back(sq);
+	return 0;
+}
+
+
 int main() {
 	printf("start\n");
 	if (gllib::init())  return 1;

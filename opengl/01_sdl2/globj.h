@@ -5,9 +5,14 @@
 
 namespace x3 {
 	struct GLtri {
-	public:
 		float  vec[9]; // = {0};
 		float  col[4]; // = {0};
+	};
+
+	struct GLsquare {
+		uint32_t  x=0, y=0, w=10, h=10;
+		float     col[4] = { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff };
+		uint32_t  texID  = 0;
 	};
 
 	class GLobj {

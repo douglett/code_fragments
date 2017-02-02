@@ -13,9 +13,10 @@ namespace gllib {
 	static SDL_Window*       win = NULL;
 	static SDL_GLContext     ctx;
 	static vector<uint32_t>  keys;
-	list<GLobj>  camlist,  objlist;
-	GLobj*       cam = NULL;
-	int          running = 1,  showcam = 1;
+	list<GLobj>     camlist,  objlist;
+	list<GLsquare>  squarelist;
+	GLobj*          cam = NULL;
+	int             running = 1,  showcam = 1;
 	
 	int init() {
 		// init sdl2

@@ -12,7 +12,8 @@ struct gvec3 { float  x, y, z; };
 struct gvec4 { float  x, y, z, a; };
 
 namespace gllib {
-	extern std::list<GLobj>  camlist,  objlist;
+	extern std::list<GLobj>     camlist,  objlist;
+	extern std::list<GLsquare>  squarelist;
 	extern GLobj*  cam;
 	extern int  running, showcam;
 	int init();
