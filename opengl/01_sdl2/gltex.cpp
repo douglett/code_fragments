@@ -62,15 +62,10 @@ namespace gltex {
 			}
 		}
 		else if (type == "greyscale_stripes") {
-			// fill_n(&t.data[0], TEX_W * TEX_W, 0xff00ffff);
-			for (int y = 0; y < TEX_W; y++) {
-				if (int(y / 10) % 2)  continue;
-				for (int x = 0; x < TEX_W; x++)
-					t.data[y * TEX_W + x] = 0xffffffff;
-			}
-			// for (int y = 10; y < 20; y++)
-			// 	for (int x = 0; x < TEX_W; x++)
-			// 		t.data[y * TEX_W + x] = 0xffffffff;
+			for (int y = 0; y < TEX_W; y++)
+				if (int(y / 10) % 2 == 0)
+					for (int x = 0; x < TEX_W; x++)
+						t.data[y * TEX_W + x] = 0xffffffff;
 		}
 		// finish
 		t.send();

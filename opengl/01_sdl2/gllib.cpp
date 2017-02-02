@@ -76,16 +76,9 @@ namespace gllib {
 
 	static int paint2d() {
 		const int TEX_W = 128;
-		// glBegin(GL_QUADS);
-			// glColor4f ( 1.0, 0.0, 0.0, 1.0 );
-		// 	glVertex3f( 0, 0, z );
-		// 	glVertex3f( w, 0, z );
-		// 	glVertex3f( w, w, z );
-		// 	glVertex3f( 0, w, z );
-		// glEnd();
+		glColor4f ( 1.0, 1.0, 1.0, 1.0 );  // always reset to white before texturing
+		// 
 		glTranslatef(10, 10, 0);
-		glColor4f ( 1.0, 1.0, 1.0, 1.0 );  // always reset to white before texture
-		// glColor4f ( 1.0, 0.0, 0.0, 1.0 );  // always reset to white before texture
 		glBindTexture( GL_TEXTURE_2D, gltex::gettexID("static") );
 			glBegin(GL_QUADS);
 				glTexCoord2f( 0, 0 );  glVertex2f( 0,     0 );
