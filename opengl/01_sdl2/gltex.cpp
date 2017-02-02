@@ -1,6 +1,7 @@
 #include <vector>
 #include <list>
 #include <random>
+#include <cmath>
 #include <OpenGL/gl.h>
 #include "gltex.h"
 
@@ -45,28 +46,55 @@ namespace gltex {
 		return 0;
 	}
 
+
+	// function pointer
+	typedef  uint32_t (*genfn_t)(uint32_t x, uint32_t y);
+	// helper consts
+	static const double  
+		PI  = 3.14159265,
+		//DEG_RAD = PI / 180.0,  // degrees->radians (n * RAD_REG)
+		WID_RAD = PI / TEX_W;  // width->radians
+	// random noise
+	static uint32_t gen_random(uint32_t x, uint32_t y) {
+		int c = rand() % 256;
+		return ( c<<24 | c<<16 | c<<8 | 0xff );
+	}
+	// 10px stripes
+	static uint32_t gen_stripes(uint32_t x, uint32_t y) {
+		if (int(y / 10) % 2 == 0)  return 0xffffffff;
+		return 0x000000ff;
+	}
+	// sine wave
+	static uint32_t gen_sinewave(uint32_t x, uint32_t y) {
+		int c = sin(x * WID_RAD) * 255;
+		return ( c<<24 | c<<16 | c<<8 | 0xff );
+	}
+	// double sinewave
+	static uint32_t gen_sinewave_2(uint32_t x, uint32_t y) {
+		return gen_sinewave((x * 2) % TEX_W, 0);
+	}
+
+
 	uint32_t generate(const std::string& name, const std::string& type) {
 		texlist.push_back(Tex());
 		Tex& t = texlist.back();
 		t.name = name;
 		t.data.resize(TEX_W * TEX_W, 0x000000ff);
 		// make patterns
-		if (type == "greyscale_static") {
-			srand(time(NULL));
-			int x, y, c;
-			for (int i = 0; i < TEX_W * TEX_W * 5; i++) {
-				x = rand() % TEX_W;
-				y = rand() % TEX_W;
-				c = rand() % 256;
-				t.data[y * TEX_W + x] = c<<24 | c<<16 | c<<8 | 0xff;
-			}
-		}
-		else if (type == "greyscale_stripes") {
+		genfn_t genfn = NULL;
+		if (type == "greyscale_static")
+			srand(time(NULL)),  genfn = gen_random;
+		else if (type == "greyscale_stripes")
+			genfn = gen_stripes;
+		else if (type == "greyscale_sinewave")
+			genfn = gen_sinewave;
+		else if (type == "greyscale_sinewave_2")
+			genfn = gen_sinewave_2;
+		// perform function
+		if (genfn != NULL)
 			for (int y = 0; y < TEX_W; y++)
-				if (int(y / 10) % 2 == 0)
-					for (int x = 0; x < TEX_W; x++)
-						t.data[y * TEX_W + x] = 0xffffffff;
-		}
+				for (int x = 0; x < TEX_W; x++)
+					t.data[y * TEX_W + x] = genfn(x, y);
 		// finish
 		t.send();
 		return t.texID;

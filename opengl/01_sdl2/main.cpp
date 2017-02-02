@@ -12,7 +12,7 @@ GLobj* box = NULL;
 
 int mkbox() {
 	glbuild::make();
-	glbuild::tex ("stripes");
+	glbuild::tex ("sine2");
 	glbuild::col (1,0,0);
 	glbuild::tri ({ -1,-1,-1,  +1,-1,-1,  +1,+1,-1 });
 	glbuild::tri ({ +1,+1,-1,  -1,+1,-1,  -1,-1,-1 });
@@ -40,6 +40,8 @@ int main() {
 	// make textures
 	gltex::generate("static",  "greyscale_static");
 	gltex::generate("stripes", "greyscale_stripes");
+	gltex::generate("sine",    "greyscale_sinewave");
+	gltex::generate("sine2",   "greyscale_sinewave_2");
 	// make game box
 	mkbox();
 	cout << glbuild::serialize(box) << endl;
