@@ -7,6 +7,10 @@
 #include "gltex.h"
 
 namespace x3 {
+
+const float PI   = 3.141592,
+            RDEG = PI / 180.0,
+            FOV  = 75.0;
 	
 struct gvec3 { float  x, y, z; };
 struct gvec4 { float  x, y, z, a; };

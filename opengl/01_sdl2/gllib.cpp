@@ -68,7 +68,7 @@ namespace gllib {
 		if (per == "3d") {
 			glMatrixMode(GL_PROJECTION); 	// change to the projection matrix
 			glLoadIdentity();  				// reset matrix to identity position
-			gluPerspective(90.0f, float(WIN_W)/WIN_H, 0.1f, 100.0f);  // Set our perspective. this will show a warning that we can ignore
+			gluPerspective(FOV, float(WIN_W)/WIN_H, 0.1f, 100.0f);  // Set our perspective. this will show a warning that we can ignore
 			glMatrixMode(GL_MODELVIEW); 	// Make sure we're changing the model from here on
 			glLoadIdentity(); 				// reset matrix to identity position
 		}

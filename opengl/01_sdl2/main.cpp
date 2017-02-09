@@ -12,7 +12,7 @@ GLobj* box = NULL;
 
 int mkbox() {
 	glbuild::make();
-	glbuild::tex ("sine2");
+	glbuild::tex ("sine");
 	glbuild::col (1,0,0);
 	glbuild::tri ({ -1,-1,-1,  +1,-1,-1,  +1,+1,-1 });
 	glbuild::tri ({ +1,+1,-1,  -1,+1,-1,  -1,-1,-1 });
@@ -64,7 +64,7 @@ int main() {
 	mksquares();
 	cout << glbuild::serialize(box) << endl;
 	
-	float  rotspeed = 2;
+	float  rotspeed = 2,  mspeed = 0.1;
 	printf("yaw[%f]  pitch[%f]  roll[%f]\n", gllib::cam->yaw, gllib::cam->pitch, 0.0f);
 	while (gllib::running) {
 		// rotate box
@@ -82,6 +82,17 @@ int main() {
 			// movement
 			case SDLK_LEFT:    gllib::cam->yaw += rotspeed;  break;
 			case SDLK_RIGHT:   gllib::cam->yaw -= rotspeed;  break;
+			case SDLK_UP:
+			case SDLK_DOWN:
+				{
+					float z   = sin(RDEG * (gllib::cam->yaw + 270));
+					float x   = sin(RDEG * (gllib::cam->yaw + 180));
+					float dir = (k == SDLK_DOWN ? -1 : 1);
+					gllib::cam->z += z * mspeed * dir;
+					gllib::cam->x += x * mspeed * dir;
+					// printf("%f  %f\n", z, x);
+				}
+				break;
 			// cameras
 			case '1':  gllib::cam = gllib::getcam(0);  break;
 			case '2':  gllib::cam = gllib::getcam(1);  break;
