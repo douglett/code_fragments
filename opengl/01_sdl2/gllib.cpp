@@ -75,49 +75,12 @@ namespace gllib {
 		return 0;
 	}
 
-	static int paint2d() {
-		const int TEX_W = 128;
-		glColor4f ( 1.0, 1.0, 1.0, 1.0 );  // always reset to white before texturing
-		// 
-		glTranslatef(10, 10, 0);
-		glBindTexture( GL_TEXTURE_2D, gltex::gettexID("static") );
-			glBegin(GL_QUADS);
-				glTexCoord2f( 0, 0 );  glVertex2f( 0,     0 );
-				glTexCoord2f( 1, 0 );  glVertex2f( TEX_W, 0 );
-				glTexCoord2f( 1, 1 );  glVertex2f( TEX_W, TEX_W );
-				glTexCoord2f( 0, 1 );  glVertex2f( 0,     TEX_W );
-			glEnd();
-		glBindTexture( GL_TEXTURE_2D, 0 );
-		// 
-		glTranslatef(150, 0, 0);
-		glBindTexture( GL_TEXTURE_2D, gltex::gettexID("stripes") );
-			glBegin(GL_QUADS);
-				glTexCoord2f( 0, 0 );  glVertex2f( 0,     0 );
-				glTexCoord2f( 1, 0 );  glVertex2f( TEX_W, 0 );
-				glTexCoord2f( 1, 1 );  glVertex2f( TEX_W, TEX_W );
-				glTexCoord2f( 0, 1 );  glVertex2f( 0,     TEX_W );
-			glEnd();
-		glBindTexture( GL_TEXTURE_2D, 0 );
-		// 
-		glTranslatef(150, 0, 0);
-		glBindTexture( GL_TEXTURE_2D, gltex::gettexID("sine2") );
-			glBegin(GL_QUADS);
-				glTexCoord2f( 0, 0 );  glVertex2f( 0,     0 );
-				glTexCoord2f( 1, 0 );  glVertex2f( TEX_W, 0 );
-				glTexCoord2f( 1, 1 );  glVertex2f( TEX_W, TEX_W );
-				glTexCoord2f( 0, 1 );  glVertex2f( 0,     TEX_W );
-			glEnd();
-		glBindTexture( GL_TEXTURE_2D, 0 );
-		//
-		return 0;
-	}
-
 	int paint() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity();  // clear matrix stack
 		// repaint ui objects
 		setPerspective("2d");
-		paint2d();
+		paintsquares();
 		// reset cam
 		setPerspective("3d");
 		glRotatef( cam->pitch,  -1, 0,0 );
@@ -169,7 +132,23 @@ namespace gllib {
 			}
 			glPopMatrix();
 		}
-		// swap backbuffer
+		return 0;
+	}
+
+	int paintsquares() {
+		glLoadIdentity();
+		// draw loop
+		for (const auto& sq : squarelist) {
+			glColor4f ( sq.col[0], sq.col[1], sq.col[2], sq.col[3] );
+			glBindTexture( GL_TEXTURE_2D, sq.texID );
+				glBegin(GL_QUADS);
+					glTexCoord2f( 0, 0 );  glVertex2f( sq.x,        sq.y );
+					glTexCoord2f( 1, 0 );  glVertex2f( sq.x + sq.w, sq.y );
+					glTexCoord2f( 1, 1 );  glVertex2f( sq.x + sq.w, sq.y + sq.h );
+					glTexCoord2f( 0, 1 );  glVertex2f( sq.x,        sq.y + sq.h );
+				glEnd();
+			glBindTexture( GL_TEXTURE_2D, 0 );
+		}
 		return 0;
 	}
 

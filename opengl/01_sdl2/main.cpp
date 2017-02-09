@@ -27,11 +27,18 @@ int mkbox() {
 
 
 int mksquares() {
-	GLsquare sq;
-	sq.w = sq.h = 128;
-	sq.x = sq.y = 10;
-	sq.texID = gltex::gettexID("static");
-	gllib::squarelist.push_back(sq);
+	vector<string> texl = { "static", "stripes", "sine", "sine2" };
+	int x = 10;
+	int sz = 50; //128
+	for (const auto& s : texl) {
+		GLsquare sq;
+		sq.w = sq.h = sz;
+		sq.y = 10;
+		sq.x = x;
+		x += sz + 10;
+		sq.texID = gltex::gettexID(s);
+		gllib::squarelist.push_back(sq);
+	}
 	return 0;
 }
 
@@ -54,6 +61,7 @@ int main() {
 	gltex::generate("sine2",   "greyscale_sinewave_2");
 	// make game box
 	mkbox();
+	mksquares();
 	cout << glbuild::serialize(box) << endl;
 	
 	float  rotspeed = 2;

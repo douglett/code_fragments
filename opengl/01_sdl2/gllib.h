@@ -20,6 +20,7 @@ namespace gllib {
 	int setPerspective(const std::string& per);
 	int paint();
 	int paintobjs(const std::list<GLobj>& olist);
+	int paintsquares();
 	int flip();
 	GLobj* mkcam();
 	const std::vector<uint32_t>& getkeys();
