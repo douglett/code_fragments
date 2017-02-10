@@ -1,5 +1,6 @@
 #include <vector>
 #include <list>
+#include <map>
 #include <random>
 #include <cmath>
 #include <OpenGL/gl.h>
@@ -11,7 +12,9 @@ using namespace std;
 namespace x3 {
 namespace gltex {
 
-	const int TEX_W = 128;
+	// helper consts
+	static const int     TEX_W = 256;
+	static const double  PI    = 3.14159265;
 
 	class Tex {
 	public:
@@ -49,11 +52,6 @@ namespace gltex {
 
 	// function pointer
 	typedef  uint32_t (*genfn_t)(uint32_t x, uint32_t y);
-	// helper consts
-	static const double  
-		PI  = 3.14159265,
-		//DEG_RAD = PI / 180.0,  // degrees->radians (n * RAD_REG)
-		WID_RAD = PI / TEX_W;  // width->radians
 	// random noise
 	static uint32_t gen_random(uint32_t x, uint32_t y) {
 		int c = rand() % 256;
@@ -66,44 +64,48 @@ namespace gltex {
 	}
 	// sine wave
 	static uint32_t gen_sinewave(uint32_t x, uint32_t y) {
-		int c = sin(x * WID_RAD) * 255;
+		int c = sin(x / float(TEX_W) * PI) * 255;
 		return ( c<<24 | c<<16 | c<<8 | 0xff );
 	}
 	// double sinewave
 	static uint32_t gen_sinewave_2(uint32_t x, uint32_t y) {
 		return gen_sinewave((x * 2) % TEX_W, 0);
 	}
+	// stars, kind of
 	static uint32_t gen_stars_1(uint32_t x, uint32_t y) {
 		return ( rand() % 256 == 0 ? 0xffffffff : 0x000000ff );
 	}
+	static const map<string, genfn_t> genlist = {
+		{ "static",  gen_random },
+		{ "stripes", gen_stripes },
+		{ "sine",    gen_sinewave },
+		{ "sine2",   gen_sinewave_2 },
+		{ "stars1",  gen_stars_1 }
+	};
 
 
-	uint32_t generate(const std::string& name, const std::string& type) {
+	uint32_t generate(const std::string& name) {
 		texlist.push_back(Tex());
 		Tex& t = texlist.back();
 		t.name = name;
 		t.data.resize(TEX_W * TEX_W, 0x000000ff);
 		// make patterns
 		srand(time(NULL));
-		genfn_t genfn = NULL;
-		if (type == "greyscale_static")
-			 genfn = gen_random;
-		else if (type == "greyscale_stripes")
-			genfn = gen_stripes;
-		else if (type == "greyscale_sinewave")
-			genfn = gen_sinewave;
-		else if (type == "greyscale_sinewave_2")
-			genfn = gen_sinewave_2;
-		else if (type == "greyscale_stars_1")
-			genfn = gen_stars_1;
-		// perform function
-		if (genfn != NULL)
+		if (genlist.count(name)) {
+			genfn_t genfn = genlist.at(name);
 			for (int y = 0; y < TEX_W; y++)
 				for (int x = 0; x < TEX_W; x++)
 					t.data[y * TEX_W + x] = genfn(x, y);
+		}
 		// finish
 		t.send();
 		return t.texID;
+	}
+
+	uint32_t generateall() {
+		for (const auto& g : genlist)
+			generate(g.first);
+		return 0;
 	}
 
 } // end gltex

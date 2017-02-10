@@ -74,11 +74,7 @@ int main() {
 	o->translate(0,-4,0);
 	o->pitch = 90;
 	// make textures
-	gltex::generate("static",  "greyscale_static");
-	gltex::generate("stripes", "greyscale_stripes");
-	gltex::generate("sine",    "greyscale_sinewave");
-	gltex::generate("sine2",   "greyscale_sinewave_2");
-	gltex::generate("stars1",   "greyscale_stars_1");
+	gltex::generateall();
 	// make game box
 	mkbox();
 	mksky();
