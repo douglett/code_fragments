@@ -7,7 +7,8 @@ using namespace x3;
 
 
 // globals
-GLobj* box = NULL;
+GLobj   *box = NULL,
+		*sky = NULL;
 
 
 int mkbox() {
@@ -26,8 +27,26 @@ int mkbox() {
 }
 
 
+int mksky() {
+	glbuild::make();
+	glbuild::tex ("stars1");
+	glbuild::col (0.8,0.8,0.8);
+	glbuild::quad({ -1,-1,-1,  +1,-1,-1,  +1,+1,-1,  -1,+1,-1 });  // back
+	glbuild::quad({ -1,-1,+1,  +1,-1,+1,  +1,+1,+1,  -1,+1,+1 });  // front
+	glbuild::quad({ -1,-1,-1,  +1,-1,-1,  +1,-1,+1,  -1,-1,+1 });  // bottom
+	glbuild::quad({ -1,+1,-1,  +1,+1,-1,  +1,+1,+1,  -1,+1,+1 });  // top
+	glbuild::quad({ -1,-1,-1,  -1,-1,+1,  -1,+1,+1,  -1,+1,-1 });  // left
+	glbuild::quad({ +1,-1,-1,  +1,-1,+1,  +1,+1,+1,  +1,+1,-1 });  // right
+	sky = glbuild::finalize();
+	// sky->translate(2.5,0,0);
+	// sky->scale(0.5);
+	sky->scale(20);
+	return 0;
+}
+
+
 int mksquares() {
-	vector<string> texl = { "static", "stripes", "sine", "sine2" };
+	vector<string> texl = { "static", "stripes", "sine", "sine2", "stars1" };
 	int x = 10;
 	int sz = 50; //128
 	for (const auto& s : texl) {
@@ -59,8 +78,10 @@ int main() {
 	gltex::generate("stripes", "greyscale_stripes");
 	gltex::generate("sine",    "greyscale_sinewave");
 	gltex::generate("sine2",   "greyscale_sinewave_2");
+	gltex::generate("stars1",   "greyscale_stars_1");
 	// make game box
 	mkbox();
+	mksky();
 	mksquares();
 	cout << glbuild::serialize(box) << endl;
 	

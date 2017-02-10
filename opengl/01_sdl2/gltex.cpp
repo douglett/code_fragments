@@ -73,6 +73,9 @@ namespace gltex {
 	static uint32_t gen_sinewave_2(uint32_t x, uint32_t y) {
 		return gen_sinewave((x * 2) % TEX_W, 0);
 	}
+	static uint32_t gen_stars_1(uint32_t x, uint32_t y) {
+		return ( rand() % 256 == 0 ? 0xffffffff : 0x000000ff );
+	}
 
 
 	uint32_t generate(const std::string& name, const std::string& type) {
@@ -81,15 +84,18 @@ namespace gltex {
 		t.name = name;
 		t.data.resize(TEX_W * TEX_W, 0x000000ff);
 		// make patterns
+		srand(time(NULL));
 		genfn_t genfn = NULL;
 		if (type == "greyscale_static")
-			srand(time(NULL)),  genfn = gen_random;
+			 genfn = gen_random;
 		else if (type == "greyscale_stripes")
 			genfn = gen_stripes;
 		else if (type == "greyscale_sinewave")
 			genfn = gen_sinewave;
 		else if (type == "greyscale_sinewave_2")
 			genfn = gen_sinewave_2;
+		else if (type == "greyscale_stars_1")
+			genfn = gen_stars_1;
 		// perform function
 		if (genfn != NULL)
 			for (int y = 0; y < TEX_W; y++)

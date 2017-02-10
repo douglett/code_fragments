@@ -23,7 +23,7 @@ namespace x3 {
 		uint32_t texID = 0;
 		std::vector<GLtri>  tris;
 		void translate (float x, float y, float z);
-		// void rotate    (float rot, float x, float y, float z);
+		void scale     (float s);
 	};
 
 	namespace glbuild {
