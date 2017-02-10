@@ -61,6 +61,7 @@ namespace gllib {
 		if (per == "2d") {
 			glMatrixMode(GL_PROJECTION); 	// change to the projection matrix
 			glLoadIdentity();
+			glDepthFunc(GL_ALWAYS);  // normal draw order
 			glOrtho(0.0f, WIN_W, WIN_H, 0.0f, 0.0f, 1.0f);
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
@@ -68,6 +69,7 @@ namespace gllib {
 		if (per == "3d") {
 			glMatrixMode(GL_PROJECTION); 	// change to the projection matrix
 			glLoadIdentity();  				// reset matrix to identity position
+			glDepthFunc(GL_LESS);
 			gluPerspective(FOV, float(WIN_W)/WIN_H, 0.1f, 100.0f);  // Set our perspective. this will show a warning that we can ignore
 			glMatrixMode(GL_MODELVIEW); 	// Make sure we're changing the model from here on
 			glLoadIdentity(); 				// reset matrix to identity position

@@ -8,9 +8,7 @@ using namespace x3;
 
 
 // globals
-GLobj   *box    = NULL,
-		*sky    = NULL,
-		*sfloor = NULL;
+GLobj  *box, *sky, *sfloor, *diamond;
 
 
 int mkbox() {
@@ -25,6 +23,29 @@ int mkbox() {
 	glbuild::quad({ -1,-1,-1,  -1,-1,+1,  -1,+1,+1,  -1,+1,-1 });
 	box = glbuild::finalize();
 	box->translate(0,0.2,0);
+	return 0;
+}
+
+
+int mkdiamond() {
+	glbuild::make();
+	glbuild::tex ("sine2");
+	glbuild::col (1,0,0);
+	glbuild::quad({ -1,-1,-1,  +1,-1,-1,  +1,+1,-1,  -1,+1,-1 });  // back
+	glbuild::quad({ -1,-1,+1,  +1,-1,+1,  +1,+1,+1,  -1,+1,+1 });  // front
+	glbuild::quad({ -1,-1,-1,  -1,-1,+1,  -1,+1,+1,  -1,+1,-1 });  // left
+	glbuild::quad({ +1,-1,-1,  +1,-1,+1,  +1,+1,+1,  +1,+1,-1 });  // right
+	glbuild::tri ({ -1,+1,-1,  +1,+1,-1,   0,3,0 });  // top 1
+	glbuild::tri ({ -1,+1,-1,  -1,+1,+1,   0,3,0 });  // top 2
+	glbuild::tri ({ +1,+1,+1,  -1,+1,+1,   0,3,0 });  // top 3
+	glbuild::tri ({ +1,+1,+1,  +1,+1,-1,   0,3,0 });  // top 4
+	glbuild::tri ({ -1,-1,-1,  +1,-1,-1,   0,-3,0 });  // bottom 1
+	glbuild::tri ({ -1,-1,-1,  -1,-1,+1,   0,-3,0 });  // bottom 2
+	glbuild::tri ({ +1,-1,+1,  -1,-1,+1,   0,-3,0 });  // bottom 3
+	glbuild::tri ({ +1,-1,+1,  +1,-1,-1,   0,-3,0 });  // bottom 4
+	diamond = glbuild::finalize();
+	diamond->translate(2,0.5,2);
+	diamond->scale(0.3);
 	return 0;
 }
 
@@ -55,6 +76,13 @@ int mkenv() {
 
 
 int mksquares() {
+	GLsquare sq;
+	sq.w = 512;
+	sq.h = 70;
+	sq.col[0] = 
+	sq.col[1] = sq.col[2] = 0.2;
+	gllib::squarelist.push_back(sq);
+	// texture squares
 	vector<string> texl = { "static", "stripes", "sine", "sine2", "stars1" };
 	int x = 10;
 	int sz = 50; //128
@@ -74,7 +102,7 @@ int mksquares() {
 int main() {
 	printf("start\n");
 	if (gllib::init())  return 1;
-	gllib::getcam(0)->translate(0,1,4);
+	gllib::getcam(0)->translate(0,1,6);
 	// clone second camera
 	GLobj* o = gllib::mkcam();
 	o->translate(4,1,0);
@@ -83,11 +111,11 @@ int main() {
 	o = gllib::mkcam();
 	o->translate(0,-4,0);
 	o->pitch = 90;
-	// make textures
-	gltex::generateall();
+	// make game objects
+	gltex::generateall();  // all textures
 	mkenv();
-	// make game box
 	mkbox();
+	mkdiamond();
 	mksquares();
 	cout << glbuild::serialize(box) << endl;
 	
@@ -95,8 +123,8 @@ int main() {
 	printf("yaw[%f]  pitch[%f]  roll[%f]\n", gllib::cam->yaw, gllib::cam->pitch, 0.0f);
 	while (gllib::running) {
 		// rotate box
-		box->yaw += rotspeed;
-		// gllib::camlist[1].rotate(box_rot, 0, 1, 0);  // also rotate camera 1
+		box->yaw     += rotspeed;
+		diamond->yaw += rotspeed;
 
 		// redraw
 		gllib::paint();
