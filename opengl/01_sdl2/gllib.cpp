@@ -160,7 +160,7 @@ namespace gllib {
 	}
 
 	GLobj* mkcam() {
-		const float s = 0.7;  // visible size
+		const float s = 0.3;  // visible size
 		// build it
 		glbuild::make();
 		glbuild::col (1,0,0,0.5);
