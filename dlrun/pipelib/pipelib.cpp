@@ -28,11 +28,16 @@ namespace pipelib {
 			dlclose(handle);
 			return 1;
 		}
-		// save lib
-		Lib lib = { handle, (buffercmd_t*) cmdfn, name, "" };
-		const char* info = NULL;
-		lib.buffercmd("info", &info, NULL);
-		if (info != NULL)  lib.info = info;
+		// make lib
+		Lib lib = { handle, (buffercmd_t*) cmdfn, name };
+		// get library info
+		const char* resp = NULL;
+		lib.buffercmd("info", &resp, (void*) &data);
+		if (resp == NULL)  fprintf(stderr, "error getting library info\n");
+		else  lib.info = resp;
+		// get library command list
+		
+		// save and report
 		liblist.push_back(lib);
 		printf("loaded: %s :: %s\n", lib.name.c_str(), lib.info.c_str());
 		return 0;

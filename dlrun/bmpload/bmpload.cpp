@@ -16,7 +16,6 @@ typedef  vector<vector<char>>  data_t;
 
 
 int buffercmd (const char* in, const char** out, void* data) {
-	if (in == NULL || out == NULL)  return -1;
 	// check command
 	stringstream ss(in);
 	string cmd;
@@ -24,7 +23,7 @@ int buffercmd (const char* in, const char** out, void* data) {
 	if (cmd == "info") {
 		*out = "test bmp loader. returns  uint32_t [w, h, [rgba], ...]";
 		return 0;
-	} else if (cmd == "list") {
+	} else if (cmd == "cmdlist") {
 		*out = 
 			"info :: library info\n"
 			"list :: list commands\n"
