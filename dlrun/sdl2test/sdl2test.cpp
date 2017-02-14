@@ -29,7 +29,10 @@ int buffercmd(const char* in, const char** out, void* data) {
 	if (cmd == "info") {
 		*out = "sdl2test...";
 		return 0;
-	} else if (cmd == "commands") {
+	} else if (cmd == "version") {
+		*out = "1";
+		return 0;
+	} else if (cmd == "cmdlist") {
 		*out = "...";
 		return 0;
 	} else if (cmd == "mainloop") {

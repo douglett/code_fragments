@@ -23,6 +23,9 @@ int buffercmd (const char* in, const char** out, void* data) {
 	if (cmd == "info") {
 		*out = "test bmp loader. returns  uint32_t [w, h, [rgba], ...]";
 		return 0;
+	} else if (cmd == "info") {
+		*out = "1";
+		return 0;
 	} else if (cmd == "cmdlist") {
 		*out = 
 			"info :: library info\n"

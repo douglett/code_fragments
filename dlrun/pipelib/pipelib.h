@@ -8,7 +8,9 @@ namespace pipelib {
 	struct Lib {
 		void*         handle;
 		buffercmd_t*  buffercmd;
+		int           version;
 		std::string   name, info;
+		std::vector<std::string>  cmdlist;
 	};
 	extern std::string  dlpath, ext, response;
 	extern std::vector<std::vector<char>>  data;

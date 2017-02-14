@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <sstream>
 #include <dlfcn.h>
 #include "pipelib.h"
 
@@ -29,17 +30,27 @@ namespace pipelib {
 			return 1;
 		}
 		// make lib
-		Lib lib = { handle, (buffercmd_t*) cmdfn, name };
+		Lib lib = { handle, (buffercmd_t*) cmdfn, 0, name };
 		// get library info
 		const char* resp = NULL;
-		lib.buffercmd("info", &resp, (void*) &data);
-		if (resp == NULL)  fprintf(stderr, "error getting library info\n");
+		int result = 0;
+		result = lib.buffercmd("info", &resp, (void*) &data);
+		if (result || resp == NULL)  fprintf(stderr, "error (%d): no library info (%s)\n", result, name.c_str());
 		else  lib.info = resp;
+		// get library version number
+		result = lib.buffercmd("version", &resp, (void*) &data);
+		if (result || resp == NULL)  fprintf(stderr, "error (%d): no library version number (%s)\n", result, name.c_str());
+		else  { stringstream ss(resp);  ss >> lib.version; }
 		// get library command list
-		
+		result = lib.buffercmd("cmdlist", &resp, (void*) &data);
+		if (result || resp == NULL)  fprintf(stderr, "error (%d): no command list (%s)\n", result, name.c_str());
+		else {
+			stringstream ss(resp);  string s;
+			while (getline(ss, s))  lib.cmdlist.push_back(s);
+		}
 		// save and report
 		liblist.push_back(lib);
-		printf("loaded: %s :: %s\n", lib.name.c_str(), lib.info.c_str());
+		printf("<loaded> %s (v.%d) :: %s\n", lib.name.c_str(), lib.version, lib.info.c_str());
 		return 0;
 	}
 
