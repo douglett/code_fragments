@@ -13,8 +13,9 @@ extern "C" {
 namespace sdl {
 	struct Sprite {
 		int           x, y, w, h;
-		uint32_t*     data;
 		SDL_Texture*  tex;
+		std::string   id;
+		std::vector<uint32_t>  data;
 	};
 	extern int  running;
 	extern int  screen_width, screen_height, screen_scale;
@@ -24,7 +25,7 @@ namespace sdl {
 	int init(int width, int height, int scale);
 	int quit();
 	int paint();
-	int makesprite(int width, int height);
+	int makesprite(int width, int height, const std::string& id="");
 	int updatesprite(Sprite& spr);
 	int mainloop();
 } // end sdl
@@ -35,25 +36,47 @@ int main() {
 }
 
 
+static string rval;
+
+
 int buffercmd(const char* in, const char** out, void* data) {
 	string cmd = in;
+	*out = "ok";  // default value
 	if (cmd == "info") {
 		*out = "sdl2test...";
-		return 0;
-	} else if (cmd == "version") {
+	}
+	else if (cmd == "version") {
 		*out = "1";
-		return 0;
-	} else if (cmd == "cmdlist") {
+	}
+	else if (cmd == "cmdlist") {
 		*out = 
 			"info :: get lib info\n"
 			"version :: get version number\n"
 			"mainloop :: test sdl2 mainloop";
-		return 0;
-	} else if (cmd == "mainloop") {
+	}
+	else if (cmd == "init") {
+		sdl::init(300, 200, 2);
+	}
+	else if (cmd == "quit") {
+		sdl::quit();
+	}
+	else if (cmd == "paint") {
+		sdl::paint();
+		if (!sdl::running)  { *out = "running flag set false";  return 1; }
+	}
+	else if (cmd == "running") {
+		*out = ( sdl::running ? "true" : "false" );
+	}
+	else if (cmd == "mainloop") {
 		*out = "mainloop running...";
 		return sdl::mainloop();
 	}
-	return 1;
+	else {
+		rval = "unknown command: " + cmd;
+		*out = rval.c_str();
+		return 1;
+	}
+	return 0;
 }
 
 
@@ -83,16 +106,22 @@ namespace sdl {
 		// initial state
 		SDL_RenderSetLogicalSize(ren, screen_width, screen_height);
 		SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+		// backbuffer sprite
+		makesprite(width, height, "backbuffer");
 		return 0;
 	}
 
 	int quit() {
+		while (sprlist.size()) {
+			SDL_DestroyTexture(sprlist.back().tex);
+			sprlist.erase(sprlist.end() - 1);
+		}
 		SDL_Quit();
 		return 0;
 	}
 
 	int paint() {
-		SDL_SetRenderDrawColor(sdl::ren, 180, 0, 0, 255);
+		SDL_SetRenderDrawColor(sdl::ren, 0, 0, 0, 255);
 		SDL_RenderClear(sdl::ren);
 		for (const auto& spr : sprlist) {
 			SDL_Rect dst = { spr.x, spr.y, spr.w, spr.h };
@@ -108,20 +137,23 @@ namespace sdl {
 		return 0;
 	}
 
-	int makesprite(int width, int height) {
+	int makesprite(int width, int height, const string& id) {
 		width  = max(1, width);
 		height = max(1, height);
+		// emplace sprite
+		sprlist.push_back({ 0, 0, width, height, NULL });
+		auto& spr = sprlist.back();
+		spr.id = id;
 		// make pixel data
-		uint32_t* data = new uint32_t[2 + width * height];
-		data[0] = width,  data[1] = height;
+		spr.data.resize(2 + width * height);
+		spr.data[0] = width,  spr.data[1] = height;
 		for (int i = 0; i < width * height; i++)
-			data[2 + i] = 0xffff00ff;
+			spr.data[2 + i] = 0xffff00ff;
 		// make texture
-		SDL_Texture* tex = SDL_CreateTexture(ren,  // make texture
+		spr.tex = SDL_CreateTexture(ren,  // make texture
 			SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 
 			width, height);
-		// save sprite and update
-		sprlist.push_back({ 0, 0, width, height, data, tex });
+		// update
 		updatesprite(sprlist.back());
 		return 0;
 	}
@@ -130,7 +162,7 @@ namespace sdl {
 		uint32_t* pix; 	// holds pixel data
 		int pitch;	    // holds width*bytelen (unused)
 		SDL_LockTexture(spr.tex, NULL, (void**)&pix, &pitch);  // prepare texture data
-		memcpy(pix, spr.data+2, sizeof(uint32_t)*spr.w*spr.h);  // copy pixels to GPU
+		memcpy(pix, &spr.data[2], sizeof(uint32_t)*spr.w*spr.h);  // copy pixels to GPU
 		SDL_UnlockTexture(spr.tex);  // done copying
 		return 0;
 	}
@@ -138,7 +170,7 @@ namespace sdl {
 	int mainloop() {
 		printf("screen test start\n");
 		sdl::init(300, 200, 2);
-		makesprite(100, 100);
+		// makesprite(100, 100);
 
 		while(sdl::running) {
 			paint();

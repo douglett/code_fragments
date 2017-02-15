@@ -70,16 +70,16 @@ namespace pipelib {
 		return NULL;
 	}
 
-	int send (const string& name, const string& msg) {
+	int send(const string& name, const string& msg) {
 		// load module
-		if (get(name) == NULL)
-			if (load(name)) {
-				fprintf(stderr, "could not load dll: %s\n", name.c_str());
-				return 1;
-			}
+		Lib* lib = get(name);
+		if (lib == NULL) {
+			fprintf(stderr, "dll not loaded: %s\n", name.c_str());
+			return 1;
+		}
 		// send message
 		const char* cs = NULL;
-		int err = get(name)->buffercmd( msg.c_str(), &cs, (void*) &data );
+		int err = lib->buffercmd( msg.c_str(), &cs, (void*) &data );
 		response = ( cs != NULL ? cs : "" );  // copy response to string
 		// handle error
 		if (err)  fprintf(stderr, "error (%d): %s\n", err, response.c_str());
