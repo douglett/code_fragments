@@ -25,8 +25,10 @@ namespace sdl {
 	int init(int width, int height, int scale);
 	int quit();
 	int paint();
+	int blit(int x, int y, const uint32_t* data);
 	int makesprite(int width, int height, const std::string& id="");
 	int updatesprite(Sprite& spr);
+	Sprite* getsprite(const std::string& id);
 	int mainloop();
 } // end sdl
 
@@ -63,6 +65,16 @@ int buffercmd(const char* in, const char** out, void* data) {
 	else if (cmd == "paint") {
 		sdl::paint();
 		if (!sdl::running)  { *out = "running flag set false";  return 1; }
+	}
+	else if (cmd == "blit") {
+		auto& datavec = *(vector<vector<char>>*) data;
+		if (datavec.size() < 2) {
+			*out = "wrong number of data args";
+			return 1;
+		}
+		int32_t*   pos =  (int32_t*) &datavec[0][0];
+		uint32_t*  dat = (uint32_t*) &datavec[1][0];
+		return  sdl::blit(pos[0], pos[1], dat);
 	}
 	else if (cmd == "running") {
 		*out = ( sdl::running ? "true" : "false" );
@@ -137,6 +149,27 @@ namespace sdl {
 		return 0;
 	}
 
+	int blit(int posx, int posy, const uint32_t* data) {
+		// get info
+		int sw = data[0];
+		int sh = data[1];
+		Sprite* spr = getsprite("backbuffer");
+		int dw = spr->data[0];
+		int dh = spr->data[1];
+		// printf("(%d %d)  (%d %d %d %d)  %x  %x\n", posx, posy, sw, sh, dw, dh, data[2], data[3]);
+		// blit
+		for (int y = 0; y < sh; y++) {
+			if (posy + y < 0 || posy + y >= dh)  continue;
+			for (int x = 0; x < sw; x++) {
+				if (posx + x < 0 || posx + x >= dw)  continue;
+				spr->data[2 + ((posy + y) * dw) + posx + x] = data[2 + (y * sw) + x];
+			}
+		}
+		// update
+		updatesprite(*spr);
+		return 0;
+	}
+
 	int makesprite(int width, int height, const string& id) {
 		width  = max(1, width);
 		height = max(1, height);
@@ -165,6 +198,13 @@ namespace sdl {
 		memcpy(pix, &spr.data[2], sizeof(uint32_t)*spr.w*spr.h);  // copy pixels to GPU
 		SDL_UnlockTexture(spr.tex);  // done copying
 		return 0;
+	}
+
+	Sprite* getsprite(const string& id) {
+		for (auto& spr : sprlist)
+			if (spr.id == id)
+				return &spr;
+		return NULL;
 	}
 
 	int mainloop() {
