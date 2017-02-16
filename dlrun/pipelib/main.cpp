@@ -7,13 +7,18 @@ using namespace std;
 
 void sdl2_test1();
 void sdl2_test2();
+void sdl2_test3();
 void bmp_test();
+
+#define to32(vc)  vector<uint32_t>( (uint32_t*) &vc[0], (uint32_t*) &vc[vc.size()] )
+#define from32(vc)  vector<char>( (char*) &vc[0], (char*) &vc[vc.size()] )
 
 
 int main() {
 	printf("pipelib test\n");
 	// bmp_test();
-	sdl2_test2();
+	// sdl2_test2();
+	sdl2_test3();
 }
 
 
@@ -46,6 +51,28 @@ void sdl2_test2() {
 
 	pipelib::send("sdl2test", "quit");
 	pipelib::unload("sdl2test");
+}
+
+
+void sdl2_test3() {
+	pipelib::load("sdl2test");
+	pipelib::load("bmpload");
+
+	pipelib::send("bmpload", "load asd.bmp");
+	vector<char> data = pipelib::data[0];
+
+	pipelib::send("sdl2test", "init");
+	vector<uint32_t> pos = { 20, 20 };
+	pipelib::data = {
+		from32(pos),
+		data
+	};
+	pipelib::send("sdl2test", "blit");
+
+	while (true) {
+		if (pipelib::send("sdl2test", "paint"))  break;
+	}
+	pipelib::send("sdl2test", "quit");
 }
 
 

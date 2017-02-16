@@ -156,7 +156,7 @@ namespace sdl {
 		Sprite* spr = getsprite("backbuffer");
 		int dw = spr->data[0];
 		int dh = spr->data[1];
-		// printf("(%d %d)  (%d %d %d %d)  %x  %x\n", posx, posy, sw, sh, dw, dh, data[2], data[3]);
+		printf("(%d %d)  (%d %d %d %d)  %x  %x\n", posx, posy, sw, sh, dw, dh, data[2], data[3]);
 		// blit
 		for (int y = 0; y < sh; y++) {
 			if (posy + y < 0 || posy + y >= dh)  continue;

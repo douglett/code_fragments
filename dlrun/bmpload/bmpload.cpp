@@ -89,14 +89,22 @@ static void loaddata(vector<char>& vc) {
 	vc.resize((2 + head.w * head.h) * 4);
 	*((uint32_t*)&vc[0]) = head.w;
 	*((uint32_t*)&vc[4]) = head.h;
-	for (int i = 0; i < head.w * head.h * 4; i++)
-		vc[8 + i] = data[head.off + i];
+	// flip and transpose bitmap
+	for (int y = 0; y < head.h; y++)
+		for (int x = 0; x < head.w; x++) {
+			int i = y * head.w + x;
+			int j = (head.h - y - 1) * head.w + x;
+			vc[8 + i*4 + 0] = data[head.off + j*4 + 1];
+			vc[8 + i*4 + 1] = data[head.off + j*4 + 2];
+			vc[8 + i*4 + 2] = data[head.off + j*4 + 3];
+			vc[8 + i*4 + 3] = data[head.off + j*4 + 0];
+		}
 }
 
 static int loadbmp(const string& fname, vector<char>& vc) {
 	// load data
 	char d;
-	fstream fs("test.bmp", fstream::in | fstream::binary);
+	fstream fs(fname, fstream::in | fstream::binary);
 	if (!fs.is_open())  return 1;
 	while (fs >> d)
 		data.push_back(d);
