@@ -17,6 +17,15 @@ namespace pipelib {
 	int  load   (const std::string& name);
 	int  unload (const std::string& name);
 	Lib* get    (const std::string& name);
-	int send    (const std::string& name, const std::string& msg);
+	int send    (const std::string& name, const std::string& msg, std::vector<std::vector<char>>* sdata = NULL);
 	std::vector<char> vchar (const std::string& str);
 } // end pipelib
+
+
+class DataBlock {
+public:
+	std::vector<std::vector<char>> data;
+	int cpos(int pos);
+	uint32_t* to32(int pos);
+	void setstr(int pos, const std::string& str);
+}; // end DataBlock

@@ -70,7 +70,7 @@ namespace pipelib {
 		return NULL;
 	}
 
-	int send(const string& name, const string& msg) {
+	int send(const string& name, const string& msg, vector<vector<char>>* sdata) {
 		// load module
 		Lib* lib = get(name);
 		if (lib == NULL) {
@@ -79,7 +79,8 @@ namespace pipelib {
 		}
 		// send message
 		const char* cs = NULL;
-		int err = lib->buffercmd( msg.c_str(), &cs, (void*) &data );
+		if (sdata == NULL)  sdata = &data;
+		int err = lib->buffercmd( msg.c_str(), &cs, (void*) sdata );
 		response = ( cs != NULL ? cs : "" );  // copy response to string
 		// handle error
 		if (err)  fprintf(stderr, "error (%d): %s\n", err, response.c_str());

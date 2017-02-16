@@ -8,9 +8,10 @@ using namespace std;
 void sdl2_test1();
 void sdl2_test2();
 void sdl2_test3();
+void sdl2_test4();
 void bmp_test();
 
-#define to32(vc)  vector<uint32_t>( (uint32_t*) &vc[0], (uint32_t*) &vc[vc.size()] )
+// #define to32(vc)  vector<uint32_t>( (uint32_t*) &vc[0], (uint32_t*) &vc[vc.size()] )
 #define from32(vc)  vector<char>( (char*) &vc[0], (char*) &vc[vc.size()] )
 
 
@@ -18,7 +19,7 @@ int main() {
 	printf("pipelib test\n");
 	// bmp_test();
 	// sdl2_test2();
-	sdl2_test3();
+	sdl2_test4();
 }
 
 
@@ -73,6 +74,27 @@ void sdl2_test3() {
 		if (pipelib::send("sdl2test", "paint"))  break;
 	}
 	pipelib::send("sdl2test", "quit");
+}
+
+
+void sdl2_test4() {
+	pipelib::load("bmpload");
+	pipelib::send("bmpload", "load asd.bmp");
+	pipelib::unload("bmpload");
+
+	DataBlock dblock;
+	dblock.data = { {}, pipelib::data[0] };
+	dblock.data[0].resize(2 * 4);
+	// dblock.to32(0);
+	dblock.to32(0)[0] = dblock.to32(0)[1] = 20;
+
+	pipelib::load("sdl2test");
+	pipelib::send("sdl2test", "init");
+	pipelib::send("sdl2test", "blit", &dblock.data);
+
+	while (true) 
+		if (pipelib::send("sdl2test", "paint"))  break;
+	pipelib::unload("sdl2test");
 }
 
 
