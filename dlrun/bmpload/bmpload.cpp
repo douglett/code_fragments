@@ -103,6 +103,7 @@ static void loaddata(vector<char>& vc) {
 
 static int loadbmp(const string& fname, vector<char>& vc) {
 	// load data
+	data = { };
 	char d;
 	fstream fs(fname, fstream::in | fstream::binary);
 	if (!fs.is_open())  return 1;
@@ -113,5 +114,6 @@ static int loadbmp(const string& fname, vector<char>& vc) {
 	header_1();
 	header_dib();
 	loaddata(vc);
+	data = { };
 	return 0;
 }

@@ -34,7 +34,7 @@ namespace sdl {
 
 
 int main() {
-	sdl::mainloop();
+	// sdl::mainloop();
 }
 
 
