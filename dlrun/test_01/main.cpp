@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <sstream>
 #include "pipelib/pipelib.h"
 
 using namespace std;
@@ -23,6 +24,7 @@ int sdl2_test() {
 	if (pipelib::loadall({ "bmpload", "sdl2test" }))  return 1;
 
 	pipelib::send("sdl2test", "init");
+	pipelib::send("sdl2test", "cls 0xff0000ff");
 	if (pipelib::send("bmpload", "load asd.bmp", &data))  return 1;  // load into slot 1
 	pipelib::push32(data, { 20, 40 });  // blit data in slot 1, to pos in slot 2
 	pipelib::send("sdl2test", "blit", &data);  // do blit

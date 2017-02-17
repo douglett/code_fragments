@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <SDL.h>
 
@@ -42,7 +43,9 @@ static string rval;
 
 
 int buffercmd(const char* in, const char** out, void* data) {
-	string cmd = in;
+	stringstream ss(in);
+	string cmd;
+	ss >> cmd;
 	*out = "ok";  // default value
 	if (cmd == "info") {
 		*out = "sdl2test...";
@@ -65,6 +68,14 @@ int buffercmd(const char* in, const char** out, void* data) {
 	else if (cmd == "paint") {
 		sdl::paint();
 		if (!sdl::running)  { *out = "running flag set false";  return 1; }
+	}
+	else if (cmd == "cls") {
+		uint32_t bgcol = 0x000000ff;
+		ss >> hex >> bgcol;
+		printf("bgcol: %x\n", bgcol);
+		auto& data = sdl::getsprite("backbuffer")->data;
+		for (int i = 0; i < data[0]*data[1]; i++)
+			data[2 + i] = bgcol;
 	}
 	else if (cmd == "blit") {
 		auto& datavec = *(vector<vector<char>>*) data;
@@ -98,6 +109,7 @@ namespace sdl {
 	SDL_Window*    win = NULL;
 	SDL_Renderer*  ren = NULL;
 	vector<Sprite> sprlist;
+	uint32_t       bgcol = 0;
 
 	int init(int width, int height, int scale) {
 		screen_width  = max(1, width);
@@ -181,7 +193,7 @@ namespace sdl {
 		spr.data.resize(2 + width * height);
 		spr.data[0] = width,  spr.data[1] = height;
 		for (int i = 0; i < width * height; i++)
-			spr.data[2 + i] = 0xffff00ff;
+			spr.data[2 + i] = 0;
 		// make texture
 		spr.tex = SDL_CreateTexture(ren,  // make texture
 			SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 
