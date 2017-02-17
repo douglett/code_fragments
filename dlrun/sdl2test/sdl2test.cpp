@@ -72,8 +72,8 @@ int buffercmd(const char* in, const char** out, void* data) {
 			*out = "wrong number of data args";
 			return 1;
 		}
-		int32_t*   pos =  (int32_t*) &datavec[0][0];
-		uint32_t*  dat = (uint32_t*) &datavec[1][0];
+		uint32_t*  dat = (uint32_t*) &datavec[0][0];
+		int32_t*   pos =  (int32_t*) &datavec[1][0];
 		return  sdl::blit(pos[0], pos[1], dat);
 	}
 	else if (cmd == "running") {

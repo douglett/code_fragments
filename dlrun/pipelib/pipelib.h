@@ -5,6 +5,8 @@
 
 namespace pipelib {
 	typedef  int (buffercmd_t) (const char* in, const char** out, void* data);
+	typedef  std::vector<std::vector<char>>  dblock_t;
+	typedef  std::vector<char>  drow_t;
 	struct Lib {
 		void*         handle;
 		buffercmd_t*  buffercmd;
@@ -13,19 +15,17 @@ namespace pipelib {
 		std::vector<std::string>  cmdlist;
 	};
 	extern std::string  dlpath, ext, response;
-	extern std::vector<std::vector<char>>  data;
-	int  load   (const std::string& name);
-	int  unload (const std::string& name);
-	Lib* get    (const std::string& name);
-	int send    (const std::string& name, const std::string& msg, std::vector<std::vector<char>>* sdata = NULL);
-	std::vector<char> vchar (const std::string& str);
+	extern dblock_t  data;
+	int  load      (const std::string& name);
+	int  loadall   (const std::vector<std::string>& names);
+	int  unload    (const std::string& name);
+	int  unloadall ();
+	Lib* get       (const std::string& name);
+	int  send      (const std::string& name, const std::string& msg, dblock_t* sdata = NULL);
+	// data block helpers
+	uint32_t*  get32   (drow_t&   drow);
+	uint32_t*  put32   (drow_t&   drow,    const std::vector<uint32_t>& vec);
+	uint32_t*  push32  (dblock_t& dblock,  const std::vector<uint32_t>& vec);
+	char*      putstr  (drow_t&   drow,    const std::string& str);
+	char*      pushstr (dblock_t& dblock,  const std::string& str);
 } // end pipelib
-
-
-class DataBlock {
-public:
-	std::vector<std::vector<char>> data;
-	int cpos(int pos);
-	uint32_t* to32(int pos);
-	void setstr(int pos, const std::string& str);
-}; // end DataBlock

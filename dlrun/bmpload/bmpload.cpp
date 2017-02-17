@@ -58,7 +58,7 @@ struct BMPhead {
 };
 static BMPhead head;
 static vector<char> data;
-static int showinfo = 1;
+static int showinfo = 0;
 
 static void header_1() {
 	if (showinfo) {

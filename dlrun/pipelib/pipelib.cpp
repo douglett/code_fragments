@@ -13,7 +13,7 @@ namespace pipelib {
 	static vector<Lib> liblist;
 	// externs
 	string  dlpath = "./",  ext = ".mac.so",  response;
-	vector<vector<char>>  data;
+	dblock_t  data;
 
 	int load(const string& name) {
 		string path = dlpath + name + ext;
@@ -54,12 +54,29 @@ namespace pipelib {
 		return 0;
 	}
 
+	int loadall(const vector<string>& names) {
+		int err = 0;
+		for (const auto& n : names)
+			if ((err = load(n)))
+				return err;
+		return 0;
+	}
+
 	int unload(const string& name) {
 		for (int i = 0; i < liblist.size(); i++)
 			if (liblist[i].name == name) {
+				dlclose(liblist[i].handle);
 				liblist.erase(liblist.begin() + i);
 				return 1;
 			}
+		return 0;
+	}
+
+	int unloadall() {
+		while (liblist.size()) {
+			dlclose(liblist[0].handle);
+			liblist.erase(liblist.begin());
+		}
 		return 0;
 	}
 
@@ -70,7 +87,7 @@ namespace pipelib {
 		return NULL;
 	}
 
-	int send(const string& name, const string& msg, vector<vector<char>>* sdata) {
+	int send(const string& name, const string& msg, dblock_t* sdata) {
 		// load module
 		Lib* lib = get(name);
 		if (lib == NULL) {
@@ -87,8 +104,26 @@ namespace pipelib {
 		return  err;
 	}
 
-	vector<char> vchar(const string& str) {
-		vector<char> vc( str.c_str(), (str.c_str() + str.length() + 1) );
-		return vc;
+
+// data block helpers
+
+	uint32_t* get32(drow_t& drow) {
+		return  (uint32_t*) &drow[0];
+	}
+	uint32_t* put32(drow_t& drow, const vector<uint32_t>& vec) {
+		drow.assign( (char*) &vec[0], (char*) &vec[vec.size()] );
+		return  (uint32_t*) &drow[0];
+	}
+	uint32_t* push32(dblock_t& dblock, const vector<uint32_t>& vec) {
+		dblock.emplace_back();
+		return  put32(dblock.back(), vec);
+	}
+	char* putstr(drow_t& drow, const string& str) {
+		drow.assign( str.c_str(), (str.c_str() + str.length() + 1) );
+		return  &drow[0];
+	}
+	char* pushstr(dblock_t& dblock, const string& str) {
+		dblock.emplace_back();
+		return  putstr(dblock.back(), str);
 	}
 } // end pipelib
