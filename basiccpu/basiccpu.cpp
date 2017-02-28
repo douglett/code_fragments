@@ -1,34 +1,7 @@
 #include <iostream>
-#include <vector>
-#include <cassert>
 #include "basiccpu.h"
 
 using namespace std;
-
-
-void test1();
-
-
-int main() {
-	printf("start\n");
-	test1();
-}
-
-
-void test1() {
-	using namespace bc;
-	CPU cpu;
-	reset(cpu);
-	vector<uint16_t> prog;
-	prog.insert(prog.end(), { 
-		imerge(OP_SET, ADR_A, ADR_NWD), 10,
-		imerge(OP_ADD, ADR_A, ADR_NWD), 2 
-	});
-	memcpy(cpu.ram, &prog[0], prog.size() * sizeof(uint16_t));
-	step(cpu);
-	step(cpu);
-	printf("A: %d \n", cpu.A);
-}
 
 
 namespace bc {
@@ -71,6 +44,22 @@ namespace bc {
 		default:  return &nil;
 		}
 	}
+	string inameop(char o) {
+		switch (OPCODE(o)) {
+		case OP_NOOP:  return "NOOP";
+		case OP_ADD: return "ADD";  case OP_SUB: return "SUB";  case OP_MUL: return "MUL";  case OP_DIV: return "DIV";
+		// OP_IFE =5,  OP_IFN, OP_IFL, OP_IFG,
+		// OP_SET =10, OP_JSR, OP_RET,
+		// OP_PRNT=20
+		}
+		return "?";
+	}
+	string inameaddr(char a) {
+		const static string reg = "ABCXYZIJ";
+		if (a >= ADR_A  && a <= ADR_J )  return reg.substr(a - ADR_A, 1);
+		if (a >= ADRW_A && a <= ADRW_J)  return "[" + reg.substr(a - ADRW_A, 1) + "]";
+		return "?";
+	}
 
 	int reset(CPU& cpu) {
 		cpu.A = cpu.B = cpu.C = cpu.X = cpu.Y = cpu.Z = cpu.I = cpu.J = 0;
@@ -86,7 +75,7 @@ namespace bc {
 		isplit(in, &o, &a, &b);
 		switch (OPCODE(o)) {
 		// switch (o) {
-		case OP_NOOP:  break;
+		case OP_NOOP:  return 1;  // end execution ok
 		case OP_ADD:  *iptr(cpu,a) += *iptr(cpu,b);  break;
 		case OP_SUB:  *iptr(cpu,a) -= *iptr(cpu,b);  break;
 		case OP_MUL:  *iptr(cpu,a) *= *iptr(cpu,b);  break;
@@ -98,6 +87,7 @@ namespace bc {
 		case OP_SET:  *iptr(cpu,a) = *iptr(cpu,b);  break;
 		case OP_JSR:  cpu.ram[cpu.SP--] = cpu.PC;  cpu.PC = *iptr(cpu,a);  break;
 		case OP_RET:  cpu.PC = cpu.ram[cpu.SP++];  break;
+		case OP_PRNT:  printf("OUT:: %d\n", *iptr(cpu,a));  break;
 		}
 		cpu.CYC += ilen(in);  // increase cycle count
 		return 0;
