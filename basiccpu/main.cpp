@@ -8,12 +8,14 @@ using namespace bc;
 
 void test1();
 void testparse();
+void testparse2();
 
 
 int main() {
 	printf("start\n");
 	// test1();
-	testparse();
+	// testparse();
+	testparse2();
 }
 
 
@@ -35,12 +37,21 @@ void test1() {
 void testparse() {
 	vector<uint16_t> prog;
 	printf("parsing:\n");
-	if (parse::parse("example.bas", prog))  return;
+	if (parse::load("example.bas", prog))  return;
 	parse::showprog(prog);
 
 	printf("running:\n");
 	CPU cpu;
 	reset(cpu);
 	memcpy(cpu.ram, &prog[0], prog.size() * sizeof(uint16_t));
+	while (step(cpu) == 0)  ;
+}
+
+void testparse2() {
+	printf("load and parse:\n");
+	CPU cpu;
+	if (parse::load("example.bas", cpu))  return;
+	// parse::showprog()
+	parse::showprog(cpu);
 	while (step(cpu) == 0)  ;
 }

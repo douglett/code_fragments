@@ -32,7 +32,10 @@ namespace bc {
 } // end bc
 
 
-// helper function
+// helper functions
+#include <iostream>
+#include <string>
+
 template<typename ... Args> 
 std::string strfmt(const std::string& fmt, Args ... args) {
 	int size = snprintf(NULL, 0, fmt.c_str(), args ...) + 1; // Extra space for '\0'

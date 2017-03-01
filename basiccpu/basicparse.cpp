@@ -5,8 +5,8 @@
 #include <cassert>
 #include <regex>
 
-#include "basiccpu.h"
 #include "basicparse.h"
+#include "basiccpu.h"
 
 using namespace std;
 using namespace bc;
@@ -15,7 +15,8 @@ using namespace bc;
 namespace bc {
 namespace parse {
 
-	static char addr(const string& t);
+	static char addr   (const string& t);
+	static int  progln (const uint16_t* prog, string& str);
 	uint16_t val_t;
 
 	static string strlower(const string& str) {
@@ -25,7 +26,15 @@ namespace parse {
 		return s;
 	}
 
-	int parse(const string& fname, vector<uint16_t>& prog) {
+	int load(const string& fname, CPU& cpu) {
+		vector<uint16_t> prog;
+		int err = load(fname, prog);
+		if (err)  return err;
+		memcpy(cpu.ram, &prog[0], sizeof(uint16_t) * prog.size());
+		return 0;
+	}
+
+	int load(const string& fname, vector<uint16_t>& prog) {
 		// load from file
 		vector<string> tok;
 		string s;
@@ -126,24 +135,52 @@ namespace parse {
 	}
 
 	void showprog(const vector<uint16_t>& prog) {
-		char o, a, b;
-		uint16_t in;
-		string so, sa, sb;
-		for (int i = 0; i < prog.size(); i++) {
-			in = prog[i];
-			isplit(in, &o, &a, &b);
-			so = inameop(o);
-			// get second argument
-			if      (a == ADR_NWD )  sa = strfmt( "%d",   prog[++i] );
-			else if (a == ADRW_NWD)  sa = strfmt( "[%d]", prog[++i] );
-			else    sa = inameaddr(a);
-			if      (b == ADR_NWD )  sb = strfmt( "%d",   prog[++i] );
-			else if (b == ADRW_NWD)  sb = strfmt( "[%d]", prog[++i] );
-			else    sb = inameaddr(b);
-			// print
-			printf("%-6s %-3s %-3s\n", so.c_str(), sa.c_str(), sb.c_str());
-			// printf("%s %s %s\n", so.c_str(), sa.c_str(), sb.c_str());
+		string s;
+		for (int i = 0; i < prog.size(); ) {
+			int l = progln(&prog[i], s);
+			if (l == 0)  break;
+			i += l;
+			printf("%s\n", s.c_str());
 		}
+	}
+
+	void showprog(const CPU& cpu) {
+		string s;
+		char o;
+		for (int i = 0; i < 0x10000; ) {
+			isplit(cpu.ram[i], &o, NULL, NULL);
+			if (o == OP_NOOP)  break;
+			// int l = progln(&cpu.ram[i], s);
+			// if (l == 0)  break;
+			// i += l;
+			i += progln(&cpu.ram[i], s);
+			printf("%s\n", s.c_str());
+		}
+	}
+
+	static int progln(const uint16_t* prog, string& str) {
+		// init
+		assert(prog != NULL);
+		char o, a, b;
+		uint16_t i=0, in;
+		string so, sa, sb;
+		str = "";
+		// setup
+		in = prog[i];
+		isplit(in, &o, &a, &b);
+		so = inameop(o);
+		// get second argument
+		if      (a == ADR_NWD )  sa = strfmt( "%d",   prog[++i] );
+		else if (a == ADRW_NWD)  sa = strfmt( "[%d]", prog[++i] );
+		else    sa = inameaddr(a);
+		if      (b == ADR_NWD )  sb = strfmt( "%d",   prog[++i] );
+		else if (b == ADRW_NWD)  sb = strfmt( "[%d]", prog[++i] );
+		else    sb = inameaddr(b);
+		// print
+		// printf("%-6s %-3s %-3s\n", so.c_str(), sa.c_str(), sb.c_str());
+		// printf("%s %s %s\n", so.c_str(), sa.c_str(), sb.c_str());
+		str = strfmt("%-6s %-3s %-3s", so.c_str(), sa.c_str(), sb.c_str());
+		return  (i + 1);
 	}
 
 	static char addr(const string& t) {
