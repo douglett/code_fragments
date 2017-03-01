@@ -58,7 +58,7 @@ namespace parse {
 			printf("\n");
 		}
 		// setup
-		string t;
+		// string t;
 		char o=0, a=0, b=0;
 		uint16_t aa, bb;
 		prog = { };
@@ -69,10 +69,11 @@ namespace parse {
 				a = addr(tok[++i]),  aa = val_t;
 				// assert(a != ADR_NIL);
 				// comparison
-				t = tok[++i];
+				string t = tok[++i];
 				if      (t == "=")   o = OP_IFE;
 				else if (t == "==")  o = OP_IFE;
 				else if (t == "!=")  o = OP_IFN;
+				else    o = OP_NOOP;
 				// arg2
 				b = addr(tok[++i]),  bb = val_t;
 				// assert(b != ADR_NIL);
@@ -80,7 +81,7 @@ namespace parse {
 				string sthen = tok[++i];
 				// assert(sthen == "then");
 				// error check
-				if (a == ADR_NIL || b == ADR_NIL || sthen != "then") {
+				if (o == OP_NOOP || a == ADR_NIL || b == ADR_NIL || sthen != "then") {
 					fprintf(stderr, "parse error: if statement (%d - %d)\n", i-4, i);
 					return 1;
 				}
@@ -143,6 +144,7 @@ namespace parse {
 				continue;
 			}
 			// add to prog
+			int start = prog.size();
 			prog.push_back(imerge(o, a, b));
 			if (a == ADR_NWD || a == ADRW_NWD)  prog.push_back(aa);
 			if (b == ADR_NWD || b == ADRW_NWD)  prog.push_back(bb);
@@ -155,7 +157,11 @@ namespace parse {
 					if (b == ADR_NWD || b == ADRW_NWD)  out += strfmt("%d",bb);
 					out += ")";
 				}
-				cout << out << endl;
+				cout << out << "  ::  ";
+				// compiled line
+				string t;
+				progln(&prog[start], t);
+				cout << t << endl;
 			}
 		}
 		// return OK
