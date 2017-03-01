@@ -17,7 +17,8 @@ namespace parse {
 
 	static char addr   (const string& t);
 	static int  progln (const uint16_t* prog, string& str);
-	uint16_t val_t;
+	static uint16_t val_t;
+	static vector<pair<string, uint16_t>> blockstack;
 
 	static string strlower(const string& str) {
 		string s = str;
@@ -27,6 +28,7 @@ namespace parse {
 	}
 
 	int load(const string& fname, CPU& cpu) {
+		reset(cpu);
 		vector<uint16_t> prog;
 		int err = load(fname, prog);
 		if (err)  return err;
@@ -50,7 +52,7 @@ namespace parse {
 	}
 
 	int parse(const vector<string>& tok, vector<uint16_t>& prog) {
-		static const int DISPLAY = 0;
+		static const int DISPLAY = 1;
 		// display
 		if (DISPLAY) {
 			for (auto& t : tok)
@@ -58,39 +60,49 @@ namespace parse {
 			printf("\n");
 		}
 		// setup
-		// string t;
 		char o=0, a=0, b=0;
 		uint16_t aa, bb;
 		prog = { };
 		// parse
 		for (int i = 0; i < tok.size(); i++) {
+			int start = prog.size();
 			if (tok[i] == "if") {
 				// arg1
 				a = addr(tok[++i]),  aa = val_t;
-				// assert(a != ADR_NIL);
 				// comparison
-				string t = tok[++i];
-				if      (t == "=")   o = OP_IFE;
-				else if (t == "==")  o = OP_IFE;
-				else if (t == "!=")  o = OP_IFN;
+				string cmp = tok[++i];
+				if      (cmp == "=")   o = OP_IFE;
+				else if (cmp == "==")  o = OP_IFE;
+				else if (cmp == "!=")  o = OP_IFN;
 				else    o = OP_NOOP;
 				// arg2
 				b = addr(tok[++i]),  bb = val_t;
-				// assert(b != ADR_NIL);
 				// decoration
 				string sthen = tok[++i];
-				// assert(sthen == "then");
 				// error check
 				if (o == OP_NOOP || a == ADR_NIL || b == ADR_NIL || sthen != "then") {
 					fprintf(stderr, "parse error: if statement (%d - %d)\n", i-4, i);
 					return 1;
 				}
+				// set up the instruction
+				prog.push_back(imerge(o, a, b));
+				if (a == ADR_NWD || a == ADRW_NWD)  prog.push_back(aa);
+				if (b == ADR_NWD || b == ADRW_NWD)  prog.push_back(bb);
+				prog.insert(prog.end(), { 
+					imerge(OP_ADD, ADR_PC, ADR_NWD), 2,  // if correct, skip next instruction
+					imerge(OP_SET, ADR_PC, ADR_NWD), 0   // set PC to some temp value
+				});
+				blockstack.push_back({ "if", prog.size()-1 });
+				if (DISPLAY)  printf("if...\n");
+				continue;
 			} 
 			else if (tok[i] == "end") {
-				string next = tok[++i];
-				// assert(next == "if");
+				string etype = tok[++i];
+				if (blockstack.back().first == etype) {
+					prog[ blockstack.back().second ] = prog.size();
+				}
 				// error check
-				if (next != "if") {
+				else {
 					fprintf(stderr, "parse error: end statement (%d - %d)\n", i-1, i);
 					return 1;
 				}
@@ -99,14 +111,11 @@ namespace parse {
 			else if (tok[i] == "let") {
 				// arg1
 				a = addr(tok[++i]),  aa = val_t;
-				// assert(b != ADR_NIL);
 				// equals
 				string eq = tok[++i];
 				o = OP_SET;
-				// assert(eq == "=");
 				// arg2
 				b = addr(tok[++i]),  bb = val_t;
-				// assert(a != ADR_NIL);
 				// error check
 				if (a == ADR_NIL || b == ADR_NIL || eq != "=") {
 					fprintf(stderr, "parse error: let statement (%d - %d)\n", i-3, i);
@@ -117,10 +126,8 @@ namespace parse {
 				o = OP_ADD;
 				// arg1
 				a = addr(tok[++i]),  aa = val_t;
-				// assert(a != ADR_NIL);
 				// arg2
 				b = addr(tok[++i]),  bb = val_t;
-				// assert(b != ADR_NIL);
 				// error check
 				if (a == ADR_NIL || b == ADR_NIL) {
 					fprintf(stderr, "parse error: add statement (%d - %d)\n", i-2, i);
@@ -131,7 +138,6 @@ namespace parse {
 				o = OP_PRNT;
 				a = addr(tok[++i]),  aa = val_t;
 				b = 0;
-				// assert(a != ADR_NIL);
 				// error check
 				if (a == ADR_NIL) {
 					fprintf(stderr, "parse error: print statement (%d - %d)\n", i-1, i);
@@ -144,12 +150,12 @@ namespace parse {
 				continue;
 			}
 			// add to prog
-			int start = prog.size();
 			prog.push_back(imerge(o, a, b));
 			if (a == ADR_NWD || a == ADRW_NWD)  prog.push_back(aa);
 			if (b == ADR_NWD || b == ADRW_NWD)  prog.push_back(bb);
 			// display
 			if (DISPLAY) {
+				// raw display
 				string out = strfmt("%x %x %x", o, a, b);
 				if (a == ADR_NWD || a == ADRW_NWD || b == ADR_NWD || b == ADRW_NWD) {
 					out += "  (";
@@ -157,11 +163,11 @@ namespace parse {
 					if (b == ADR_NWD || b == ADRW_NWD)  out += strfmt("%d",bb);
 					out += ")";
 				}
-				cout << out << "  ::  ";
 				// compiled line
-				string t;
-				progln(&prog[start], t);
-				cout << t << endl;
+				string asmb;
+				progln(&prog[start], asmb);
+				// print
+				printf("[%-15s]----[%-10s]\n", out.c_str(), asmb.c_str());
 			}
 		}
 		// return OK
@@ -184,9 +190,6 @@ namespace parse {
 		for (int i = 0; i < 0x10000; ) {
 			isplit(cpu.ram[i], &o, NULL, NULL);
 			if (o == OP_NOOP)  break;
-			// int l = progln(&cpu.ram[i], s);
-			// if (l == 0)  break;
-			// i += l;
 			i += progln(&cpu.ram[i], s);
 			printf("%s\n", s.c_str());
 		}
