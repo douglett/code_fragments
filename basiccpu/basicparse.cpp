@@ -67,7 +67,7 @@ namespace parse {
 			if (tok[i] == "if") {
 				// arg1
 				a = addr(tok[++i]),  aa = val_t;
-				assert(a != ADR_NIL);
+				// assert(a != ADR_NIL);
 				// comparison
 				t = tok[++i];
 				if      (t == "=")   o = OP_IFE;
@@ -75,39 +75,67 @@ namespace parse {
 				else if (t == "!=")  o = OP_IFN;
 				// arg2
 				b = addr(tok[++i]),  bb = val_t;
-				assert(b != ADR_NIL);
+				// assert(b != ADR_NIL);
 				// decoration
-				assert(tok[++i] == "then");
+				string sthen = tok[++i];
+				// assert(sthen == "then");
+				// error check
+				if (a == ADR_NIL || b == ADR_NIL || sthen != "then") {
+					fprintf(stderr, "parse error: if statement (%d - %d)\n", i-4, i);
+					return 1;
+				}
 			} 
 			else if (tok[i] == "end") {
-				assert(tok[++i] == "if");
+				string next = tok[++i];
+				// assert(next == "if");
+				// error check
+				if (next != "if") {
+					fprintf(stderr, "parse error: end statement (%d - %d)\n", i-1, i);
+					return 1;
+				}
 				continue;
 			}
 			else if (tok[i] == "let") {
 				// arg1
 				a = addr(tok[++i]),  aa = val_t;
-				assert(b != ADR_NIL);
+				// assert(b != ADR_NIL);
 				// equals
-				assert(tok[++i] == "=");
+				string eq = tok[++i];
 				o = OP_SET;
+				// assert(eq == "=");
 				// arg2
 				b = addr(tok[++i]),  bb = val_t;
-				assert(a != ADR_NIL);
+				// assert(a != ADR_NIL);
+				// error check
+				if (a == ADR_NIL || b == ADR_NIL || eq != "=") {
+					fprintf(stderr, "parse error: let statement (%d - %d)\n", i-3, i);
+					return 1;
+				}
 			} 
 			else if (tok[i] == "add") {
 				o = OP_ADD;
 				// arg1
 				a = addr(tok[++i]),  aa = val_t;
-				assert(a != ADR_NIL);
+				// assert(a != ADR_NIL);
 				// arg2
 				b = addr(tok[++i]),  bb = val_t;
-				assert(b != ADR_NIL);
+				// assert(b != ADR_NIL);
+				// error check
+				if (a == ADR_NIL || b == ADR_NIL) {
+					fprintf(stderr, "parse error: add statement (%d - %d)\n", i-2, i);
+					return 1;
+				}
 			}
 			else if (tok[i] == "print") {
 				o = OP_PRNT;
 				a = addr(tok[++i]),  aa = val_t;
-				assert(a != ADR_NIL);
 				b = 0;
+				// assert(a != ADR_NIL);
+				// error check
+				if (a == ADR_NIL) {
+					fprintf(stderr, "parse error: print statement (%d - %d)\n", i-1, i);
+					return 1;
+				}
 			}
 			else {
 				if (tok[i].substr(0, 1) == "'")  ;  // comment - ignore
@@ -177,14 +205,14 @@ namespace parse {
 		else if (b == ADRW_NWD)  sb = strfmt( "[%d]", prog[++i] );
 		else    sb = inameaddr(b);
 		// print
-		// printf("%-6s %-3s %-3s\n", so.c_str(), sa.c_str(), sb.c_str());
-		// printf("%s %s %s\n", so.c_str(), sa.c_str(), sb.c_str());
 		str = strfmt("%-6s %-3s %-3s", so.c_str(), sa.c_str(), sb.c_str());
+		// str = strfmt("%s %s %s", so.c_str(), sa.c_str(), sb.c_str());
 		return  (i + 1);
 	}
 
 	static char addr(const string& t) {
 		static const regex REG_NUMBER("[0-9]+");
+		val_t = 0;
 		if      (t == "a")   return ADR_A;
 		else if (t == "b")   return ADR_B;
 		else if (t == "c")   return ADR_C;
