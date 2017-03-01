@@ -21,12 +21,14 @@ namespace bc {
 		uint16_t ram[0x10000];
 	};
 	// functions
-	void      isplit (uint16_t in, char* o, char* b, char* a);
-	uint16_t  imerge (char o, char b, char a);
-	int       ilen   (uint16_t in);
-	uint16_t* iptr   (CPU& cpu, char adr);
-	int       reset  (CPU& cpu);
-	int       step   (CPU& cpu);
+	void        isplit    (uint16_t in, char* o, char* b, char* a);
+	uint16_t    imerge    (char o, char b, char a);
+	int         ilen      (uint16_t in);
+	uint16_t*   iptr      (CPU& cpu, char adr);
+	std::string inameop   (char o);
+	std::string inameaddr (char a);
+	int         reset     (CPU& cpu);
+	int         step      (CPU& cpu);
 } // end bc
 
 

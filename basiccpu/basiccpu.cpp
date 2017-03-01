@@ -1,4 +1,6 @@
 #include <iostream>
+#include <vector>
+#include <map>
 #include "basiccpu.h"
 
 using namespace std;
@@ -45,20 +47,24 @@ namespace bc {
 		}
 	}
 	string inameop(char o) {
-		switch (OPCODE(o)) {
-		case OP_NOOP:  return "NOOP";
-		case OP_ADD: return "ADD";  case OP_SUB: return "SUB";  case OP_MUL: return "MUL";  case OP_DIV: return "DIV";
-		// OP_IFE =5,  OP_IFN, OP_IFL, OP_IFG,
-		// OP_SET =10, OP_JSR, OP_RET,
-		// OP_PRNT=20
-		}
-		return "?";
+		static const map<int, string> OP_STR = {
+			{ OP_NOOP, "NOOP" },
+			{ OP_ADD,  "ADD"  }, { OP_SUB, "SUB" }, { OP_MUL, "MUL" }, { OP_DIV, "DIV" },
+			{ OP_IFE,  "IFE"  }, { OP_IFN, "IFN" }, { OP_IFL, "IFL" }, { OP_IFG, "IFG" },
+			{ OP_SET,  "SET"  }, { OP_JSR, "JSR" }, { OP_RET, "RET" },
+			{ OP_PRNT, "PRNT" }
+		};
+		if (OP_STR.count(o))  return OP_STR.at(o);
+		return  "?";
 	}
 	string inameaddr(char a) {
-		const static string reg = "ABCXYZIJ";
-		if (a >= ADR_A  && a <= ADR_J )  return reg.substr(a - ADR_A, 1);
-		if (a >= ADRW_A && a <= ADRW_J)  return "[" + reg.substr(a - ADRW_A, 1) + "]";
-		return "?";
+		const static string         reg  = "ABCXYZIJ";
+		const static vector<string> reg2 = { "PC", "SP", "NWD" };
+		if (a >= ADR_A   && a <= ADR_J   )  return reg.substr(a - ADR_A, 1);
+		if (a >= ADRW_A  && a <= ADRW_J  )  return "[" + reg.substr(a - ADRW_A, 1) + "]";
+		if (a >= ADR_PC  && a <= ADR_NWD )  return reg2[a - ADR_PC];
+		if (a >= ADRW_PC && a <= ADRW_NWD)  return "[" + reg2[a - ADR_PC] + "]";
+		return  "?";
 	}
 
 	int reset(CPU& cpu) {
