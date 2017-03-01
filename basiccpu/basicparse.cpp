@@ -18,6 +18,13 @@ namespace parse {
 	static char addr(const string& t);
 	uint16_t val_t;
 
+	static string strlower(const string& str) {
+		string s = str;
+		for (auto& c : s)
+			c = tolower(c);
+		return s;
+	}
+
 	int parse(const string& fname, vector<uint16_t>& prog) {
 		// load from file
 		vector<string> tok;
@@ -26,7 +33,7 @@ namespace parse {
 		while (!fs.eof()) {
 			fs >> ws;
 			if      (fs.peek() == '\'')  { getline(fs, s);  tok.push_back(s); }
-			else if (fs >> s)  { tok.push_back(s); }
+			else if (fs >> s)  { tok.push_back( strlower(s) ); }
 		}
 		fs.close();
 		// parse
@@ -134,8 +141,8 @@ namespace parse {
 			else if (b == ADRW_NWD)  sb = strfmt( "[%d]", prog[++i] );
 			else    sb = inameaddr(b);
 			// print
-			// printf("%-6s %-3s %-3s\n", so.c_str(), sa.c_str(), sb.c_str());
-			printf("%s %s %s\n", so.c_str(), sa.c_str(), sb.c_str());
+			printf("%-6s %-3s %-3s\n", so.c_str(), sa.c_str(), sb.c_str());
+			// printf("%s %s %s\n", so.c_str(), sa.c_str(), sb.c_str());
 		}
 	}
 

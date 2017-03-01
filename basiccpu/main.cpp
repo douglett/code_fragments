@@ -33,12 +33,14 @@ void test1() {
 }
 
 void testparse() {
+	vector<uint16_t> prog;
+	printf("parsing:\n");
+	if (parse::parse("example.bas", prog))  return;
+	parse::showprog(prog);
+
+	printf("running:\n");
 	CPU cpu;
 	reset(cpu);
-	vector<uint16_t> prog;
-	if (parse::parse("example.bas", prog))  return;
 	memcpy(cpu.ram, &prog[0], prog.size() * sizeof(uint16_t));
-
-	parse::showprog(prog);
 	while (step(cpu) == 0)  ;
 }
