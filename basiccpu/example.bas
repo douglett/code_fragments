@@ -18,7 +18,7 @@ print a
 die
 
 
-' func blah
-' 	let a = 1
-' 	print a
-' end func
+func blah
+	let a = 1
+	print a
+end func

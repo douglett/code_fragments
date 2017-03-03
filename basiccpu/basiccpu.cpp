@@ -69,13 +69,15 @@ namespace bc {
 
 	int reset(CPU& cpu) {
 		cpu.A = cpu.B = cpu.C = cpu.X = cpu.Y = cpu.Z = cpu.I = cpu.J = 0;
-		cpu.PC = cpu.CYC = 0;
-		cpu.SP = 0xffff;
+		cpu.PC  = 1;
+		cpu.CYC = 0;
+		cpu.SP  = 0xffff;
 		fill_n(cpu.ram, 0x10000, 0);
 		return 0;
 	}
 
 	int step(CPU& cpu) {
+		if (cpu.PC == 0)  return 1;  // stop
 		char     o, a, b;
 		uint16_t in = cpu.ram[cpu.PC++];
 		isplit(in, &o, &a, &b);

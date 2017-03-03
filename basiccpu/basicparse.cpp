@@ -19,6 +19,7 @@ namespace parse {
 	static int  progln (const uint16_t* prog, string& str);
 	static uint16_t val_t;
 	static vector<pair<string, uint16_t>> blockstack;
+	static vector<string> fnlist;
 
 	// string to lower case
 	static string strlower(const string& str) {
@@ -44,6 +45,13 @@ namespace parse {
 		else if (regex_match(t, REG_NUMBER))  { val_t = stoi(t);  return ADR_NWD; }
 		return ADR_NIL;
 	}
+	// 
+	static int indexOf(const vector<string>& vs, const string& s) {
+		for (int i = 0; i < vs.size(); i++)
+			if (vs[i] == s)
+				return i;
+		return -1;
+	}
 
 
 	// main parser
@@ -58,7 +66,8 @@ namespace parse {
 		// setup
 		char o=0, a=0, b=0;
 		uint16_t aa, bb;
-		prog = { };
+		prog = { imerge(OP_NOOP, 0, 0) };
+		fnlist = { };
 		// parse
 		for (int i = 0; i < tok.size(); i++) {
 			int start = prog.size();
@@ -146,13 +155,31 @@ namespace parse {
 					return 1;
 				}
 			}
-			else if (tok[i] == "func") {
-				o = OP_FUNC;
-				a = b = 0;
-				string name = tok[++i];
-				blockstack.push_back({ "func", prog.size()-1 });
-				if (DISPLAY)  printf("func...\n");
-				continue;
+			// else if (tok[i] == "func") {
+			// 	o = OP_FUNC;
+			// 	a = ADRW_NWD;
+			// 	b = 0;
+			// 	// arg1
+			// 	string fn = tok[++i];
+			// 	if (indexOf(fnlist, fn) == -1)  fnlist.push_back(fn);
+			// 	aa = 0x9000 + indexOf(fnlist, fn);
+			// 	blockstack.push_back({ "func", prog.size()-1 });
+			// 	// if (DISPLAY)  printf("func...\n");
+			// 	// continue;
+			// }
+			// else if (tok[i] == "call") {
+			// 	o = OP_JSR;
+			// 	a = ADRW_NWD;
+			// 	b = 0;
+			// 	// arg1
+			// 	string fn = tok[++i];
+			// 	if (indexOf(fnlist, fn) == -1)  fnlist.push_back(fn);
+			// 	aa = 0x9000 + indexOf(fnlist, fn);
+			// }
+			else if (tok[i] == "die") {
+				o = OP_SET;
+				a = ADR_PC;
+				b = 0;
 			}
 			else {
 				if (tok[i].substr(0, 1) == "'")  continue;  // comment - ignore
