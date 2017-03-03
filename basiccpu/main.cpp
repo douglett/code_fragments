@@ -53,5 +53,7 @@ void testparse2() {
 	if (parse::load_parse("example.bas", cpu))  return;
 	// parse::showprog()
 	parse::showprog(cpu);
+	printf("running:\n");
 	while (step(cpu) == 0)  ;
+	printf("OK:  CYC %d  PC %d\n", cpu.CYC, cpu.PC);
 }

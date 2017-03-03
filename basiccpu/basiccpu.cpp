@@ -52,7 +52,7 @@ namespace bc {
 			{ OP_ADD,  "ADD"  }, { OP_SUB, "SUB" }, { OP_MUL, "MUL" }, { OP_DIV, "DIV" },
 			{ OP_IFE,  "IFE"  }, { OP_IFN, "IFN" }, { OP_IFL, "IFL" }, { OP_IFG, "IFG" },
 			{ OP_SET,  "SET"  }, { OP_JSR, "JSR" }, { OP_RET, "RET" },
-			{ OP_PRNT, "PRNT" }
+			{ OP_PRNT, "PRNT" }, { OP_FUNC, "FUNC" }
 		};
 		if (OP_STR.count(o))  return OP_STR.at(o);
 		return  "?";

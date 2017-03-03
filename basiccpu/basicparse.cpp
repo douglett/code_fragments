@@ -66,12 +66,24 @@ namespace parse {
 		// setup
 		char o=0, a=0, b=0;
 		uint16_t aa, bb;
-		prog = { imerge(OP_NOOP, 0, 0) };
-		fnlist = { };
+		prog = {
+			0,  // first char, no-op
+			imerge(OP_JSR, ADRW_NWD, 0), 5,  // call main
+			imerge(OP_SET, ADR_PC, 0), 0,  // die
+			1,  // function table size (5)
+		};
+		// assign space for function table (0x6 - 0x500)
+		while (prog.size() < 0x500)
+			prog.push_back(0);
+		fnlist = { "main" };
 		// parse
 		for (int i = 0; i < tok.size(); i++) {
 			int start = prog.size();
-			if (tok[i] == "if") {
+			if (blockstack.size() == 0 && tok[i] != "func") {
+				fprintf(stderr, "must be inside a function (%d)\n", i);
+				return 1;
+			}
+			else if (tok[i] == "if") {
 				// arg1
 				a = addr(tok[++i]),  aa = val_t;
 				// comparison
@@ -106,12 +118,14 @@ namespace parse {
 				int match = ( blockstack.back().first == etype );
 				if (match && etype == "if") {
 					prog[ blockstack.back().second ] = prog.size();
+					blockstack.pop_back();
 					if (DISPLAY)  printf("end (if)\n");
 					continue;
 				}
 				else if (match && etype == "func") {
 					o = OP_RET;
 					a = b = 0;
+					blockstack.pop_back();
 				}
 				// error check
 				else {
@@ -155,27 +169,25 @@ namespace parse {
 					return 1;
 				}
 			}
-			// else if (tok[i] == "func") {
-			// 	o = OP_FUNC;
-			// 	a = ADRW_NWD;
-			// 	b = 0;
-			// 	// arg1
-			// 	string fn = tok[++i];
-			// 	if (indexOf(fnlist, fn) == -1)  fnlist.push_back(fn);
-			// 	aa = 0x9000 + indexOf(fnlist, fn);
-			// 	blockstack.push_back({ "func", prog.size()-1 });
-			// 	// if (DISPLAY)  printf("func...\n");
-			// 	// continue;
-			// }
-			// else if (tok[i] == "call") {
-			// 	o = OP_JSR;
-			// 	a = ADRW_NWD;
-			// 	b = 0;
-			// 	// arg1
-			// 	string fn = tok[++i];
-			// 	if (indexOf(fnlist, fn) == -1)  fnlist.push_back(fn);
-			// 	aa = 0x9000 + indexOf(fnlist, fn);
-			// }
+			else if (tok[i] == "func") {
+				o = OP_FUNC;
+				a = ADRW_NWD;
+				b = 0;
+				// arg1
+				string fn = tok[++i];
+				if (indexOf(fnlist, fn) == -1)  fnlist.push_back(fn);
+				aa = indexOf(fnlist, fn);  // actual numeric function position
+				blockstack.push_back({ "func", prog.size()-1 });
+			}
+			else if (tok[i] == "call") {
+				o = OP_JSR;
+				a = ADRW_NWD;
+				b = 0;
+				// arg1
+				string fn = tok[++i];
+				if (indexOf(fnlist, fn) == -1)  fnlist.push_back(fn);
+				aa = 5 + indexOf(fnlist, fn);  // function memory location
+			}
 			else if (tok[i] == "die") {
 				o = OP_SET;
 				a = ADR_PC;
