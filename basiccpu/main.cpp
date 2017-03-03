@@ -1,5 +1,4 @@
 #include <iostream>
-#include <vector>
 #include "basiccpu.h"
 #include "basicparse.h"
 
@@ -19,6 +18,8 @@ void testparse() {
 	printf("load and parse:\n");
 	CPU cpu;
 	if (parse::load_parse("example.bas", cpu))  return;
+
+	parse::show(cpu);
 	
 	printf("running:\n");
 	while (step(cpu) == 0)  ;
