@@ -37,7 +37,7 @@ void test1() {
 void testparse() {
 	vector<uint16_t> prog;
 	printf("parsing:\n");
-	if (parse::load("example.bas", prog))  return;
+	if (parse::load_parse("example.bas", prog))  return;
 	parse::showprog(prog);
 
 	printf("running:\n");
@@ -50,7 +50,7 @@ void testparse() {
 void testparse2() {
 	printf("load and parse:\n");
 	CPU cpu;
-	if (parse::load("example.bas", cpu))  return;
+	if (parse::load_parse("example.bas", cpu))  return;
 	// parse::showprog()
 	parse::showprog(cpu);
 	while (step(cpu) == 0)  ;

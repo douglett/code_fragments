@@ -15,42 +15,38 @@ using namespace bc;
 namespace bc {
 namespace parse {
 
-	static char addr   (const string& t);
+	// static char addr   (const string& t);
 	static int  progln (const uint16_t* prog, string& str);
 	static uint16_t val_t;
 	static vector<pair<string, uint16_t>> blockstack;
 
+	// string to lower case
 	static string strlower(const string& str) {
 		string s = str;
 		for (auto& c : s)
 			c = tolower(c);
 		return s;
 	}
-
-	int load(const string& fname, CPU& cpu) {
-		reset(cpu);
-		vector<uint16_t> prog;
-		int err = load(fname, prog);
-		if (err)  return err;
-		memcpy(cpu.ram, &prog[0], sizeof(uint16_t) * prog.size());
-		return 0;
+	// address string to address
+	static char addr(const string& t) {
+		static const regex REG_NUMBER("[0-9]+");
+		val_t = 0;
+		if      (t == "a")   return ADR_A;
+		else if (t == "b")   return ADR_B;
+		else if (t == "c")   return ADR_C;
+		else if (t == "x")   return ADR_X;
+		else if (t == "y")   return ADR_Y;
+		else if (t == "z")   return ADR_Z;
+		else if (t == "i")   return ADR_I;
+		else if (t == "j")   return ADR_J;
+		else if (t == "pc")  return ADR_PC;
+		else if (t == "sp")  return ADR_SP;
+		else if (regex_match(t, REG_NUMBER))  { val_t = stoi(t);  return ADR_NWD; }
+		return ADR_NIL;
 	}
 
-	int load(const string& fname, vector<uint16_t>& prog) {
-		// load from file
-		vector<string> tok;
-		string s;
-		fstream fs(fname, fstream::in);
-		while (!fs.eof()) {
-			fs >> ws;
-			if      (fs.peek() == '\'')  { getline(fs, s);  tok.push_back(s); }
-			else if (fs >> s)  { tok.push_back( strlower(s) ); }
-		}
-		fs.close();
-		// parse
-		return parse(tok, prog);
-	}
 
+	// main parser
 	int parse(const vector<string>& tok, vector<uint16_t>& prog) {
 		static const int DISPLAY = 1;
 		// display
@@ -98,15 +94,21 @@ namespace parse {
 			} 
 			else if (tok[i] == "end") {
 				string etype = tok[++i];
-				if (blockstack.back().first == etype) {
+				int match = ( blockstack.back().first == etype );
+				if (match && etype == "if") {
 					prog[ blockstack.back().second ] = prog.size();
+					if (DISPLAY)  printf("end (if)\n");
+					continue;
+				}
+				else if (match && etype == "func") {
+					o = OP_RET;
+					a = b = 0;
 				}
 				// error check
 				else {
 					fprintf(stderr, "parse error: end statement (%d - %d)\n", i-1, i);
 					return 1;
 				}
-				continue;
 			}
 			else if (tok[i] == "let") {
 				// arg1
@@ -144,10 +146,20 @@ namespace parse {
 					return 1;
 				}
 			}
-			else {
-				if (tok[i].substr(0, 1) == "'")  ;  // comment - ignore
-				else  printf("unknown token:  %s\n", tok[i].c_str());
+			else if (tok[i] == "func") {
+				o = OP_FUNC;
+				a = b = 0;
+				string name = tok[++i];
+				blockstack.push_back({ "func", prog.size()-1 });
+				if (DISPLAY)  printf("func...\n");
 				continue;
+			}
+			else {
+				if (tok[i].substr(0, 1) == "'")  continue;  // comment - ignore
+				else {
+					printf("unknown token:  %s\n", tok[i].c_str());
+					return 1;
+				}
 			}
 			// add to prog
 			prog.push_back(imerge(o, a, b));
@@ -174,6 +186,22 @@ namespace parse {
 		return 0;
 	}
 
+
+	//--- load to program vector ---
+	int load_parse(const string& fname, vector<uint16_t>& prog) {
+		// load from file
+		vector<string> tok;
+		string s;
+		fstream fs(fname, fstream::in);
+		while (!fs.eof()) {
+			fs >> ws;
+			if      (fs.peek() == '\'')  { getline(fs, s);  tok.push_back(s); }
+			else if (fs >> s)  { tok.push_back( strlower(s) ); }
+		}
+		fs.close();
+		// parse
+		return parse(tok, prog);
+	}
 	void showprog(const vector<uint16_t>& prog) {
 		string s;
 		for (int i = 0; i < prog.size(); ) {
@@ -184,6 +212,15 @@ namespace parse {
 		}
 	}
 
+	//--- load to CPU struct ---
+	int load_parse(const string& fname, CPU& cpu) {
+		reset(cpu);
+		vector<uint16_t> prog;
+		int err = load_parse(fname, prog);
+		if (err)  return err;
+		memcpy(cpu.ram, &prog[0], sizeof(uint16_t) * prog.size());
+		return 0;
+	}
 	void showprog(const CPU& cpu) {
 		string s;
 		char o;
@@ -194,6 +231,7 @@ namespace parse {
 			printf("%s\n", s.c_str());
 		}
 	}
+
 
 	static int progln(const uint16_t* prog, string& str) {
 		// init
@@ -217,23 +255,6 @@ namespace parse {
 		str = strfmt("%-6s %-3s %-3s", so.c_str(), sa.c_str(), sb.c_str());
 		// str = strfmt("%s %s %s", so.c_str(), sa.c_str(), sb.c_str());
 		return  (i + 1);
-	}
-
-	static char addr(const string& t) {
-		static const regex REG_NUMBER("[0-9]+");
-		val_t = 0;
-		if      (t == "a")   return ADR_A;
-		else if (t == "b")   return ADR_B;
-		else if (t == "c")   return ADR_C;
-		else if (t == "x")   return ADR_X;
-		else if (t == "y")   return ADR_Y;
-		else if (t == "z")   return ADR_Z;
-		else if (t == "i")   return ADR_I;
-		else if (t == "j")   return ADR_J;
-		else if (t == "pc")  return ADR_PC;
-		else if (t == "sp")  return ADR_SP;
-		else if (regex_match(t, REG_NUMBER))  { val_t = stoi(t);  return ADR_NWD; }
-		return ADR_NIL;
 	}
 
 } // end parse

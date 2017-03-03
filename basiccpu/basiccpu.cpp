@@ -94,6 +94,7 @@ namespace bc {
 		case OP_JSR:  cpu.ram[cpu.SP--] = cpu.PC;  cpu.PC = *iptr(cpu,a);  break;
 		case OP_RET:  cpu.PC = cpu.ram[cpu.SP++];  break;
 		case OP_PRNT:  printf("OUT:: %d\n", *iptr(cpu,a));  break;
+		case OP_FUNC:  iptr(cpu,a);  break;
 		}
 		cpu.CYC += ilen(in);  // increase cycle count
 		return 0;

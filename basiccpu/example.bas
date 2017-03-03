@@ -15,3 +15,10 @@ add a b
 add a 10
 
 print a
+die
+
+
+' func blah
+' 	let a = 1
+' 	print a
+' end func
