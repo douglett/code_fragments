@@ -4,9 +4,8 @@ namespace bc {
 	enum OPCODE {
 		OP_NOOP=0,
 		OP_ADD =1,  OP_SUB, OP_MUL, OP_DIV,
-		OP_IFE =5,  OP_IFN, OP_IFL, OP_IFG,
-		OP_SET =10, OP_JSR, OP_RET,
-		OP_PRNT=20, OP_FUNC  // pseudo
+		OP_IFE =10, OP_IFN, OP_IFL, OP_IFG,
+		OP_SET =15, OP_JSR, OP_RET
 	};
 	enum ADDRCODE {
 		ADR_NIL=0,
@@ -27,6 +26,7 @@ namespace bc {
 	uint16_t*   iptr      (CPU& cpu, char adr);
 	std::string inameop   (char o);
 	std::string inameaddr (char a);
+	std::string iline     (const CPU& cpu);
 	int         reset     (CPU& cpu);
 	int         step      (CPU& cpu);
 } // end bc

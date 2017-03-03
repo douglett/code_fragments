@@ -51,8 +51,7 @@ namespace bc {
 			{ OP_NOOP, "NOOP" },
 			{ OP_ADD,  "ADD"  }, { OP_SUB, "SUB" }, { OP_MUL, "MUL" }, { OP_DIV, "DIV" },
 			{ OP_IFE,  "IFE"  }, { OP_IFN, "IFN" }, { OP_IFL, "IFL" }, { OP_IFG, "IFG" },
-			{ OP_SET,  "SET"  }, { OP_JSR, "JSR" }, { OP_RET, "RET" },
-			{ OP_PRNT, "PRNT" }, { OP_FUNC, "FUNC" }
+			{ OP_SET,  "SET"  }, { OP_JSR, "JSR" }, { OP_RET, "RET" }
 		};
 		if (OP_STR.count(o))  return OP_STR.at(o);
 		return  "?";
@@ -65,6 +64,25 @@ namespace bc {
 		if (a >= ADR_PC  && a <= ADR_NWD )  return reg2[a - ADR_PC];
 		if (a >= ADRW_PC && a <= ADRW_NWD)  return "[" + reg2[a - ADR_PC] + "]";
 		return  "?";
+	}
+	string iline(const CPU& cpu) {
+		// init
+		char o, a, b;
+		uint16_t i = cpu.PC;
+		string s;
+		// setup
+		isplit(cpu.ram[i], &o, &a, &b);
+		s = inameop(o);
+		// get first argument
+		if      (a == ADR_NWD )  s += strfmt( " %d",   cpu.ram[++i] );
+		else if (a == ADRW_NWD)  s += strfmt( " [%d]", cpu.ram[++i] );
+		else    s += " " + inameaddr(a);
+		// get second argument
+		if      (b == ADR_NWD )  s += strfmt( " %d",   cpu.ram[++i] );
+		else if (b == ADRW_NWD)  s += strfmt( " [%d]", cpu.ram[++i] );
+		else    s += " " + inameaddr(b);
+		// print
+		return s;
 	}
 
 	int reset(CPU& cpu) {
@@ -95,8 +113,6 @@ namespace bc {
 		case OP_SET:  *iptr(cpu,a) = *iptr(cpu,b);  break;
 		case OP_JSR:  cpu.ram[cpu.SP--] = cpu.PC;  cpu.PC = *iptr(cpu,a);  break;
 		case OP_RET:  cpu.PC = cpu.ram[cpu.SP++];  break;
-		case OP_PRNT:  printf("OUT:: %d\n", *iptr(cpu,a));  break;
-		case OP_FUNC:  iptr(cpu,a);  break;
 		}
 		cpu.CYC += ilen(in);  // increase cycle count
 		return 0;
