@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <cassert>
 #include "basiccpu.h"
 
 using namespace std;
@@ -66,20 +67,24 @@ namespace bc {
 		return  "?";
 	}
 	string iline(const CPU& cpu) {
+		uint16_t PC = cpu.PC;
+		return  iline(&cpu.ram[0], PC);
+	}
+	string iline(const uint16_t* ram, uint16_t& PC) {
+		assert(ram != NULL);
 		// init
 		char o, a, b;
-		uint16_t i = cpu.PC;
 		string s;
 		// setup
-		isplit(cpu.ram[i], &o, &a, &b);
+		isplit(ram[PC++], &o, &a, &b);
 		s = inameop(o);
 		// get first argument
-		if      (a == ADR_NWD )  s += strfmt( " %d",   cpu.ram[++i] );
-		else if (a == ADRW_NWD)  s += strfmt( " [%d]", cpu.ram[++i] );
+		if      (a == ADR_NWD )  s += strfmt( " %d",   ram[PC++] );
+		else if (a == ADRW_NWD)  s += strfmt( " [%d]", ram[PC++] );
 		else    s += " " + inameaddr(a);
 		// get second argument
-		if      (b == ADR_NWD )  s += strfmt( " %d",   cpu.ram[++i] );
-		else if (b == ADRW_NWD)  s += strfmt( " [%d]", cpu.ram[++i] );
+		if      (b == ADR_NWD )  s += strfmt( " %d",   ram[PC++] );
+		else if (b == ADRW_NWD)  s += strfmt( " [%d]", ram[PC++] );
 		else    s += " " + inameaddr(b);
 		// print
 		return s;

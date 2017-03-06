@@ -28,6 +28,7 @@ namespace bc {
 	std::string inameop   (char o);
 	std::string inameaddr (char a);
 	std::string iline     (const CPU& cpu);
+	std::string iline     (const uint16_t* ram, uint16_t& PC);
 	int         reset     (CPU& cpu);
 	int         step      (CPU& cpu);
 } // end bc

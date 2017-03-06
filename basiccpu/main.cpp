@@ -13,7 +13,6 @@ int main() {
 	testparse();
 }
 
-
 void testparse() {
 	printf("load and parse:\n");
 	//CPU cpu;
