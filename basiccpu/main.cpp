@@ -1,6 +1,6 @@
 #include <iostream>
 #include "basiccpu.h"
-#include "basicparse.h"
+#include "basicp.h"
 
 using namespace std;
 using namespace bc;
@@ -16,12 +16,7 @@ int main() {
 
 void testparse() {
 	printf("load and parse:\n");
-	CPU cpu;
-	if (parse::load_parse("example.bas", cpu))  return;
-
-	parse::show(cpu);
-	
-	printf("running:\n");
-	while (step(cpu) == 0)  ;
-	printf("OK:  CYC %d  PC %d\n", cpu.CYC, cpu.PC);
+	//CPU cpu;
+	vector<uint16_t> prog;
+	basic::load("example.bas", prog);
 }

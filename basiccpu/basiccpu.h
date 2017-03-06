@@ -5,7 +5,8 @@ namespace bc {
 		OP_NOOP=0,
 		OP_ADD =1,  OP_SUB, OP_MUL, OP_DIV,
 		OP_IFE =10, OP_IFN, OP_IFL, OP_IFG,
-		OP_SET =15, OP_JSR, OP_RET
+		OP_SET =15, OP_JSR, OP_RET,
+		OP_LABL=20  // pseudo
 	};
 	enum ADDRCODE {
 		ADR_NIL=0,

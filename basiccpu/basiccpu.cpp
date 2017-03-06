@@ -102,17 +102,18 @@ namespace bc {
 		switch (OPCODE(o)) {
 		// switch (o) {
 		case OP_NOOP:  return 1;  // end execution ok
-		case OP_ADD:  *iptr(cpu,a) += *iptr(cpu,b);  break;
-		case OP_SUB:  *iptr(cpu,a) -= *iptr(cpu,b);  break;
-		case OP_MUL:  *iptr(cpu,a) *= *iptr(cpu,b);  break;
-		case OP_DIV:  *iptr(cpu,a) /= *iptr(cpu,b);  break;
-		case OP_IFE:  if (!(*iptr(cpu,a) == *iptr(cpu,b)))  cpu.PC++;  break;
-		case OP_IFN:  if (!(*iptr(cpu,a) != *iptr(cpu,b)))  cpu.PC++;  break;
-		case OP_IFL:  if (!(*iptr(cpu,a) <  *iptr(cpu,b)))  cpu.PC++;  break;
-		case OP_IFG:  if (!(*iptr(cpu,a) >  *iptr(cpu,b)))  cpu.PC++;  break;
-		case OP_SET:  *iptr(cpu,a) = *iptr(cpu,b);  break;
-		case OP_JSR:  cpu.ram[cpu.SP--] = cpu.PC;  cpu.PC = *iptr(cpu,a);  break;
-		case OP_RET:  cpu.PC = cpu.ram[cpu.SP++];  break;
+		case OP_ADD:   *iptr(cpu,a) += *iptr(cpu,b);  break;
+		case OP_SUB:   *iptr(cpu,a) -= *iptr(cpu,b);  break;
+		case OP_MUL:   *iptr(cpu,a) *= *iptr(cpu,b);  break;
+		case OP_DIV:   *iptr(cpu,a) /= *iptr(cpu,b);  break;
+		case OP_IFE:   if (!(*iptr(cpu,a) == *iptr(cpu,b)))  cpu.PC++;  break;
+		case OP_IFN:   if (!(*iptr(cpu,a) != *iptr(cpu,b)))  cpu.PC++;  break;
+		case OP_IFL:   if (!(*iptr(cpu,a) <  *iptr(cpu,b)))  cpu.PC++;  break;
+		case OP_IFG:   if (!(*iptr(cpu,a) >  *iptr(cpu,b)))  cpu.PC++;  break;
+		case OP_SET:   *iptr(cpu,a) = *iptr(cpu,b);  break;
+		case OP_JSR:   cpu.ram[cpu.SP--] = cpu.PC;  cpu.PC = *iptr(cpu,a);  break;
+		case OP_RET:   cpu.PC = cpu.ram[cpu.SP++];  break;
+		case OP_LABL:  iptr(cpu,a);  break;
 		}
 		cpu.CYC += ilen(in);  // increase cycle count
 		return 0;
