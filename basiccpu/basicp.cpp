@@ -164,7 +164,11 @@ namespace basic {
 		printf("\n");
 	}
 
+
 	int load(const string& fname, vector<uint16_t>& prog) {
+		fparse(fname);
+		return 1;
+
 		Head head;
 		FuncList func;
 		DataList data;
