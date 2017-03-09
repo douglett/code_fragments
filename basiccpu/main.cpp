@@ -16,6 +16,9 @@ int main() {
 void testparse() {
 	printf("load and parse:\n");
 	//CPU cpu;
-	vector<uint16_t> prog;
-	basic::load("example.bas", prog);
+	// vector<uint16_t> prog;
+	
+	// test parseprog
+	basic::fparse("example.bas");
+	basic::showprog(basic::prog);
 }
