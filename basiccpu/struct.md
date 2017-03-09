@@ -11,15 +11,15 @@ func_head (variable):
 	34: fn2 address
 	35: fn3 (etc. etc...)
   ---function_name_table---
-	36: [4 m a i n] (string 4+1)
-	41: [3 f n 1] (string 3+1)
-	45: [3 f n 2] (string 3+1)
-	49: [3 f n 3] (string 3+1)
+	36: [4 m a i n]  (string 4+1)
+	41: [3 f n 1]  	 (string 3+1)
+	45: [3 f n 2]    (string 3+1)
+	49: [3 f n 3]    (string 3+1)
 data_block (variable):
   ---TOP_[53]---
-	TOP+0: [2 5 h e l l o] (data_type, str_length, str_characters...)
-	TOP+7: [0 20] (data_type, value)
-	TOP+9: [1 3 1 2 3] (data_type, arr_length, value...)
+	TOP+0: [2 5 h e l l o]  (data_type, str_length, str_characters...)
+	TOP+7: [0 20]  			(data_type, value)
+	TOP+9: [1 3 1 2 3] 		(data_type, arr_length, value...)
 
 program:
 	...

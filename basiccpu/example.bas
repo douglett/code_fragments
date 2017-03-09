@@ -1,5 +1,5 @@
 func main
-	' let b = 1
+	let b = 1
 	' call blah
 end func
 
