@@ -167,6 +167,7 @@ namespace basic {
 
 	int load(const string& fname, vector<uint16_t>& prog) {
 		fparse(fname);
+		showprog(basic::prog);
 		return 1;
 
 		Head head;

@@ -12,9 +12,9 @@ using namespace bc;
 namespace basic {
 
 	static uint16_t PC = 0;
-	static vector<uint16_t> prog;
-	static vector<string>   toklist;
-	static vector<string>   funclist;
+	static vector<string> toklist;
+	static vector<string> funclist;
+	vector<uint16_t> prog;
 
 
 	static int getnum(const string& s, uint16_t& val) {
