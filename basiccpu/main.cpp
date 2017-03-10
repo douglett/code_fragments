@@ -15,12 +15,13 @@ int main() {
 
 int testparse() {
 	printf("load and parse:\n");
-	//CPU cpu;
-	// vector<uint16_t> prog;
-	
 	// test parseprog
-	if (basic::fparse("example.bas"))
-		return 1;
-	basic::showprog(basic::prog);
+	if (basic::fparse("example.bas"))  return 1;
+	printf("=====\n");
+	printf("running:\n");
+	CPU cpu;
+	bc::load(cpu, basic::prog);
+	while (!bc::step(cpu))  ;
+	printf("[PC %d]  [A %d]  [B %d]\n", cpu.PC, cpu.A, cpu.B);
 	return 0;
 }

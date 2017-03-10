@@ -5,7 +5,7 @@ end func
 
 
 func blah
-	' let a = 1
+	let a = 10
 	' print a
 	'ass
 end func

@@ -12,12 +12,14 @@ using namespace bc;
 
 namespace basic {
 
-	static const uint16_t FUNC_OFFSET = 32;  // function address offset
+	static const uint16_t 
+		// FUNC_SIZE_POS = 5,
+		FUNC_OFFSET = 32;  // function address offset (main)
 
 	static uint16_t PC = 0;
 	static vector<string> toklist;
 	static vector<pair<string, int>> funclist;
-	vector<uint16_t>  head, fhead, dhead, prog;
+	vector<uint16_t>  head, fhead, dhead, body, prog;
 
 
 	static int getnum(const string& s, uint16_t& val) {
@@ -91,11 +93,11 @@ namespace basic {
 			return 1;
 		}
 		bb = getaddr_v;
-		// add to prog
+		// add to body
 		printf("found let: %s = %s\n", dst.c_str(), src.c_str());
-		prog.push_back(imerge(OP_SET, a, b));
-		if (a == ADR_NWD || a == ADRW_NWD)  prog.push_back(aa);
-		if (b == ADR_NWD || b == ADRW_NWD)  prog.push_back(bb);
+		body.push_back(imerge(OP_SET, a, b));
+		if (a == ADR_NWD || a == ADRW_NWD)  body.push_back(aa);
+		if (b == ADR_NWD || b == ADRW_NWD)  body.push_back(bb);
 		PC += 4;
 		return 0;
 	}
@@ -112,12 +114,12 @@ namespace basic {
 		int fi = funcindex(fname);
 		// if not yet defined, add to func list
 		if (fi == -1) {
-			funclist.push_back({ fname, 0 });
+			funclist.push_back({ fname, -1 });
 			fi = funclist.size()-1;
 		}
-		// add to prog
+		// add to body
 		printf("found call: %s (%d)\n", fname.c_str(), fi);
-		prog.insert(prog.end(), { imerge(OP_JSR, ADRW_NWD, 0), uint16_t(FUNC_OFFSET + fi) });
+		body.insert(body.end(), { imerge(OP_JSR, ADRW_NWD, 0), uint16_t(FUNC_OFFSET + fi) });
 		PC += 2;
 		return 0;
 	}
@@ -156,19 +158,22 @@ namespace basic {
 			fprintf(stderr, "error: expected [func <name>] at: %s\n", ctok());
 			return 1;
 		}
-		// add to func list
+		// add to func list if missing
 		int fi = funcindex(fname);
 		if (fi == -1) {
-			funclist.push_back({ fname, 1 });
+			funclist.push_back({ fname, -1 });
 			fi = funclist.size()-1;
-		} else if (funclist[fi].second == 0) {
-			funclist[fi].second = 1;
+		}
+		if (funclist[fi].second == -1) {
+			funclist[fi].second = body.size();
 		} else {
-			printf("error: duplicate func definition: %s\n", fname.c_str());
+			fprintf(stderr, "error: duplicate func definition: %s\n", fname.c_str());
+			for (int i=0; i < funclist.size(); i++)
+				fprintf(stderr, "  %d.  %s  %d\n", i, funclist[i].first.c_str(), funclist[i].second);
 			return 1;
 		}
 		printf("found func: %s (%d)\n", fname.c_str(), fi);
-		prog.insert(prog.end(), { imerge(OP_LABL, ADRW_NWD, 0), uint16_t(fi) });
+		body.insert(body.end(), { imerge(OP_LABL, ADRW_NWD, 0), uint16_t(fi) });
 		// parse function body
 		if (parse_func_body())
 			return 1;
@@ -180,12 +185,13 @@ namespace basic {
 			return 1;
 		}
 		printf("end func: %s\n", fname.c_str());
-		prog.push_back(imerge(OP_RET, 0, 0));
+		body.push_back(imerge(OP_RET, 0, 0));
 		return 0;
 	}
 
 
 	static int write_head() {
+		printf("writing head...\n");
 		head = {
 			OP_NOOP,
 			imerge(OP_JSR, ADRW_NWD, 0), FUNC_OFFSET,
@@ -197,9 +203,18 @@ namespace basic {
 		return 0;
 	}
 	static int write_fhead() {
+		printf("writing fhead...\n");
 		fhead = { };
-		for (int i=0; i<funclist.size(); i++)
-			fhead.push_back(i);
+		// function locations
+		for (int i=0; i<funclist.size(); i++) {
+			if (funclist[i].second == -1) {
+				fprintf(stderr, "error: write_fhead: missing function definition: %s\n", funclist[i].first.c_str());
+				return 1;
+			}
+			printf("  %d.  %s  %d\n", i, funclist[i].first.c_str(), funclist[i].second);
+			fhead.push_back( funclist[i].second );
+		}
+		// function names
 		for (const auto& f : funclist) {
 			fhead.push_back(f.first.length());
 			for (auto c : f.first)
@@ -208,7 +223,22 @@ namespace basic {
 		return 0;
 	}
 	static int write_dhead() {
+		printf("writing dhead...\n");
 		dhead = { 0, 0, 0, 0, 0 };  // temp
+		return 0;
+	}
+	static int fhead_offset(uint16_t offset) {
+		int len = funclist.size();
+		for (int i=0; i<len; i++)
+			fhead[i] += offset;
+		return 0;
+	}
+	static int write_prog() {
+		prog = { };
+		prog.insert( prog.end(), head.begin(),  head.end()  );
+		prog.insert( prog.end(), fhead.begin(), fhead.end() );
+		prog.insert( prog.end(), dhead.begin(), dhead.end() );
+		prog.insert( prog.end(), body.begin(),  body.end()  );
 		return 0;
 	}
 
@@ -217,7 +247,8 @@ namespace basic {
 		// reset
 		PC = 0;
 		toklist = { };
-		funclist = { {"main", 0} };
+		funclist = { {"main", -1} };
+		head = fhead = dhead = body = prog = { };
 		// open
 		fstream fs(fname, fstream::in);
 		if (!fs.is_open()) {
@@ -235,15 +266,23 @@ namespace basic {
 		while (PC < toklist.size())
 			if (parse_func())
 				return 1;
-		// basic check
-		if (funclist[0].second == 0) {
-			fprintf(stderr, "error: function [main] not defined\n");
-			return 1;
-		}
 		// write headers
-		write_head();
-		write_fhead();
-		write_dhead();
+		if (write_head() || write_fhead() || write_dhead())  return 1;
+		if (fhead_offset( head.size() + fhead.size() + dhead.size() ))  return 1;
+		if (write_prog())  return 1;
+		// show
+		printf("=====\n");
+		printf("head:\n");
+		basic::showprog(head);
+		printf("fhead:\n");
+		basic::showprog(fhead);
+		printf("dhead:\n");
+		basic::showprog(dhead);
+		printf("body:\n");
+		basic::showprog(body);
+		printf("=====\n");
+		printf("prog:\n");
+		basic::showprog(prog);
 		return 0;
 	}
 

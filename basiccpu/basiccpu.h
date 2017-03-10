@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 namespace bc {
 	enum OPCODE {
 		OP_NOOP=0,
@@ -30,6 +32,7 @@ namespace bc {
 	std::string iline     (const CPU& cpu);
 	std::string iline     (const uint16_t* ram, uint16_t& PC);
 	int         reset     (CPU& cpu);
+	int         load      (CPU& cpu, const std::vector<uint16_t>& prog);
 	int         step      (CPU& cpu);
 } // end bc
 

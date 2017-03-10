@@ -99,6 +99,12 @@ namespace bc {
 		return 0;
 	}
 
+	int load(CPU& cpu, const std::vector<uint16_t>& prog) {
+		reset(cpu);
+		memcpy(cpu.ram, &prog[0], sizeof(uint16_t)*prog.size());
+		return 0;
+	}
+
 	int step(CPU& cpu) {
 		if (cpu.PC == 0)  return 1;  // stop
 		char     o, a, b;
