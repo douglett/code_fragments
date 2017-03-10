@@ -8,7 +8,7 @@ namespace bc {
 		OP_ADD =1,  OP_SUB, OP_MUL, OP_DIV,
 		OP_IFE =10, OP_IFN, OP_IFL, OP_IFG,
 		OP_SET =15, OP_JSR, OP_RET,
-		OP_LABL=20  // pseudo
+		OP_LABL=20, OP_INT  // special
 	};
 	enum ADDRCODE {
 		ADR_NIL=0,
@@ -34,6 +34,7 @@ namespace bc {
 	int         reset     (CPU& cpu);
 	int         load      (CPU& cpu, const std::vector<uint16_t>& prog);
 	int         step      (CPU& cpu);
+	int         interrupt (CPU& cpu, char a, uint16_t msg);
 } // end bc
 
 

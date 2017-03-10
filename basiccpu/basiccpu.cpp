@@ -125,8 +125,28 @@ namespace bc {
 		case OP_JSR:   cpu.ram[cpu.SP--] = cpu.PC;  cpu.PC = *iptr(cpu,a);  break;
 		case OP_RET:   cpu.PC = cpu.ram[cpu.SP++];  break;
 		case OP_LABL:  iptr(cpu,a);  break;
+		case OP_INT:   if (interrupt(cpu, a, *iptr(cpu,b)))  return 1;  break;
 		}
 		cpu.CYC += ilen(in);  // increase cycle count
+		return 0;
+	}
+
+	int interrupt(CPU& cpu, char a, uint16_t msg) {
+		int dtype=0, len=0;
+		string s;
+		switch (a) {
+		case 1:
+		case 2:
+			dtype = cpu.ram[msg],  len = cpu.ram[msg+1];
+			switch (dtype) {
+			case 0:  s = strfmt("%d", len);  break;
+			case 1:  for (int i=0; i<len; i++)  s += strfmt("%c%d", (i==0 ? '[' : ' '), cpu.ram[msg+2+i]);  s += "]";  break;
+			case 2:  for (int i=0; i<len; i++)  s += char(cpu.ram[msg+2+i]);  break;
+			}
+			if      (a == 1)  cout << s << endl;
+			else if (a == 2)  cerr << s << endl;
+			break;
+		}
 		return 0;
 	}
 } // end bc

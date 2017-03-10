@@ -20,10 +20,10 @@ func_head (variable):
 	49: [3 f n 3]    (string 3+1)
 data_block (variable):
   ---TOP_[53]---
+  	---[ data_type: [0 value]  [1 array]  [2 string] ]---
 	TOP+0: [2 5 h e l l o]  (data_type, str_length, str_characters...)
 	TOP+7: [0 20]  			(data_type, value)
 	TOP+9: [1 3 1 2 3] 		(data_type, arr_length, value...)
-
 program:
 	...
 	
