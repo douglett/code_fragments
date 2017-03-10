@@ -1,3 +1,6 @@
+program structure
+=================
+
 head (32):
 	0: noop (1)
 	1: call main (2)
@@ -24,3 +27,11 @@ data_block (variable):
 program:
 	...
 	
+
+basic commands
+==============
+
+	- func <name>
+	- call <name>
+	- let <src> = <dst>
+	- end { func }

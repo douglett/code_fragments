@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cassert>
 #include <fstream>
 #include "basicp.h"
 #include "basiccpu.h"
@@ -11,10 +12,12 @@ using namespace bc;
 
 namespace basic {
 
+	static const uint16_t FUNC_OFFSET = 32;  // function address offset
+
 	static uint16_t PC = 0;
 	static vector<string> toklist;
-	static vector<string> funclist;
-	vector<uint16_t> prog;
+	static vector<pair<string, int>> funclist;
+	vector<uint16_t>  head, fhead, dhead, prog;
 
 
 	static int getnum(const string& s, uint16_t& val) {
@@ -52,13 +55,16 @@ namespace basic {
 		if (getnum(s, getaddr_v))  return ADR_NWD;
 		return ADR_NIL;
 	}
+	static int funcindex(const string& s) {
+		for (int i=0; i<funclist.size(); i++)
+			if (funclist[i].first == s)
+				return i;
+		return -1;
+	}
 
 
 	static int parse_let() {
-		if (string(ctok()) != "let") {
-			fprintf(stderr, "let: unknown error: %s\n", ctok());
-			return 1;
-		}
+		assert(string(ctok()) == "let");  // should always be true
 		if (PC + 3 >= toklist.size()) {
 			fprintf(stderr, "let: unexpected EOF after: %s\n", ctok());
 			return 1;
@@ -96,8 +102,24 @@ namespace basic {
 
 
 	static int parse_call() {
-		fprintf(stderr, "TODO: call\n");
-		return 1;
+		assert(string(ctok()) == "call");  // should always be true
+		if (PC + 1 >= toklist.size()) {
+			fprintf(stderr, "error: call: unexpected EOF after: %s\n", ctok());
+			return 1;
+		}
+		// function name
+		string fname = toklist[PC+1];
+		int fi = funcindex(fname);
+		// if not yet defined, add to func list
+		if (fi == -1) {
+			funclist.push_back({ fname, 0 });
+			fi = funclist.size()-1;
+		}
+		// add to prog
+		printf("found call: %s (%d)\n", fname.c_str(), fi);
+		prog.insert(prog.end(), { imerge(OP_JSR, ADRW_NWD, 0), uint16_t(FUNC_OFFSET + fi) });
+		PC += 2;
+		return 0;
 	}
 
 
@@ -134,14 +156,19 @@ namespace basic {
 			fprintf(stderr, "error: expected [func <name>] at: %s\n", ctok());
 			return 1;
 		}
-		// add to list
-		if (find(funclist.begin(), funclist.end(), fname) != funclist.end()) {
+		// add to func list
+		int fi = funcindex(fname);
+		if (fi == -1) {
+			funclist.push_back({ fname, 1 });
+			fi = funclist.size()-1;
+		} else if (funclist[fi].second == 0) {
+			funclist[fi].second = 1;
+		} else {
 			printf("error: duplicate func definition: %s\n", fname.c_str());
 			return 1;
 		}
-		printf("found func: %s\n", fname.c_str());
-		funclist.push_back(fname);
-		prog.insert(prog.end(), { imerge(OP_LABL, ADRW_NWD, 0), uint16_t(funclist.size()-1) });
+		printf("found func: %s (%d)\n", fname.c_str(), fi);
+		prog.insert(prog.end(), { imerge(OP_LABL, ADRW_NWD, 0), uint16_t(fi) });
 		// parse function body
 		if (parse_func_body())
 			return 1;
@@ -158,11 +185,39 @@ namespace basic {
 	}
 
 
+	static int write_head() {
+		head = {
+			OP_NOOP,
+			imerge(OP_JSR, ADRW_NWD, 0), FUNC_OFFSET,
+			imerge(OP_SET, PC, ADR_NWD), 0,
+			0  // func_size (5)
+		};
+		while (head.size() < FUNC_OFFSET)
+			head.push_back(0); // pad header
+		return 0;
+	}
+	static int write_fhead() {
+		fhead = { };
+		for (int i=0; i<funclist.size(); i++)
+			fhead.push_back(i);
+		for (const auto& f : funclist) {
+			fhead.push_back(f.first.length());
+			for (auto c : f.first)
+				fhead.push_back(c);
+		}
+		return 0;
+	}
+	static int write_dhead() {
+		dhead = { 0, 0, 0, 0, 0 };  // temp
+		return 0;
+	}
+
+
 	int fparse(const string& fname) {
 		// reset
 		PC = 0;
 		toklist = { };
-		funclist = { };
+		funclist = { {"main", 0} };
 		// open
 		fstream fs(fname, fstream::in);
 		if (!fs.is_open()) {
@@ -180,6 +235,15 @@ namespace basic {
 		while (PC < toklist.size())
 			if (parse_func())
 				return 1;
+		// basic check
+		if (funclist[0].second == 0) {
+			fprintf(stderr, "error: function [main] not defined\n");
+			return 1;
+		}
+		// write headers
+		write_head();
+		write_fhead();
+		write_dhead();
 		return 0;
 	}
 
