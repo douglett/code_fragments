@@ -18,8 +18,6 @@ namespace basic {
 
 	static uint16_t PC = 0;
 	static vector<string> toklist;
-	static vector<pair<string, int>> funclist;
-	vector<uint16_t>  head, fhead, dhead, body, prog;
 
 
 	static int getnum(const string& s, uint16_t& val) {
@@ -247,8 +245,10 @@ namespace basic {
 		// reset
 		PC = 0;
 		toklist = { };
+		// reset parser items
 		funclist = { {"main", -1} };
-		head = fhead = dhead = body = prog = { };
+		head = fhead = dhead = body;
+		prog = { };
 		// open
 		fstream fs(fname, fstream::in);
 		if (!fs.is_open()) {

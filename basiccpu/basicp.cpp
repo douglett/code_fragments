@@ -6,6 +6,9 @@ using namespace std;
 
 namespace basic {
 
+	std::vector<std::pair<std::string, int>>  funclist;
+	std::vector<uint16_t>  head, fhead, dhead, body, prog;
+
 	void showprog(const vector<uint16_t>& prog) {
 		// display v16
 		int ps = prog.size();

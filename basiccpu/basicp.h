@@ -5,10 +5,9 @@
 
 namespace basic {
 	// basicp
-	void showprog (const std::vector<uint16_t>& prog);
-	// basicp_parseprog
+	extern std::vector<std::pair<std::string, int>>  funclist;
 	extern std::vector<uint16_t>  head, fhead, dhead, body, prog;
+	void showprog (const std::vector<uint16_t>& prog);
+	// basicp_parsebas
 	int  fparse   (const std::string& fname);
-	// basicp_pblock (test)
-	int  pblock_test();
 } // end basic
