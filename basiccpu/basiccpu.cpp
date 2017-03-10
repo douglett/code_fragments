@@ -139,12 +139,11 @@ namespace bc {
 		case 2:
 			dtype = cpu.ram[msg],  len = cpu.ram[msg+1];
 			switch (dtype) {
-			case 0:  s = strfmt("%d", len);  break;
-			case 1:  for (int i=0; i<len; i++)  s += strfmt("%c%d", (i==0 ? '[' : ' '), cpu.ram[msg+2+i]);  s += "]";  break;
-			case 2:  for (int i=0; i<len; i++)  s += char(cpu.ram[msg+2+i]);  break;
+			case DAT_VAL:  s = strfmt("%d", len);  break;
+			case DAT_ARR:  for (int i=0; i<len; i++)  s += strfmt("%c%d", (i==0 ? '[' : ' '), cpu.ram[msg+2+i]);  s += "]";  break;
+			case DAT_STR:  for (int i=0; i<len; i++)  s += char(cpu.ram[msg+2+i]);  break;
 			}
-			if      (a == 1)  cout << s << endl;
-			else if (a == 2)  cerr << s << endl;
+			fprintf((a == 1 ? stdout : stderr), "BC>> %s\n", s.c_str());
 			break;
 		}
 		return 0;

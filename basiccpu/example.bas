@@ -6,6 +6,6 @@ end func
 
 func blah
 	let a = 10
-	' print a
+	print a
 	'ass
 end func

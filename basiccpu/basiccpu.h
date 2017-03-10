@@ -17,6 +17,9 @@ namespace bc {
 		ADRW_A =15, ADRW_B, ADRW_C, ADRW_X, ADRW_Y, ADRW_Z, ADRW_I, ADRW_J,
 		ADRW_PC=25, ADRW_SP, ADRW_NWD
 	};
+	enum DATACODE {
+		DAT_VAL=0,  DAT_ARR=1,  DAT_STR=2
+	};
 	struct CPU {
 		uint16_t A,B,C,X,Y,Z,I,J;
 		uint16_t PC,SP,CYC;

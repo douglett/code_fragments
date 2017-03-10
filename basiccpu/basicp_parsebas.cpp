@@ -123,18 +123,49 @@ namespace basic {
 	}
 
 
+	static int parse_print() {
+		assert(string(ctok()) == "print");  // should always be true
+		if (PC + 1 >= toklist.size()) {
+			fprintf(stderr, "error: print: unexpected EOF after: %s\n", ctok());
+			return 1;
+		}
+		char a;
+		int aa;
+		// get print pos
+		string pos = toklist[PC+1];
+		if ((a = getaddr(pos)) == ADR_NIL) {
+			fprintf(stderr, "error: print: unknown address: %s\n", pos.c_str());
+			return 1;
+		}
+		aa = getaddr_v;
+		// do print function
+		body.insert(body.end(), {
+			imerge(OP_SET, ADRW_NWD, ADR_NWD), 0x9000, DAT_VAL,  // set 0x9000 data val
+			imerge(OP_SET, ADRW_NWD, a), 0x9001,                 // set 9001 number
+		});
+		if (a == ADR_NWD || a == ADRW_NWD)  body.push_back(aa);  // add optional inline number 
+		body.insert(body.end(), { 
+			imerge(OP_INT, 1, ADR_NWD), 0x9000                   // interrupt at address 9000 
+		});
+		// inc and move on
+		PC += 2;
+		return 0;
+	}
+
+
 	static int parse_func_body() {
 		while (PC < toklist.size()) {
 			clear_comments();
 			if (tokcmp({ "end", "func" })) {
 				break;
-			}
-			else if (string(ctok()) == "let") {
+			} else if (string(ctok()) == "let") {
 				if (parse_let())  return 1;
 				continue;
-			}
-			else if (string(ctok()) == "call") {
+			} else if (string(ctok()) == "call") {
 				if (parse_call())  return 1;
+				continue;
+			} else if (string(ctok()) == "print") {
+				if (parse_print())  return 1;
 				continue;
 			}
 			// unknown token
