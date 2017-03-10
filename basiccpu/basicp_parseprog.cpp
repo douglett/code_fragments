@@ -95,6 +95,12 @@ namespace basic {
 	}
 
 
+	static int parse_call() {
+		fprintf(stderr, "TODO: call\n");
+		return 1;
+	}
+
+
 	static int parse_func_body() {
 		while (PC < toklist.size()) {
 			clear_comments();
@@ -103,6 +109,10 @@ namespace basic {
 			}
 			else if (string(ctok()) == "let") {
 				if (parse_let())  return 1;
+				continue;
+			}
+			else if (string(ctok()) == "call") {
+				if (parse_call())  return 1;
 				continue;
 			}
 			// unknown token

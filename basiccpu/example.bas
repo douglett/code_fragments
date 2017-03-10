@@ -1,6 +1,6 @@
 func main
 	let b = 1
-	' call blah
+	call blah
 end func
 
 

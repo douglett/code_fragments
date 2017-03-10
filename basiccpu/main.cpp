@@ -5,7 +5,7 @@
 using namespace std;
 using namespace bc;
 
-void testparse();
+int testparse();
 
 
 int main() {
@@ -13,12 +13,14 @@ int main() {
 	testparse();
 }
 
-void testparse() {
+int testparse() {
 	printf("load and parse:\n");
 	//CPU cpu;
 	// vector<uint16_t> prog;
 	
 	// test parseprog
-	basic::fparse("example.bas");
+	if (basic::fparse("example.bas"))
+		return 1;
 	basic::showprog(basic::prog);
+	return 0;
 }
