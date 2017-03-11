@@ -97,8 +97,8 @@ namespace basic {
 		// add to body
 		printf("found let: %s = %s\n", dst.c_str(), src.c_str());
 		body.push_back(imerge(OP_SET, a, b));
-		if (a == ADR_NWD || a == ADRW_NWD)  body.push_back(aa);
-		if (b == ADR_NWD || b == ADRW_NWD)  body.push_back(bb);
+		if (alen(a))  body.push_back(aa);
+		if (alen(b))  body.push_back(bb);
 		PC += 4;
 		return 0;
 	}
@@ -146,7 +146,7 @@ namespace basic {
 			imerge(OP_SET, ADRW_NWD, ADR_NWD), 0x9000, DAT_VAL,  // set [0x9000] = data val
 			imerge(OP_SET, ADRW_NWD, a), 0x9001,                 // set [0x9001] = number
 		});
-		if (a == ADR_NWD || a == ADRW_NWD)  body.push_back(aa);  // add optional inline number 
+		if (alen(a))  body.push_back(aa);  // add optional inline number 
 		body.insert(body.end(), { 
 			imerge(OP_INT, 1, ADR_NWD), 0x9000                   // interrupt at address 9000 
 		});
@@ -160,7 +160,6 @@ namespace basic {
 		char o, b, a = getaddr(ctok());
 		int bb, aa = getaddr_v;
 		assert(a != ADR_NIL);  // should always be true
-		printf("here: %s  %s  %s\n", toklist[PC].c_str(), toklist[PC+1].c_str(), toklist[PC+2].c_str());
 		// length check
 		if (PC + 2 >= toklist.size()) {
 			fprintf(stderr, "error: math: unexpected EOF after: %s\n", ctok());
@@ -168,7 +167,10 @@ namespace basic {
 		}
 		// get math type
 		string mtype = toklist[PC+1];
-		if (mtype == "+=")  o = OP_ADD;
+		if      (mtype == "+=")  o = OP_ADD;
+		else if (mtype == "-=")  o = OP_SUB;
+		else if (mtype == "*=")  o = OP_MUL;
+		else if (mtype == "/=")  o = OP_DIV;
 		else {
 			fprintf(stderr, "error: math: expected math operation, got: %s\n", mtype.c_str());
 			return 1;
@@ -180,6 +182,7 @@ namespace basic {
 		}
 		bb = getaddr_v;
 		// add to program body
+		printf("math: [%s]  [%s]  [%s]\n", toklist[PC].c_str(), mtype.c_str(), toklist[PC+2].c_str());
 		body.push_back(imerge(o, a, b));
 		if (alen(a))  body.push_back(aa);
 		if (alen(b))  body.push_back(bb);
