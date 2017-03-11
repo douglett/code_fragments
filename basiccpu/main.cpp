@@ -1,6 +1,6 @@
 #include <iostream>
-#include "basiccpu.h"
-#include "basicp.h"
+#include "basic/basiccpu.h"
+#include "basic/basicp.h"
 
 using namespace std;
 using namespace bc;
