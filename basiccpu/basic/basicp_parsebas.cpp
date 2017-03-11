@@ -55,6 +55,9 @@ namespace basic {
 		if (getnum(s, getaddr_v))  return ADR_NWD;
 		return ADR_NIL;
 	}
+	static int alen(char a) {
+		return (a == ADR_NWD || a == ADRW_NWD);
+	}
 	static int funcindex(const string& s) {
 		for (int i=0; i<funclist.size(); i++)
 			if (funclist[i].first == s)
@@ -140,8 +143,8 @@ namespace basic {
 		aa = getaddr_v;
 		// do print function
 		body.insert(body.end(), {
-			imerge(OP_SET, ADRW_NWD, ADR_NWD), 0x9000, DAT_VAL,  // set 0x9000 data val
-			imerge(OP_SET, ADRW_NWD, a), 0x9001,                 // set 9001 number
+			imerge(OP_SET, ADRW_NWD, ADR_NWD), 0x9000, DAT_VAL,  // set [0x9000] = data val
+			imerge(OP_SET, ADRW_NWD, a), 0x9001,                 // set [0x9001] = number
 		});
 		if (a == ADR_NWD || a == ADRW_NWD)  body.push_back(aa);  // add optional inline number 
 		body.insert(body.end(), { 
@@ -149,6 +152,38 @@ namespace basic {
 		});
 		// inc and move on
 		PC += 2;
+		return 0;
+	}
+
+
+	static int parse_math_in() {
+		char o, b, a = getaddr(ctok());
+		int bb, aa = getaddr_v;
+		assert(a != ADR_NIL);  // should always be true
+		printf("here: %s  %s  %s\n", toklist[PC].c_str(), toklist[PC+1].c_str(), toklist[PC+2].c_str());
+		// length check
+		if (PC + 2 >= toklist.size()) {
+			fprintf(stderr, "error: math: unexpected EOF after: %s\n", ctok());
+			return 1;
+		}
+		// get math type
+		string mtype = toklist[PC+1];
+		if (mtype == "+=")  o = OP_ADD;
+		else {
+			fprintf(stderr, "error: math: expected math operation, got: %s\n", mtype.c_str());
+			return 1;
+		}
+		// get 2nd address
+		if ((b = getaddr(toklist[PC+2])) == ADR_NIL) {
+			fprintf(stderr, "error: math: expected address: %s\n", toklist[PC+2].c_str());
+			return 1;
+		}
+		bb = getaddr_v;
+		// add to program body
+		body.push_back(imerge(o, a, b));
+		if (alen(a))  body.push_back(aa);
+		if (alen(b))  body.push_back(bb);
+		PC += 3;
 		return 0;
 	}
 
@@ -166,6 +201,9 @@ namespace basic {
 				continue;
 			} else if (string(ctok()) == "print") {
 				if (parse_print())  return 1;
+				continue;
+			} else if (getaddr(ctok()) != ADR_NIL) {
+				if (parse_math_in())  return 1;
 				continue;
 			}
 			// unknown token
