@@ -15,7 +15,7 @@ strfmt(const std::string& fmt, Args ... args) {
 	snprintf(cs, size, fmt.c_str(), args ...);
 	return cs;
 }
-std::vector<std::string> 
+inline std::vector<std::string> 
 strsplit(const std::string& str) {
 	std::stringstream ss(str);
 	std::vector<std::string> vs;
@@ -23,7 +23,7 @@ strsplit(const std::string& str) {
 	while (ss >> s)  vs.push_back(s);
 	return vs;
 }
-std::string
+inline std::string
 strjoin(const std::vector<std::string>& vs) {
 	std::string s;
 	for (int i=0; i<vs.size(); i++)
