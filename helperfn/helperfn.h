@@ -16,7 +16,7 @@ strfmt(const std::string& fmt, Args ... args) {
 	return cs;
 }
 std::vector<std::string> 
-split(const std::string& str) {
+strsplit(const std::string& str) {
 	std::stringstream ss(str);
 	std::vector<std::string> vs;
 	std::string s;
@@ -24,7 +24,7 @@ split(const std::string& str) {
 	return vs;
 }
 std::string
-join(const std::vector<std::string>& vs) {
+strjoin(const std::vector<std::string>& vs) {
 	std::string s;
 	for (int i=0; i<vs.size(); i++)
 		s += vs[i] + (i<vs.size()-1 ? " " : "");
