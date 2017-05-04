@@ -6,7 +6,7 @@ using namespace std;
 
 
 namespace vid {
-	const int SURFACE_MAX=1024;
+	// const int SURFACE_MAX=1024;
 	SDL_Surface* screen=NULL;
 	Uint32 tcolor=0;
 
@@ -57,6 +57,17 @@ namespace vid {
 		return box;  // return
 	}
 
+	void scaleto(SDL_Surface* src, SDL_Surface* dst) {
+		Uint32* dpx = (Uint32*)dst->pixels;
+		Uint32* spx = (Uint32*)src->pixels;
+		for (int h=min(src->h,dst->h/2)-1; h>=0; h--)  // go in reverse, in case src=dst
+		for (int w=min(src->w,dst->w/2)-1; w>=0; w--) {
+			// ((Uint32*)dst->pixels)[h*dst->w + w] = ((Uint32*)src->pixels)[h*src->w + w];
+			dpx[h*2*dst->w + (w*2)]     = dpx[h*2*dst->w + (w*2)+1]     = 
+			dpx[(h*2+1)*dst->w + (w*2)] = dpx[(h*2+1)*dst->w + (w*2)+1] =
+			spx[h*src->w + w];
+		}
+	}
 } // end vid
 
 
@@ -64,11 +75,14 @@ int main(int argc, char** argv) {
 	printf("hello world\n");
 	vid::init();
 	SDL_Surface* screen=vid::screen;
+	// box test
 	SDL_Surface* box = vid::makesurface(100, 100);
-	SDL_Rect r2={30,30,40,40};
-	SDL_FillRect(box, &r2, vid::tcolor);
-
-	// SDL_SetColorKey( surface, SDL_SRCCOLORKEY, SDL_MapRGB(surface->format, 255, 0, 255) );
+	SDL_Rect r={30,30,40,40};
+	SDL_FillRect(box, &r, vid::tcolor);
+	// scale test
+	SDL_Surface* box2 = vid::makesurface(200, 200);
+	vid::scaleto(box, box2);
+	vid::scaleto(box, box);
 	
 	SDL_Event e;
 	int loop=1;
@@ -84,15 +98,16 @@ int main(int argc, char** argv) {
 		// cls
 		SDL_FillRect(screen, NULL, SDL_MapRGBA(screen->format, 255,0,0,255));
 
-		SDL_Rect r={20,20,40,40};
+		r={20,20,40,40};
 		SDL_FillRect(screen, &r, SDL_MapRGBA(screen->format, 255,255,0,120));
-		r.x=r.y=40;
+		r={40,40,40,40};
 		SDL_FillRect(screen, &r, SDL_MapRGBA(screen->format, 0,0,255,120));
 
 		// blit test
-		SDL_Rect dst={ 100, 100, box->clip_rect.w, box->clip_rect.h };
+		SDL_Rect dst={ 100, 100 };
 		SDL_BlitSurface(box, NULL, screen, &dst);
-		// printf("blit: %d\n", blit);
+		dst={ 200, 200 };
+		SDL_BlitSurface(box2, NULL, screen, &dst);
 		
 		SDL_Flip(screen);
 		SDL_Delay(16);  // delay
