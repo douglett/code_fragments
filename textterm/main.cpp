@@ -1,5 +1,6 @@
 #include "globals.h"
 #include <iostream>
+#include <vector>
 #include <SDL.h>
 
 using namespace std;
@@ -9,6 +10,7 @@ namespace vid {
 	// const int SURFACE_MAX=1024;
 	SDL_Surface* screen=NULL;
 	Uint32 tcolor=0;
+	vector<int> keylist;
 
 	void init() {
 		// init library
@@ -68,6 +70,20 @@ namespace vid {
 			spx[h*src->w + w];
 		}
 	}
+
+	int getkeys() {
+		keylist={ };
+		SDL_Event e;
+		while (SDL_PollEvent(&e)) {
+			if (e.type==SDL_QUIT)  return -1;
+			else if (e.type==SDL_KEYDOWN)
+				switch (e.key.keysym.sym) {
+				case SDLK_ESCAPE:  return -1;
+				default:  keylist.push_back(e.key.keysym.sym);  break;
+				}
+		}
+		return 0;
+	}
 } // end vid
 
 
@@ -80,35 +96,28 @@ int main(int argc, char** argv) {
 	SDL_Rect r={30,30,40,40};
 	SDL_FillRect(box, &r, vid::tcolor);
 	// scale test
-	SDL_Surface* box2 = vid::makesurface(200, 200);
-	vid::scaleto(box, box2);
-	vid::scaleto(box, box);
+	// SDL_Surface* box2 = vid::makesurface(200, 200);
+	// vid::scaleto(box, box2);
+	// vid::scaleto(box, box);
 	
-	SDL_Event e;
 	int loop=1;
 	while (loop) {
-		while (SDL_PollEvent(&e)) {
-			if (e.type==SDL_QUIT)  loop=0;
-			else if (e.type==SDL_KEYDOWN)
-				switch (e.key.keysym.sym) {
-				case SDLK_ESCAPE:  loop=0;  break;
-				default:  break; // nil
-				}
-		}
+		if (vid::getkeys())  loop=0;
 		// cls
-		SDL_FillRect(screen, NULL, SDL_MapRGBA(screen->format, 255,0,0,255));
+		SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 255,0,0));
 
 		r={20,20,40,40};
-		SDL_FillRect(screen, &r, SDL_MapRGBA(screen->format, 255,255,0,120));
+		SDL_FillRect(screen, &r, SDL_MapRGB(screen->format, 255,255,0));
 		r={40,40,40,40};
-		SDL_FillRect(screen, &r, SDL_MapRGBA(screen->format, 0,0,255,120));
+		SDL_FillRect(screen, &r, SDL_MapRGB(screen->format, 0,0,255));
 
 		// blit test
 		SDL_Rect dst={ 100, 100 };
 		SDL_BlitSurface(box, NULL, screen, &dst);
-		dst={ 200, 200 };
-		SDL_BlitSurface(box2, NULL, screen, &dst);
+		// dst={ 200, 200 };
+		// SDL_BlitSurface(box2, NULL, screen, &dst);
 		
+		vid::scaleto(screen, screen);
 		SDL_Flip(screen);
 		SDL_Delay(16);  // delay
 	}
