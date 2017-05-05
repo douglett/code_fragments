@@ -3,11 +3,13 @@
 #include <SDL.h>
 #include <vector>
 #include <string>
+#include <array>
 
 namespace vid {
 	const int SURFACE_MAX=1024;
 	// const int SCREEN_W=320, SCREEN_H=240;
 	extern SDL_Surface           *screen, *vmem;
+	extern std::vector<std::array<int,6>> sprlist;
 	extern std::vector<uint32_t> keylist;
 	extern uint32_t              tcolor;
 	void         init();

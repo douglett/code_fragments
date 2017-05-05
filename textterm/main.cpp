@@ -1,9 +1,5 @@
 #include "globals.h"
 #include <iostream>
-#include <string>
-#include <vector>
-// #include <array>
-#include <SDL.h>
 
 using namespace std;
 
@@ -11,19 +7,12 @@ using namespace std;
 namespace vid {
 	// public
 	SDL_Surface *screen=NULL, *vmem=NULL;
+	vector<array<int,6>> sprlist;
 	vector<uint32_t> keylist;
 	uint32_t tcolor=0;
 	// private
 	static int video_mode=3;
 	static SDL_Surface *qbfont=NULL;
-	
-	struct sprite {
-		SDL_Rect r;
-		int w, h;
-		string id;
-	};
-	vector<sprite> spritelist;
-	// vector<array<int,6>> sprlist;
 
 	void init() {
 		// init library
@@ -85,14 +74,9 @@ namespace vid {
 
 	void scaleto(SDL_Surface* src, SDL_Surface* dst) {
 		SDL_Rect r;
-		// uint32_t* dpx = (uint32_t*)dst->pixels;
 		uint32_t* spx = (uint32_t*)src->pixels;
 		for (int h=min(src->h,dst->h/2)-1; h>=0; h--)  // go in reverse, in case src=dst
 		for (int w=min(src->w,dst->w/2)-1; w>=0; w--) {
-			// ((uint32_t*)dst->pixels)[h*dst->w + w] = ((uint32_t*)src->pixels)[h*src->w + w];
-			// dpx[h*2*dst->w + (w*2)]     = dpx[h*2*dst->w + (w*2)+1]     = 
-			// dpx[(h*2+1)*dst->w + (w*2)] = dpx[(h*2+1)*dst->w + (w*2)+1] =
-			// spx[h*src->w + w];
 			r={ int16_t(w*2), int16_t(h*2), 2,2 };
 			SDL_FillRect(dst, &r, spx[h*src->w + w]);
 		}
@@ -108,7 +92,7 @@ namespace vid {
 				switch (k) {
 				case SDLK_ESCAPE:  return -1;
 				case SDLK_F1:  video_mode=1;  break;
-				case SDLK_F2:  video_mode=2;  break;
+				// case SDLK_F2:  video_mode=2;  break;
 				case SDLK_F3:  video_mode=3;  break;
 				case SDLK_F4:  video_mode=4;  break;
 				default:  keylist.push_back(k);  printf("%x\n", k);  break;
@@ -137,9 +121,10 @@ namespace vid {
 			case 3:  // blit screen
 				r={0,0,320,240};  // flip background
 				SDL_BlitSurface(vmem, &r, screen, &r);
-				for (auto& spr : spritelist) {
-					r={int16_t(spr.w), int16_t(spr.h), 0,0};
-					SDL_BlitSurface(vmem, &spr.r, screen, &r);
+				for (auto& spr : sprlist) {
+					r.x=spr[0],   r.y=spr[1],  r.w=spr[2],  r.h=spr[3];
+					r2.x=spr[4],  r2.y=spr[5];
+					SDL_BlitSurface(vmem, &r, screen, &r2);
 				}
 				vid::scaleto(screen, screen);  // scale up in place before flipping
 				break;
@@ -182,7 +167,7 @@ int main(int argc, char** argv) {
 		r.x++;  r.y++;
 	}
 	// create sprite
-	vid::spritelist.push_back({ {320,0,40,40}, 10, 10 });
+	vid::sprlist.push_back({{ 320,0,40,40, 10,10 }});
 	
 	int loop=1;
 	while (loop) {
