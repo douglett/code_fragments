@@ -154,14 +154,12 @@ namespace vid {
 
 
 namespace term {
-	vector<string> texthist;
-	string textpg;
-
-	std::string& gettextpg() {
-		// for (int i=0; i<texthist.size(); i++)
-		textpg="<temp>";
-		return textpg;
-	}
+	vector<string> texthist={
+		"initialising...",
+		"ready."
+	};
+	// string textpg;
+	// std::string& gettextpg();
 } // end term
 
 
@@ -169,12 +167,7 @@ namespace term {
 int main(int argc, char** argv) {
 	printf("hello world\n");
 	vid::init();
-	SDL_Rect r;
-
-	term::texthist={
-		"hello world",
-		"asd 1 2 3 4"
-	};
+	SDL_Rect r, r2;
 
 	// draw main background
 	r={0,0,320,240};
@@ -189,10 +182,16 @@ int main(int argc, char** argv) {
 	}
 	r={330,10,20,20};
 	SDL_FillRect(vid::vmem, &r, SDL_MapRGB(vid::vmem->format, 255,0,255));
-	r={10,400,20,20};
-	SDL_FillRect(vid::vmem, &r, SDL_MapRGB(vid::vmem->format, 255,0,255));
+	// r={10,400,20,20};
+	// SDL_FillRect(vid::vmem, &r, SDL_MapRGB(vid::vmem->format, 255,0,255));
+	
+	r ={0,400,40,40};
+	r2={10,250,40,40};
+	SDL_BlitSurface(vid::vmem, &r, vid::vmem, &r2);
+
 	// create sprite
 	vid::sprlist.push_back({{ 320,0,40,40, 10,10 }});
+	vid::sprlist.push_back({{ 10,250,40,40, 100,40 }});
 	
 	int loop=1;
 	while (loop) {

@@ -22,6 +22,6 @@ namespace vid {
 
 namespace term {
 	extern std::vector<std::string> texthist;
-	extern std::string textpg;
-	std::string& gettextpg();
+	// extern std::string textpg;
+	// std::string& gettextpg();
 } // end term
