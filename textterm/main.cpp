@@ -37,9 +37,10 @@ namespace vid {
 		tcolor = SDL_MapRGB(screen->format, 255, 0, 255);  // set transparent color
 		vmem = makesurface(640, 480);  // setup background video memory
 		// load font
-		qbfont = SDL_LoadBMP("qbfont.bmp");
+		qbfont = loadsurface("qbfont.bmp");
 		SDL_Rect r = { 0, int16_t(480-qbfont->h) };
 		SDL_BlitSurface(qbfont, NULL, vid::vmem, &r);  // blit to bottom left corner
+		// printf("%x\n", *((uint32_t*)qbfont->pixels) );  // test transparent color
 	}
 
 	void quit() {
@@ -70,6 +71,19 @@ namespace vid {
 		// set surface properties
 		SDL_SetColorKey(box, SDL_SRCCOLORKEY, tcolor);  // transparency
 		return box;  // return
+	}
+
+	SDL_Surface* loadsurface(const std::string& name) {
+		SDL_Surface *sf  = SDL_LoadBMP(name.c_str());
+		if (sf==NULL) {
+			fprintf(stderr, "error loading image: %s\n", name.c_str());
+			exit(1);
+		}
+		// SDL_Surface *sfo = sf;
+		SDL_Surface *sfo = SDL_DisplayFormat(sf);  // optimize
+		SDL_FreeSurface(sf);
+		SDL_SetColorKey(sfo, SDL_SRCCOLORKEY, tcolor);  // transparency
+		return sfo;
 	}
 
 	void scaleto(SDL_Surface* src, SDL_Surface* dst) {
@@ -115,7 +129,7 @@ namespace vid {
 						r2 = { int16_t((j+1)*8), int16_t((i+1)*8) };  // dest on screen
 						SDL_BlitSurface(qbfont, &r, screen, &r2);
 					}
-				vid::scaleto(screen, screen);  // scale up in place before flipping
+				// vid::scaleto(screen, screen);  // scale up in place before flipping
 				break;  // tty
 			case 2:  break;  // curses mode
 			case 3:  // blit screen
@@ -141,6 +155,13 @@ namespace vid {
 
 namespace term {
 	vector<string> texthist;
+	string textpg;
+
+	std::string& gettextpg() {
+		// for (int i=0; i<texthist.size(); i++)
+		textpg="<temp>";
+		return textpg;
+	}
 } // end term
 
 
@@ -166,6 +187,10 @@ int main(int argc, char** argv) {
 		SDL_FillRect(vid::vmem, &r, SDL_MapRGB(vid::vmem->format, 0,0,255));
 		r.x++;  r.y++;
 	}
+	r={330,10,20,20};
+	SDL_FillRect(vid::vmem, &r, SDL_MapRGB(vid::vmem->format, 255,0,255));
+	r={10,400,20,20};
+	SDL_FillRect(vid::vmem, &r, SDL_MapRGB(vid::vmem->format, 255,0,255));
 	// create sprite
 	vid::sprlist.push_back({{ 320,0,40,40, 10,10 }});
 	

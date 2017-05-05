@@ -15,11 +15,13 @@ namespace vid {
 	void         init();
 	void         quit();
 	SDL_Surface* makesurface(int w, int h);
+	SDL_Surface* loadsurface(const std::string& name);
 	void         scaleto(SDL_Surface* src, SDL_Surface* dst);
 	int          flipvid();
 } // end vid
 
 namespace term {
 	extern std::vector<std::string> texthist;
-	
+	extern std::string textpg;
+	std::string& gettextpg();
 } // end term
