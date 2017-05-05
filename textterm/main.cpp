@@ -1,16 +1,29 @@
 #include "globals.h"
 #include <iostream>
+#include <string>
 #include <vector>
+// #include <array>
 #include <SDL.h>
 
 using namespace std;
 
 
 namespace vid {
-	// const int SURFACE_MAX=1024;
-	SDL_Surface* screen=NULL;
-	Uint32 tcolor=0;
-	vector<int> keylist;
+	// public
+	SDL_Surface *screen=NULL, *vmem=NULL;
+	vector<uint32_t> keylist;
+	uint32_t tcolor=0;
+	// private
+	static int video_mode=3;
+	static SDL_Surface *qbfont=NULL;
+	
+	struct sprite {
+		SDL_Rect r;
+		int w, h;
+		string id;
+	};
+	vector<sprite> spritelist;
+	// vector<array<int,6>> sprlist;
 
 	void init() {
 		// init library
@@ -33,6 +46,17 @@ namespace vid {
 		// set screen properties
 		SDL_WM_SetCaption("mywin1", "mywin2");  // window title
 		tcolor = SDL_MapRGB(screen->format, 255, 0, 255);  // set transparent color
+		vmem = makesurface(640, 480);  // setup background video memory
+		// load font
+		qbfont = SDL_LoadBMP("qbfont.bmp");
+		SDL_Rect r = { 0, int16_t(480-qbfont->h) };
+		SDL_BlitSurface(qbfont, NULL, vid::vmem, &r);  // blit to bottom left corner
+	}
+
+	void quit() {
+		SDL_FreeSurface(qbfont);
+		SDL_FreeSurface(vmem);
+		SDL_Quit();
 	}
 
 	SDL_Surface* makesurface(int w, int h) {
@@ -60,69 +84,111 @@ namespace vid {
 	}
 
 	void scaleto(SDL_Surface* src, SDL_Surface* dst) {
-		Uint32* dpx = (Uint32*)dst->pixels;
-		Uint32* spx = (Uint32*)src->pixels;
+		SDL_Rect r;
+		// uint32_t* dpx = (uint32_t*)dst->pixels;
+		uint32_t* spx = (uint32_t*)src->pixels;
 		for (int h=min(src->h,dst->h/2)-1; h>=0; h--)  // go in reverse, in case src=dst
 		for (int w=min(src->w,dst->w/2)-1; w>=0; w--) {
-			// ((Uint32*)dst->pixels)[h*dst->w + w] = ((Uint32*)src->pixels)[h*src->w + w];
-			dpx[h*2*dst->w + (w*2)]     = dpx[h*2*dst->w + (w*2)+1]     = 
-			dpx[(h*2+1)*dst->w + (w*2)] = dpx[(h*2+1)*dst->w + (w*2)+1] =
-			spx[h*src->w + w];
+			// ((uint32_t*)dst->pixels)[h*dst->w + w] = ((uint32_t*)src->pixels)[h*src->w + w];
+			// dpx[h*2*dst->w + (w*2)]     = dpx[h*2*dst->w + (w*2)+1]     = 
+			// dpx[(h*2+1)*dst->w + (w*2)] = dpx[(h*2+1)*dst->w + (w*2)+1] =
+			// spx[h*src->w + w];
+			r={ int16_t(w*2), int16_t(h*2), 2,2 };
+			SDL_FillRect(dst, &r, spx[h*src->w + w]);
 		}
 	}
 
-	int getkeys() {
+	static int getkeys() {
 		keylist={ };
 		SDL_Event e;
 		while (SDL_PollEvent(&e)) {
 			if (e.type==SDL_QUIT)  return -1;
-			else if (e.type==SDL_KEYDOWN)
-				switch (e.key.keysym.sym) {
+			else if (e.type==SDL_KEYDOWN) {
+				uint32_t k = e.key.keysym.sym;
+				switch (k) {
 				case SDLK_ESCAPE:  return -1;
-				default:  keylist.push_back(e.key.keysym.sym);  break;
+				case SDLK_F1:  video_mode=1;  break;
+				case SDLK_F2:  video_mode=2;  break;
+				case SDLK_F3:  video_mode=3;  break;
+				case SDLK_F4:  video_mode=4;  break;
+				default:  keylist.push_back(k);  printf("%x\n", k);  break;
 				}
+			}
 		}
 		return 0;
 	}
+
+	int flipvid() {
+		SDL_Rect r, r2;
+		char c;
+		switch (video_mode) {
+			case 1:  
+				SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0,0,0));
+				for (int i=0; i<term::texthist.size(); i++)
+					for (int j=0; j<term::texthist[i].length(); j++) {
+						c  = term::texthist[i][j];
+						r  = { int16_t(c%16*8), int16_t(c/16*8), 8,8 };  // source char
+						r2 = { int16_t((j+1)*8), int16_t((i+1)*8) };  // dest on screen
+						SDL_BlitSurface(qbfont, &r, screen, &r2);
+					}
+				vid::scaleto(screen, screen);  // scale up in place before flipping
+				break;  // tty
+			case 2:  break;  // curses mode
+			case 3:  // blit screen
+				r={0,0,320,240};  // flip background
+				SDL_BlitSurface(vmem, &r, screen, &r);
+				for (auto& spr : spritelist) {
+					r={int16_t(spr.w), int16_t(spr.h), 0,0};
+					SDL_BlitSurface(vmem, &spr.r, screen, &r);
+				}
+				vid::scaleto(screen, screen);  // scale up in place before flipping
+				break;
+			case 4:  SDL_BlitSurface(vmem, NULL, screen, NULL);  break;  // display vram
+		}
+		// flip
+		SDL_Flip(screen);
+		SDL_Delay(16);  // delay
+		return getkeys();
+	}
 } // end vid
+
+
+
+namespace term {
+	vector<string> texthist;
+} // end term
+
 
 
 int main(int argc, char** argv) {
 	printf("hello world\n");
 	vid::init();
-	SDL_Surface* screen=vid::screen;
-	// box test
-	SDL_Surface* box = vid::makesurface(100, 100);
-	SDL_Rect r={30,30,40,40};
-	SDL_FillRect(box, &r, vid::tcolor);
-	// scale test
-	// SDL_Surface* box2 = vid::makesurface(200, 200);
-	// vid::scaleto(box, box2);
-	// vid::scaleto(box, box);
+	SDL_Rect r;
+
+	term::texthist={
+		"hello world",
+		"asd 1 2 3 4"
+	};
+
+	// draw main background
+	r={0,0,320,240};
+	SDL_FillRect(vid::vmem, &r, SDL_MapRGB(vid::vmem->format, 255,0,0));
+	// draw sprite in vmem
+	r={320,0,40,40};
+	SDL_FillRect(vid::vmem, &r, SDL_MapRGB(vid::vmem->format, 255,255,0));
+	r={320,0,1,1};
+	for (int i=0; i<40; i++) {
+		SDL_FillRect(vid::vmem, &r, SDL_MapRGB(vid::vmem->format, 0,0,255));
+		r.x++;  r.y++;
+	}
+	// create sprite
+	vid::spritelist.push_back({ {320,0,40,40}, 10, 10 });
 	
 	int loop=1;
 	while (loop) {
-		if (vid::getkeys())  loop=0;
-		// cls
-		SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 255,0,0));
-
-		r={20,20,40,40};
-		SDL_FillRect(screen, &r, SDL_MapRGB(screen->format, 255,255,0));
-		r={40,40,40,40};
-		SDL_FillRect(screen, &r, SDL_MapRGB(screen->format, 0,0,255));
-
-		// blit test
-		SDL_Rect dst={ 100, 100 };
-		SDL_BlitSurface(box, NULL, screen, &dst);
-		// dst={ 200, 200 };
-		// SDL_BlitSurface(box2, NULL, screen, &dst);
-		
-		vid::scaleto(screen, screen);
-		SDL_Flip(screen);
-		SDL_Delay(16);  // delay
+		if (vid::flipvid())  loop=0;
 	}
 
-	SDL_FreeSurface(box);
-	SDL_Quit();
+	vid::quit();
 	return 0;
 }
