@@ -169,6 +169,8 @@ int main(int argc, char** argv) {
 	vid::init();
 	SDL_Rect r, r2;
 
+	// system("stat -f \"%N \%m\" *.cpp");  // get file list and timestamp
+
 	// draw main background
 	r={0,0,320,240};
 	SDL_FillRect(vid::vmem, &r, SDL_MapRGB(vid::vmem->format, 255,0,0));
