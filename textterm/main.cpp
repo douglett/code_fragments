@@ -11,7 +11,7 @@ namespace vid {
 	vector<uint32_t> keylist;
 	uint32_t tcolor=0;
 	// private
-	static int video_mode=3;
+	static int video_mode=0;
 	static SDL_Surface *qbfont=NULL;
 
 	void init() {
@@ -109,6 +109,7 @@ namespace vid {
 				// case SDLK_F2:  video_mode=2;  break;
 				case SDLK_F3:  video_mode=3;  break;
 				case SDLK_F4:  video_mode=4;  break;
+				case SDLK_F5:  video_mode=5;  break;
 				default:  keylist.push_back(k);  printf("%x\n", k);  break;
 				}
 			}
@@ -120,29 +121,37 @@ namespace vid {
 		SDL_Rect r, r2;
 		char c;
 		switch (video_mode) {
-			case 1:  
-				SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0,0,0));
-				for (int i=0; i<term::texthist.size(); i++)
-					for (int j=0; j<term::texthist[i].length(); j++) {
-						c  = term::texthist[i][j];
-						r  = { int16_t(c%16*8), int16_t(c/16*8), 8,8 };  // source char
-						r2 = { int16_t((j+1)*8), int16_t((i+1)*8) };  // dest on screen
-						SDL_BlitSurface(qbfont, &r, screen, &r2);
-					}
-				// vid::scaleto(screen, screen);  // scale up in place before flipping
-				break;  // tty
-			case 2:  break;  // curses mode
-			case 3:  // blit screen
-				r={0,0,320,240};  // flip background
-				SDL_BlitSurface(vmem, &r, screen, &r);
-				for (auto& spr : sprlist) {
-					r.x=spr[0],   r.y=spr[1],  r.w=spr[2],  r.h=spr[3];
-					r2.x=spr[4],  r2.y=spr[5];
-					SDL_BlitSurface(vmem, &r, screen, &r2);
+		case 1:  default:  // tty
+			SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0,0,0));
+			for (int i=0; i<term::texthist.size(); i++)
+				for (int j=0; j<term::texthist[i].length(); j++) {
+					c  = term::texthist[i][j];
+					r  = { int16_t(c%16*8), int16_t(c/16*8), 8,8 };  // source char
+					r2 = { int16_t((j+1)*8), int16_t((i+1)*8) };  // dest on screen
+					SDL_BlitSurface(qbfont, &r, screen, &r2);
 				}
-				vid::scaleto(screen, screen);  // scale up in place before flipping
-				break;
-			case 4:  SDL_BlitSurface(vmem, NULL, screen, NULL);  break;  // display vram
+			// vid::scaleto(screen, screen);  // scale up in place before flipping
+			break;
+		case 2:  // curses mode
+			break;
+		case 3:  // blit screen
+			r={0,0,320,240};  // flip background
+			SDL_BlitSurface(vmem, &r, screen, &r);
+			for (auto& spr : sprlist) {
+				r.x=spr[0],   r.y=spr[1],  r.w=spr[2],  r.h=spr[3];
+				r2.x=spr[4],  r2.y=spr[5];
+				SDL_BlitSurface(vmem, &r, screen, &r2);
+			}
+			vid::scaleto(screen, screen);  // scale up in place before flipping
+			break;
+		case 4:  // display vram
+			SDL_BlitSurface(vmem, NULL, screen, NULL);
+			break;
+		case 5:  // display file vram
+			vidf::update();
+			SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0,0,0));
+
+			break;
 		}
 		// flip
 		SDL_Flip(screen);
@@ -164,13 +173,8 @@ namespace term {
 
 
 
-int main(int argc, char** argv) {
-	printf("hello world\n");
-	vid::init();
+void initvmem() {
 	SDL_Rect r, r2;
-
-	// system("stat -f \"%N \%m\" *.cpp");  // get file list and timestamp
-
 	// draw main background
 	r={0,0,320,240};
 	SDL_FillRect(vid::vmem, &r, SDL_MapRGB(vid::vmem->format, 255,0,0));
@@ -194,12 +198,24 @@ int main(int argc, char** argv) {
 	// create sprite
 	vid::sprlist.push_back({{ 320,0,40,40, 10,10 }});
 	vid::sprlist.push_back({{ 10,250,40,40, 100,40 }});
-	
+
+	vid::video_mode=3;
+}
+
+
+int main(int argc, char** argv) {
+	printf("hello world\n");
+	// system("stat -f \"%N \%m\" *.cpp");  // get file list and timestamp
+	vid::init();
+	// initvmem();
+	vidf::init("vid0");
+	vid::video_mode=5;
+	// main loop
 	int loop=1;
 	while (loop) {
 		if (vid::flipvid())  loop=0;
 	}
-
+	// quit
 	vid::quit();
 	return 0;
 }

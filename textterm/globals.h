@@ -20,6 +20,11 @@ namespace vid {
 	int          flipvid();
 } // end vid
 
+namespace vidf {
+	int  init   (const std::string& path);
+	int  update ();
+} // end vidf
+
 namespace term {
 	extern std::vector<std::string> texthist;
 	// extern std::string textpg;
