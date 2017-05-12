@@ -21,6 +21,12 @@ namespace vid {
 } // end vid
 
 namespace vidf {
+	struct Vfile {
+		std::string fname;
+		int mtime=0, x=0, y=0, z=0;
+		SDL_Surface* sf=NULL;
+	};
+	extern std::vector<Vfile> flist;
 	int  init   (const std::string& path);
 	int  update ();
 } // end vidf

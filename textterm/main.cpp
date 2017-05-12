@@ -150,7 +150,8 @@ namespace vid {
 		case 5:  // display file vram
 			vidf::update();
 			SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0,0,0));
-
+			r={0,0};
+			for (auto& f : vidf::flist)  SDL_BlitSurface(f.sf, NULL, screen, &r);
 			break;
 		}
 		// flip
