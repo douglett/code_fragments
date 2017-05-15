@@ -1,15 +1,15 @@
 #pragma once
 
 #include <SDL.h>
-#include <vector>
 #include <string>
+#include <vector>
 #include <array>
 
 namespace vid {
 	const int SURFACE_MAX=1024;
 	// const int SCREEN_W=320, SCREEN_H=240;
-	extern SDL_Surface           *screen, *vmem;
-	extern std::vector<std::array<int,6>> sprlist;
+	extern SDL_Surface           *screen; //, *vmem;
+	// extern std::vector<std::array<int,6>> sprlist;
 	extern std::vector<uint32_t> keylist;
 	extern uint32_t              tcolor;
 	void         init();
@@ -20,6 +20,16 @@ namespace vid {
 	int          flipvid();
 } // end vid
 
+namespace vram {
+	extern SDL_Surface *vmem;
+	extern std::vector<std::array<int,6>> sprlist;
+	void init      ();
+	int  is_init   ();
+	int  flip      ();
+	int  dbgflip   ();
+	void testscene ();
+} // end vram
+
 namespace vidf {
 	struct Vfile {
 		std::string fname;
@@ -27,8 +37,9 @@ namespace vidf {
 		SDL_Surface* sf=NULL;
 	};
 	extern std::vector<Vfile> flist;
-	int  init   (const std::string& path);
-	int  update ();
+	int  init    (const std::string& path);
+	int  is_init ();
+	int  update  ();
 } // end vidf
 
 namespace term {
