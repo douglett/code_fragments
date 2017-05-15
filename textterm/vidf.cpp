@@ -67,4 +67,12 @@ namespace vidf {
 		for (auto& f : flist)  update_surface(f);
 		return 0;
 	}
+	int flip() {
+		// display file vram
+		update();
+		SDL_FillRect(vid::screen, NULL, SDL_MapRGB(vid::screen->format, 0,0,0));
+		SDL_Rect r={0,0};
+		for (auto& f : flist)  SDL_BlitSurface(f.sf, NULL, vid::screen, &r);
+		return 0;
+	}
 } // end vidf
