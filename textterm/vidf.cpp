@@ -56,6 +56,11 @@ int vidf::init(const string& path) {
 	}
 	return 0;
 }
+void vidf::quit() {
+	for (auto& f : flist)  SDL_FreeSurface(f.sf);
+	flist = { };
+	fconf.mtime = 0;
+}
 int vidf::is_init() {
 	return ( fconf.mtime > 0 );
 }

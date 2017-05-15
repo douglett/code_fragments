@@ -6,13 +6,11 @@ using namespace std;
 
 namespace vid {
 	// public
-	SDL_Surface *screen=NULL; //, *vmem=NULL;
-	// vector<array<int,6>> sprlist;
+	SDL_Surface  *screen=NULL,  *qbfont=NULL;
 	vector<uint32_t> keylist;
 	uint32_t tcolor=0;
 	// private
 	static int video_mode=0;
-	static SDL_Surface *qbfont=NULL;
 
 	void init() {
 		// init library
@@ -35,16 +33,14 @@ namespace vid {
 		// set screen properties
 		SDL_WM_SetCaption("mywin1", "mywin2");  // window title
 		tcolor = SDL_MapRGB(screen->format, 255, 0, 255);  // set transparent color
-		// vmem = makesurface(640, 480);  // setup background video memory
 		// load font
 		qbfont = loadsurface("qbfont.bmp");
-		// SDL_Rect r = { 0, int16_t(480-qbfont->h) };
-		// SDL_BlitSurface(qbfont, NULL, vid::vmem, &r);  // blit to bottom left corner
 	}
 
 	void quit() {
+		vidf::quit();
+		vram::quit();
 		SDL_FreeSurface(qbfont);
-		SDL_FreeSurface(vram::vmem);
 		SDL_Quit();
 	}
 
@@ -104,16 +100,30 @@ namespace vid {
 				uint32_t k = e.key.keysym.sym;
 				switch (k) {
 				case SDLK_ESCAPE:  return -1;
-				case SDLK_F1:  video_mode=1;  break;  // tty
-				case SDLK_F2:  video_mode=2;  break;  // tty curses
-				case SDLK_F3:  if (vram::is_init())  video_mode=3;  break;  // vram sprite flip
-				case SDLK_F4:  if (vram::is_init())  video_mode=4;  break;  // vram debug
-				case SDLK_F5:  if (vidf::is_init())  video_mode=5;  break;  // video file mode
+				case SDLK_F1:  vmode(1);  break;
+				case SDLK_F2:  vmode(2);  break;
+				case SDLK_F3:  vmode(3);  break;
+				case SDLK_F4:  vmode(4);  break;
+				case SDLK_F5:  vmode(5);  break;
 				default:  keylist.push_back(k);  printf("%x\n", k);  break;
 				}
 			}
 		}
 		return 0;
+	}
+
+	int vmode(int mode) {
+		// if (mode > -1)  video_mode = mode;
+		switch (mode) {
+			case 0:  break;  // just return
+			case 1:  video_mode=1;  break;  // tty
+			case 2:  video_mode=2;  break;  // tty curses
+			case 3:  if (vram::is_init())  video_mode=3;  break;  // vram sprite flip
+			case 4:  if (vram::is_init())  video_mode=4;  break;  // vram debug
+			case 5:  if (vidf::is_init())  video_mode=5;  break;  // video file mode
+			default:  fprintf(stderr, "error: unknown video mode: %d\n", mode);
+		}
+		return video_mode;
 	}
 
 	int flipvid() {
@@ -154,9 +164,8 @@ namespace vid {
 int main(int argc, char** argv) {
 	printf("hello world\n");
 	vid::init();
-	// vram::init(),  vram::testscene();
-	// vidf::init("vid0");
-	// vid::video_mode=5;
+	// vram::init(),  vram::testscene(),  vid::video_mode=3;
+	vidf::init("vid0"),  vid::vmode(5);
 	// main loop
 	int loop=1;
 	while (loop) {

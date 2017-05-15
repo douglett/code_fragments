@@ -14,10 +14,18 @@ namespace vram {
 		}
 		SDL_FreeSurface(vmem);
 		vmem = vid::makesurface(640, 480);  // setup background video memory
+		// setup font
+		SDL_Rect r={ 0 };  r.y=480-vid::qbfont->h;
+		SDL_BlitSurface(vid::qbfont, NULL, vmem, &r);  // blit to bottom left corner
 	}
 
 	int is_init() {
 		return ( vmem != NULL );
+	}
+
+	void quit() {
+		SDL_FreeSurface(vmem);
+		vmem = NULL;
 	}
 
 	int flip() {
