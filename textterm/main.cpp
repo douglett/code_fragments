@@ -13,6 +13,7 @@ namespace vid {
 	static int video_mode=0;
 
 	void init() {
+		logfmt("initialising...");
 		// init library
 		if (SDL_Init(SDL_INIT_VIDEO)) {
 			fprintf(stderr, "error initialising SDL\n");
@@ -35,6 +36,7 @@ namespace vid {
 		tcolor = SDL_MapRGB(screen->format, 255, 0, 255);  // set transparent color
 		// load font
 		qbfont = loadsurface("qbfont.bmp");
+		logfmt("ready.");
 	}
 
 	void quit() {
