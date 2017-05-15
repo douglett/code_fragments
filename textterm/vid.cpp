@@ -11,7 +11,7 @@ static void makeqbfont();
 namespace vid {
 	// public
 	SDL_Surface  *screen=NULL,  *qbfont=NULL;
-	uint32_t     tcolor=0,  fgcolor=0x00ffff00;
+	uint32_t     tcolor=0,  fgcolor=0;
 	vector<uint32_t> keylist;
 	// private
 	static int video_mode=0;
@@ -37,7 +37,8 @@ namespace vid {
 		}
 		// set screen properties
 		SDL_WM_SetCaption("mywin1", "mywin2");  // window title
-		tcolor = SDL_MapRGB(screen->format, 255, 0, 255);  // set transparent color
+		tcolor  = SDL_MapRGB(screen->format, 255, 0, 255);  // set transparent color
+		fgcolor = SDL_MapRGB(screen->format, 255, 255, 0);  // set text foreground color
 		( true ? makeqbfont() : loadqbfont() );  // load font
 		logfmt("ready.");
 	}
@@ -122,7 +123,7 @@ namespace vid {
 		switch (mode) {
 			case 0:  break;  // just return
 			case 1:  video_mode=1;  break;  // tty
-			case 2:  video_mode=2;  break;  // tty curses
+			// case 2:  video_mode=2;  break;  // tty curses
 			case 3:  if (vram::is_init())  video_mode=3;  break;  // vram sprite flip
 			case 4:  if (vram::is_init())  video_mode=4;  break;  // vram debug
 			case 5:  if (vidf::is_init())  video_mode=5;  break;  // video file mode
@@ -132,22 +133,9 @@ namespace vid {
 	}
 
 	int flipvid() {
-		SDL_Rect r, r2;
-		char c;
 		switch (video_mode) {
-		case 1:  default:  // tty
-		case 2:
-			SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0,0,0));
-			for (int i=0; i<term::texthist.size(); i++)
-				for (int j=0; j<term::texthist[i].length(); j++) {
-					c  = term::texthist[i][j];
-					r  = { int16_t(c%16*8), int16_t(c/16*8), 8,8 };  // source char
-					r2 = { int16_t((j+1)*8), int16_t((i+1)*8) };  // dest on screen
-					SDL_BlitSurface(qbfont, &r, screen, &r2);
-				}
-			// vid::scaleto(screen, screen);  // scale up in place before flipping
-			break;
-		// case 2:  break;  // curses mode
+		case 1:  default:  term::flip();  break;  // tty
+		case 2:  break;  // curses mode
 		case 3:  vram::flip();  break;
 		case 4:  vram::dbgflip();  break;
 		case 5:  vidf::flip();  break;  // display file vram

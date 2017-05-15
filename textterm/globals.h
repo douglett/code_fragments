@@ -49,7 +49,8 @@ namespace term {
 	const  int  C_MAX=1024;
 	extern char c_str[C_MAX];
 	extern std::vector<std::string> texthist;
-	void log(const std::string& s);
+	void log  (const std::string& s);
+	int  flip ();
 } // end term
 #define  strfmt(...)  (snprintf(term::c_str, term::C_MAX, __VA_ARGS__),  term::c_str)
 #define  logfmt(...)  term::log(strfmt(__VA_ARGS__))
