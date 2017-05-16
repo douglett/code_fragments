@@ -87,6 +87,19 @@ namespace vid {
 		return sfo;
 	}
 
+	SDL_Surface* textc(char c) {
+		return textc(c, fgcolor);
+	}
+	SDL_Surface* textc(char c, uint32_t col) {
+		static SDL_Rect      rs={0,0, 8,8};
+		static SDL_Surface*  sf=NULL;
+		if (sf==NULL)  sf = vid::makesurface(8, 8);
+		rs.x=(c%16)*8,  rs.y=(c/16)*8;  // source char
+		SDL_FillRect(sf, NULL, col);
+		SDL_BlitSurface(vid::qbfont, &rs, sf, NULL);
+		return sf;
+	}
+
 	void scaleto(SDL_Surface* src, SDL_Surface* dst) {
 		SDL_Rect r={0,0, 2,2};
 		uint32_t* spx = (uint32_t*)src->pixels;
@@ -259,12 +272,13 @@ static void makeqbfont() {
 	// load font from DATA (above)
 	if (vid::qbfont==NULL)  vid::qbfont = vid::makesurface(128, 128);
 	auto* px = (uint32_t*)vid::qbfont->pixels;
-	uint32_t  i=0,  bit;
+	uint32_t  i=0,  white=SDL_MapRGB(vid::qbfont->format, 255,255,255),  bit;
 	for (uint32_t d : QBFONT_DATA) {
 		for (int j=0; j<32; j++) {
 			bit = (d >> (31-j)) & 1;
-			px[i+j] = ( bit ? vid::fgcolor : vid::tcolor );
+			px[i+j] = ( bit ? white : vid::tcolor );
 		}
 		i+=32;
 	}
+	SDL_SetColorKey(vid::qbfont, SDL_SRCCOLORKEY, white);  // transparency
 }

@@ -15,6 +15,8 @@ namespace vid {
 	void         quit();
 	SDL_Surface* makesurface(int w, int h);
 	SDL_Surface* loadsurface(const std::string& name);
+	SDL_Surface* textc(char c);
+	SDL_Surface* textc(char c, uint32_t col);
 	void         scaleto(SDL_Surface* src, SDL_Surface* dst);
 	int          vmode(int mode=0);
 	int          flipvid();
