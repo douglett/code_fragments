@@ -9,7 +9,7 @@ namespace vid {
 	const int SURFACE_MAX=1024;
 	// const int SCREEN_W=320, SCREEN_H=240;
 	extern SDL_Surface           *screen, *qbfont;
-	extern uint32_t              tcolor, fgcolor;
+	extern uint32_t              tcolor, fgcolor, errcolor;
 	extern std::vector<uint32_t> keylist;
 	void         init();
 	void         quit();
@@ -50,9 +50,11 @@ namespace vidf {
 namespace term {
 	const  int  C_MAX=1024;
 	extern char c_str[C_MAX];
-	extern std::vector<std::string> texthist;
+	extern std::vector<std::pair<int, std::string>> texthist;
 	void log  (const std::string& s);
+	void err  (const std::string& s);
 	int  flip ();
 } // end term
 #define  strfmt(...)  (snprintf(term::c_str, term::C_MAX, __VA_ARGS__),  term::c_str)
 #define  logfmt(...)  term::log(strfmt(__VA_ARGS__))
+#define  errfmt(...)  term::err(strfmt(__VA_ARGS__))

@@ -11,7 +11,7 @@ static void makeqbfont();
 namespace vid {
 	// public
 	SDL_Surface  *screen=NULL,  *qbfont=NULL;
-	uint32_t     tcolor=0,  fgcolor=0;
+	uint32_t     tcolor=0,  fgcolor=0,  errcolor=0;
 	vector<uint32_t> keylist;
 	// private
 	static int video_mode=0;
@@ -37,8 +37,9 @@ namespace vid {
 		}
 		// set screen properties
 		SDL_WM_SetCaption("mywin1", "mywin2");  // window title
-		tcolor  = SDL_MapRGB(screen->format, 255, 0, 255);  // set transparent color
-		fgcolor = SDL_MapRGB(screen->format, 255, 255, 0);  // set text foreground color
+		tcolor   = SDL_MapRGB(screen->format, 255, 0, 255);  // set transparent color
+		fgcolor  = SDL_MapRGB(screen->format, 255, 255, 0);  // set text foreground color
+		errcolor = SDL_MapRGB(screen->format, 255, 0, 0);  // set text foreground color
 		( true ? makeqbfont() : loadqbfont() );  // load font
 		logfmt("ready.");
 	}
@@ -140,7 +141,7 @@ namespace vid {
 			case 3:  if (vram::is_init())  video_mode=3;  break;  // vram sprite flip
 			case 4:  if (vram::is_init())  video_mode=4;  break;  // vram debug
 			case 5:  if (vidf::is_init())  video_mode=5;  break;  // video file mode
-			default:  fprintf(stderr, "error: unknown video mode: %d\n", mode);
+			default:  errfmt("error: unknown video mode: %d", mode);
 		}
 		return video_mode;
 	}

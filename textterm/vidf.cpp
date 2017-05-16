@@ -53,7 +53,7 @@ static int update_surface(Vbmp& f) {
 	f.mtime = tt;
 	SDL_FreeSurface(f.sf);
 	f.sf = vid::loadsurface(base_path+f.fname);
-	printf("update: %s %d\n", f.fname.c_str(), f.mtime);
+	logfmt("update: %s %d", f.fname.c_str(), f.mtime);
 	return 1;
 }
 
@@ -69,7 +69,7 @@ namespace vidf {
 		string vpath = base_path + conffile.fname;  // get base path
 		conffile.mtime = gett(vpath);  // update time
 		if (conffile.mtime == -1) {
-			fprintf(stderr, "error: config file not found: %s\n", vpath.c_str());
+			errfmt("error: config file not found: %s", vpath.c_str());
 			return 1;
 		}
 		conffile.fs.open(vpath, fstream::in | fstream::out);  // (re)open file
