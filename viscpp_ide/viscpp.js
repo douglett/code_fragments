@@ -25,7 +25,9 @@ var methods = [
 	{ sig: "std::string hello()",
 		body: [
 			'return "hello";'
-		]}
+		]},
+	{ sig: "?",
+		body: []}
 ];
 
 function main() {
@@ -33,6 +35,7 @@ function main() {
 	$("#method_body").on("input", method_body_save);
 	$("#method_head").on("input", method_head_save);
 	method_list_update();
+	method_list_refresh();
 }
 
 function method_list_update() {
@@ -49,6 +52,9 @@ function method_list_update() {
 		// if (v.sig!=="<header>")  div.attr("contenteditable", "true");
 		mlist.append(div);
 	});
+}
+
+function method_list_refresh() {
 	$("#method_list :first-child").click();
 }
 
@@ -78,6 +84,7 @@ function method_body_load() {
 function method_head_save() {
 	var m = method_current();
 	m.sig = $("#method_head").text();
+	if (m.sig==="")  m.sig="?";
 	$(".maintable div.highlight").text(m.sig);
 }
 
@@ -114,9 +121,11 @@ function compile() {
 	$("#method_list > div").removeClass("highlight");
 	$("#method_body").empty().text(prog.join("\n"));
 	$("#method_head").text("<compiled>").removeAttr("contenteditable");
+
+	save_compiled();
 }
 
-function send() {
+function save_compiled() {
 	if ($("#method_head").text()!=="<compiled>") {
 		alert("Please compile before saving");
 		return;
@@ -142,7 +151,33 @@ function save_json() {
 	});
 }
 
+function load_json() {
+	fetch("compile.php?getdata=test.json")
+	.then(response => response.text())
+	.then(text => {
+		console.log(text);
+		methods = JSON.parse(text);
+		method_list_update();
+		method_list_refresh();
+	});
+}
 
+function create_method() {
+	methods.push({ sig:"?", body:[] });
+	method_list_update();
+}
+
+function delete_method() {
+	var m = method_current();
+	if (!m || m.sig==="<header>") {
+		alert("can't delete this method");
+		return;
+	}
+	if (confirm("delete method? \n\n"+m.sig)) {
+		methods.splice(methods.indexOf(m), 1);
+		method_list_update();
+	}
+}
 
 // function save_file() {
 // 	// var blob = new Blob([$("#method_body").text()], {type: "text/plain;charset=utf-8"});

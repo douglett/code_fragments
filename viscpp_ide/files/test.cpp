@@ -17,6 +17,7 @@ using namespace std;
 
 int main();
 std::string hello();
+?;
 
 /* ***** */
 
@@ -26,4 +27,8 @@ int main() {
 
 std::string hello() {
 	return "hello";
+}
+
+? {
+	asdasd
 }
