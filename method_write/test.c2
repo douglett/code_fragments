@@ -1,0 +1,8 @@
+@method
+int blah()
+	int a=1;
+	int b=2;
+	return 0;
+
+@method
+int a(int aa)
