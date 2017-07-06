@@ -3,11 +3,15 @@
 <head>
 	<title>viscpp</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="viscpp.js"></script>
 </head>
 <body onload="main()">
 
 <table class="maintable" border=1 resizable=true>
-	<tr> <th>methods</th> <th>code</th> </tr>
+	<tr>
+		<th>methods</th>
+		<th id="method_head" contenteditable>...</th>
+	</tr>
 	<tr>
 		<td id="method_list"></td>
 		<td id="method_body" contenteditable></td>
@@ -17,150 +21,24 @@
 <button onclick="compile()">compile</button>
 <button onclick="send()">save</button>
 
-<!-- <div id="a"></div>
-<div id="b"></div> -->
-
 </body>
 </html>
 
 
 
-<script type="text/javascript">
-
-// var headers = [ "iostream", "string", "cstdint", "cassert", "vector", "map", "fstream", "sstream" ];
-var default_header = [
-	"#include <iostream>", 
-	"#include <string>", 
-	"#include <cstdint>", 
-	"#include <cassert>", 
-	"#include <vector>", 
-	"#include <map>", 
-	"#include <fstream>", 
-	"#include <sstream>",
-	"",
-	"typedef int32_t  i32",
-	"typedef uint32_t u32",
-	"",
-	"using namespace std;"
-];
-
-var methods = [
-	{ sig: "<header>", 
-		body: []},
-	{ sig: "int main()", 
-		body: [
-			'printf("hello world\\n");'
-		]},
-	{ sig: "std::string hello()",
-		body: [
-			'return "hello";'
-		]}
-];
-
-function main() {
-	console.log("hello");
-	$("#method_body").on("input", method_body_save);
-	method_list_update();
-}
-
-function method_list_update() {
-	var mlist = $("#method_list");
-	mlist.empty();
-	// add rest
-	methods.forEach(function(v) {
-		var div = $("<div/>").text(v.sig)
-			.click(function() {
-				$("#method_list > div").removeClass("highlight");
-				$(this).addClass("highlight");
-				method_body_load();
-			});
-		// if (v.sig!=="<header>")  div.attr("contenteditable", "true");
-		mlist.append(div);
-	});
-	$("#method_list :first-child").click();
-}
-
-function method_current() {
-	var c = $("#method_list div.highlight").text();
-	var m = methods.find(function(m) {
-		if (m.sig===c)  return m;
-	});
-	return m;
-}
-
-function method_body_load() {
-	var m = method_current();
-	var mb = $("#method_body").empty();
-	// add each item
-	m.body.forEach(function(ln) {
-		mb.append( $("<p/>").text(ln) );
-	});
-	// need at least one <p> element
-	if (mb.children().length===0)  mb.append("</p>");
-}
-
-function method_body_save() {
-	var m = method_current();
-	m.body.splice(0, m.body.length);
-	$("#method_body").children().each(function(k, el) {
-		el = $(el);
-		m.body.push(el.text());
-	});
-}
-
-function compile() {
-	var prog      = [ ];
-	var fndef     = [ ];
-	var seperator = [ "", "/* ***** */", "" ];
-
-	methods.forEach(function(m) {
-		if (m.sig=="<header>")  return;
-		fndef.push(m.sig + ";");
-	});
-
-	methods.forEach(function(m) {
-		if (m.sig=="<header>")  return;
-		prog.push(m.sig + " {");
-		m.body.forEach(txt => prog.push("\t" + txt));
-		prog.push("}", "");
-	});
-
-	prog=[].concat(default_header, [""], methods[0].body, seperator, fndef, seperator, prog);
-
-	// prog.forEach(v => console.log(v));
-	$("#method_list > div").removeClass("highlight");
-	$("#method_body").empty().text(prog.join("\n"));
-}
-
-function send() {
-	fetch("compile.php", {
-		method: "POST",
-		body: "hello"
-	})
-	.then(response => response.text())
-	.then(text => {
-		console.log(text);
-	})
-}
-
-</script>
-
-
-
 <style type="text/css">
-html          { height: 100%; }
-body          { height: 90%; }
-.maintable    { border-collapse: collapse;  border: 0.1em solid black;  width: 100%;  height: 100%;  margin-bottom: 0.5em; }
-.maintable th,
-.maintable td { padding: 0.2em;  font-family: monospace;  white-space: pre; }
-.maintable th { height: 1.5em; }
-.maintable td { vertical-align: top;  overflow: auto;  /*resize: both;*/ }
-.maintable th:first-child, 
-.maintable td:first-child { width: 15%; }
-.maintable p  { margin: 0;  min-height: 1em; }
-.highlight    { background: lightblue; }
+	html           { height: 100%; }
+	body           { height: 90%; }
+	.maintable     { border-collapse: collapse;  border: 0.1em solid black;  width: 100%;  height: 100%;  margin-bottom: 0.5em; }
+	.maintable th,
+	.maintable td  { padding: 0.2em;  font-family: monospace;  white-space: pre; }
+	.maintable th  { height: 1.5em; }
+	.maintable td  { vertical-align: top;  overflow: auto;  /*resize: both;*/ }
+	.maintable th:first-child, 
+	.maintable td:first-child { width: 15em;  max-width: 15em;  overflow: hidden; }
+	.maintable p   { margin: 0;  min-height: 1em; }
+	.highlight     { background: lightblue; }
+	#method_head,
+	#method_body   { text-align: left;  padding-left: 1em; }
 
-#a, #b { display: inline-block;  border: 0.1em solid black;  min-height: 2em;  resize: both;  overflow: auto; }
-#a { width: 15%; }
-#b { width: 80%; }
 </style>
