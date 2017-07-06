@@ -21,13 +21,7 @@ var methods = [
 	{ sig: "int main()", 
 		body: [
 			'printf("hello world\\n");'
-		]},
-	{ sig: "std::string hello()",
-		body: [
-			'return "hello";'
-		]},
-	{ sig: "?",
-		body: []}
+		]}
 ];
 
 function main() {

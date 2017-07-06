@@ -17,18 +17,14 @@ using namespace std;
 
 int main();
 std::string hello();
-?;
 
 /* ***** */
 
 int main() {
 	printf("hello world\n");
+	printf("%s\n", hello().c_str());
 }
 
 std::string hello() {
 	return "hello";
-}
-
-? {
-	asdasd
 }
