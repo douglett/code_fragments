@@ -121,13 +121,35 @@ function send() {
 		alert("Please compile before saving");
 		return;
 	}
-
-	fetch("compile.php", {
+	fetch("compile.php?compiled=true", {
 		method: "POST",
 		body: $("#method_body").text()
 	})
 	.then(response => response.text())
 	.then(text => {
 		console.log(text);
-	})
+	});
 }
+
+function save_json() {
+	fetch("compile.php?data=true", {
+		method: "POST",
+		body: JSON.stringify(methods)
+	})
+	.then(response => response.text())
+	.then(text => {
+		console.log(text);
+	});
+}
+
+
+
+// function save_file() {
+// 	// var blob = new Blob([$("#method_body").text()], {type: "text/plain;charset=utf-8"});
+// 	// saveAs(blob, "test.cpp");
+
+// 	var iframe = document.createElement("iframe");
+// 	window.iframe = iframe;
+// 	document.body.appendChild(iframe);
+// 	iframe.contentWindow.open('data:text/csv;charset=utf-8,' + $("#method_body").text());
+// }
