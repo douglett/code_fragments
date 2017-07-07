@@ -1,10 +1,8 @@
-#include "globals.h"
+// #include "globals.h"
+#include "graphics.h"
 #include <SDL.h>
 #include <iostream>
 #include <cassert>
-
-// typedef int32_t  i32;
-// typedef uint32_t u32;
 
 using namespace std;
 
