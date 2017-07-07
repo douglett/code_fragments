@@ -8,7 +8,6 @@ using namespace std;
 
 
 int makesprites();
-int scale2x(SDL_Surface* src, SDL_Surface* dst);
 SDL_Surface* screen = NULL;
 SDL_Surface* ship = NULL;
 struct pos_t {
@@ -45,9 +44,11 @@ int main(int argc, char** argv) {
 		SDL_FillRect(screen, NULL, 0x000000ff);
 		SDL_Rect r={ Sint16(pos.x), Sint16(pos.y) };
 		SDL_BlitSurface(ship, NULL, screen, &r);
-		scale2x(screen, screen);
-		SDL_Flip(screen);
-		SDL_Delay(16);
+		// scale2x(screen, screen);
+		gfx::scale2x(screen, screen);
+		// SDL_Flip(screen);
+		// SDL_Delay(16);
+		gfx::flip();
 
 		while (SDL_PollEvent(&e)) {
 			int keydir=0,  showkey=0;
@@ -75,35 +76,10 @@ int main(int argc, char** argv) {
 
 
 int makesprites() {
-	ship = SDL_CreateRGBSurface(SDL_SWSURFACE, 32, 32, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+	ship = gfx::mksprite(32, 32);
 	SDL_FillRect(ship, NULL, 0xffffffff);
 	uint32_t* sp = (uint32_t*)ship->pixels;
 	for (int i=0; i<100; i++)
 		sp[ship->w * i + i] = 0xff0000ff;
-	return 0;
-}
-
-
-int scale2x(SDL_Surface* src, SDL_Surface* dst) {
-	// lock
-	SDL_LockSurface(src);
-	// SDL_LockSurface(dst);
-	// get some data
-	uint32_t* sp = (uint32_t*)src->pixels;
-	// uint32_t* dp = (uint32_t*)dst->pixels;
-	int ww = min(src->w, dst->w/2);
-	int hh = min(src->h, dst->h/2);
-	// loop
-	uint32_t c;
-	SDL_Rect r={ 0, 0, 2, 2 };
-	for (int y=hh-1; y>=0; y--)
-	for (int x=ww-1; x>=0; x--) {
-		c = sp[src->w * y + x];
-		r.x = x*2,  r.y = y*2;
-		SDL_FillRect(dst, &r, c);
-	}
-	// unlock
-	// SDL_UnlockSurface(dst);
-	SDL_UnlockSurface(src);
 	return 0;
 }

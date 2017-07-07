@@ -1,6 +1,7 @@
 #include "graphics.h"
 #include <SDL.h>
 #include <iostream>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -11,16 +12,16 @@ using namespace std;
 SDL_Surface* gfx::mksprite(int w, int h) {
 	SDL_Surface* s = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h,
 		32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-	SDL_FillRect(s, NULL, 0);
+	SDL_FillRect(s, NULL, 0x00000000);
 	return s;
 }
 int gfx::rmsprite(SDL_Surface* s) {
 	SDL_FreeSurface(s);
 	return 0;
 }
-// int gfx::rmall() {
-// 	return 0;
-// }
+int gfx::rmall() {
+	return 0;
+}
 
 
 int gfx::scale2x(SDL_Surface* src, SDL_Surface* dst) {
