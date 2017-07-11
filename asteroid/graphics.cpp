@@ -98,30 +98,24 @@ int gfx::drawline(SDL_Surface* dst, int x1, int y1, int x2, int y2) {
 	return 0;  // OK
 }
 int gfx::bresenham(SDL_Surface* dst, int x1, int y1, int x2, int y2) {
-     // real deltax := x1 - x0
-     // real deltay := y1 - y0
-     // real deltaerr := abs(deltay / deltax)    // Assume deltax != 0 (line is not vertical),
-     //       // note that this division needs to be done in a way that preserves the fractional part
-     // real error := deltaerr - 0.5
-     // int y := y0
-     // for x from x0 to x1 
-     //     plot(x,y)
-     //     error := error + deltaerr
-     //     if error ≥ 0.5 then
-     //         y := y + 1
-     //         error := error - 1.0
-
-	double deltax = x2 - x1;
-	double deltay = y2 - y1;
-	double deltaerr = abs(deltay / deltax);
-	double error = deltaerr - 0.5;
+	// Bresenham's line algorithm
+	// init values
+	const int steep = (abs(y2 - y1) > abs(x2 - x1));
+	if (steep)    swap(x1, y1),  swap(x2, y2);
+	if (x1 > x2)  swap(x1, x2),  swap(y1, y2);
+	const double dx = x2 - x1;
+	const double dy = abs(y2 - y1);
+	const int ystep = ( y1 < y2 ? 1 : -1 );
+	double error = dx / 2.0f;
+	// do loop
 	int y = y1;
 	for (int x=x1; x<x2; x++) {
-		gfx::drawpx(dst, x, y);
-		error += deltaerr;
-		if (error >= 0.5) {
-			y += 1;  error -= 1.0;
-		}
+		if (steep)  gfx::drawpx(dst, y, x);
+		else        gfx::drawpx(dst, x, y);
+		error -= dy;
+		if (error < 0)  y += ystep,  error += dx;
 	}
-	return 0;
+	if (steep)  gfx::drawpx(dst, y2, x2);  // do final pixel
+	else        gfx::drawpx(dst, x2, y2);
+	return 0;  // OK
 }

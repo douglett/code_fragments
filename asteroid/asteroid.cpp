@@ -110,8 +110,9 @@ int paintspinner() {
 	int x = cos(rot * PI/180) * 20;
 	int y = sin(rot * PI/180) * 20;
 	
-	gfx::drawc(0xff0000ff);
-	gfx::drawline(spinner, 25-x, 25-y, 25+x, 25+y);
+	// gfx::drawc(0xff0000ff);
+	// gfx::drawline(spinner, 25-x, 25-y, 25+x, 25+y);
+	gfx::drawc(0x0000ffff);
 	gfx::drawpx(spinner, 25-x, 25-y);
 	gfx::drawpx(spinner, 25+x, 25+y);
 
