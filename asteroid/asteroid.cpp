@@ -3,13 +3,16 @@
 #include <SDL.h>
 #include <iostream>
 #include <cassert>
+#include <cmath>
 
 using namespace std;
 
 
 int makesprites();
+int paintspinner();
 SDL_Surface* screen = NULL;
 SDL_Surface* ship = NULL;
+SDL_Surface* spinner = NULL;
 struct pos_t {
 	int u=0, d=0, l=0, r=0;
 	int x=20, y=20;
@@ -35,6 +38,7 @@ int main(int argc, char** argv) {
 
 	int doloop=1;
 	SDL_Event e;
+	SDL_Rect r;
 	while (doloop) {
 		// movement
 		pos.x = pos.x + pos.r - pos.l;
@@ -42,12 +46,12 @@ int main(int argc, char** argv) {
 
 		// draw
 		SDL_FillRect(screen, NULL, 0x000000ff);
-		SDL_Rect r={ Sint16(pos.x), Sint16(pos.y) };
+		r.x=pos.x,  r.y=pos.y;
 		SDL_BlitSurface(ship, NULL, screen, &r);
-		// scale2x(screen, screen);
+		r.x=320-51,  r.y=240-51;
+		paintspinner();
+		SDL_BlitSurface(spinner, NULL, screen, &r);
 		gfx::scale2x(screen, screen);
-		// SDL_Flip(screen);
-		// SDL_Delay(16);
 		gfx::flip();
 
 		while (SDL_PollEvent(&e)) {
@@ -90,6 +94,29 @@ int makesprites() {
 	gfx::drawline(ship, 10, 45, 30, 10);
 	gfx::drawc(0x999900ff);
 	gfx::drawline(ship, 10, 40, 49, 30);
+
+	spinner = gfx::mksprite(50, 50);
+	SDL_FillRect(spinner, NULL, 0xffffffff);
+
+	return 0;
+}
+
+
+int paintspinner() {
+	static const double PI = 3.14159265;
+	static int rot = 0;
+	rot = (rot + 5) % 360;
+	SDL_FillRect(spinner, NULL, 0xffffffff);
+	int x = cos(rot * PI/180) * 20;
+	int y = sin(rot * PI/180) * 20;
+	
+	gfx::drawc(0xff0000ff);
+	gfx::drawline(spinner, 25-x, 25-y, 25+x, 25+y);
+	gfx::drawpx(spinner, 25-x, 25-y);
+	gfx::drawpx(spinner, 25+x, 25+y);
+
+	gfx::drawc(0x00ff00ff);
+	gfx::bresenham(spinner, 25-x, 25-y, 25+x, 25+y);
 
 	return 0;
 }

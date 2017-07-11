@@ -14,4 +14,5 @@ namespace gfx {
 	int drawc(uint32_t color);
 	int drawpx(SDL_Surface* dst, int x, int y);
 	int drawline(SDL_Surface* dst, int x1, int y1, int x2, int y2);
+	int bresenham(SDL_Surface* dst, int x1, int y1, int x2, int y2);
 }

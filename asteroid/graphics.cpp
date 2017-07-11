@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <cmath>
 
 using namespace std;
 
@@ -95,4 +96,32 @@ int gfx::drawline(SDL_Surface* dst, int x1, int y1, int x2, int y2) {
 		}
 	}
 	return 0;  // OK
+}
+int gfx::bresenham(SDL_Surface* dst, int x1, int y1, int x2, int y2) {
+     // real deltax := x1 - x0
+     // real deltay := y1 - y0
+     // real deltaerr := abs(deltay / deltax)    // Assume deltax != 0 (line is not vertical),
+     //       // note that this division needs to be done in a way that preserves the fractional part
+     // real error := deltaerr - 0.5
+     // int y := y0
+     // for x from x0 to x1 
+     //     plot(x,y)
+     //     error := error + deltaerr
+     //     if error ≥ 0.5 then
+     //         y := y + 1
+     //         error := error - 1.0
+
+	double deltax = x2 - x1;
+	double deltay = y2 - y1;
+	double deltaerr = abs(deltay / deltax);
+	double error = deltaerr - 0.5;
+	int y = y1;
+	for (int x=x1; x<x2; x++) {
+		gfx::drawpx(dst, x, y);
+		error += deltaerr;
+		if (error >= 0.5) {
+			y += 1;  error -= 1.0;
+		}
+	}
+	return 0;
 }
