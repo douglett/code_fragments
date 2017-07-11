@@ -6,7 +6,9 @@
 #include <vector>
 
 using namespace std;
-// using namespace gfx;
+
+
+static uint32_t col = 0;
 
 
 SDL_Surface* gfx::mksprite(int w, int h) {
@@ -52,5 +54,44 @@ int gfx::scale2x(SDL_Surface* src, SDL_Surface* dst) {
 int gfx::flip() {
 	SDL_Flip(SDL_GetVideoSurface());
 	SDL_Delay(16);
+	return 0;
+}
+
+
+int gfx::drawc(uint32_t color) {
+	col = color;
+	return 0;
+}
+
+
+int gfx::drawline(SDL_Surface* dst, int x1, int y1, int x2, int y2) {
+	uint32_t* px = (uint32_t*)dst->pixels;
+	// for (int i=0; i<100; i++)
+	// 	sp[ship->w * i + i] = 0xff0000ff;
+
+	int dy = abs(y2 - y1);
+	int dx = abs(x2 - x1);
+	int mody = ( y2-y1 < 0 ? -1 : 1 );
+	int modx = ( x2-x1 < 0 ? -1 : 1 );
+	printf("%d %d\n", dy, dx);
+
+	if (dy > dx) {
+		for (int i=0; i<dy; i++) {
+			int x = (dx / double(dy)) * i;
+			if (y1+i>=0 && y1+i<dst->h && x1+x>=0 && x1+x<dst->w)
+				px[dst->w * (y1+i) + x1+x] = col;
+
+			// int x = x1 + ((dx / double(dy)) * i * modx);
+			// int y = y1 + (i * mody);
+		}
+	}
+	else {
+		for (int i=0; i<dx; i++) {
+			int y = (dy / double(dx)) * i;
+			if (y1+y>=0 && y1+y<dst->h && x1+i>=0 && x1+i<dst->w)
+				px[dst->w * (y1+y) + x1+i] = col;
+		}
+	}
+
 	return 0;
 }

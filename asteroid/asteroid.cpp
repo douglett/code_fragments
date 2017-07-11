@@ -76,10 +76,18 @@ int main(int argc, char** argv) {
 
 
 int makesprites() {
-	ship = gfx::mksprite(32, 32);
+	ship = gfx::mksprite(50, 50);
 	SDL_FillRect(ship, NULL, 0xffffffff);
-	uint32_t* sp = (uint32_t*)ship->pixels;
-	for (int i=0; i<100; i++)
-		sp[ship->w * i + i] = 0xff0000ff;
+	// uint32_t* sp = (uint32_t*)ship->pixels;
+	// for (int i=0; i<100; i++)
+	// 	sp[ship->w * i + i] = 0xff0000ff;
+
+	gfx::drawc(0xff0000ff);
+	gfx::drawline(ship, 10, 10, 30, 40);
+	gfx::drawc(0x0000ffff);
+	gfx::drawline(ship, 10, 10, 49, 40);
+	gfx::drawc(0x00ffffff);
+	gfx::drawline(ship, 10, 45, 30, 10);
+
 	return 0;
 }
