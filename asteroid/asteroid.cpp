@@ -88,6 +88,8 @@ int makesprites() {
 	gfx::drawline(ship, 10, 10, 49, 40);
 	gfx::drawc(0x00ffffff);
 	gfx::drawline(ship, 10, 45, 30, 10);
+	gfx::drawc(0x999900ff);
+	gfx::drawline(ship, 10, 40, 49, 30);
 
 	return 0;
 }
