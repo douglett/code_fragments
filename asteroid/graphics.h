@@ -12,5 +12,6 @@ namespace gfx {
 	int scale2x(SDL_Surface* src, SDL_Surface* dst);
 	int flip();
 	int drawc(uint32_t color);
+	int drawpx(SDL_Surface* dst, int x, int y);
 	int drawline(SDL_Surface* dst, int x1, int y1, int x2, int y2);
 }

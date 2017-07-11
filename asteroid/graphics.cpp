@@ -59,37 +59,40 @@ int gfx::flip() {
 
 
 int gfx::drawc(uint32_t color) {
-	col = color;
+	col = color;  // set global draw color
 	return 0;
 }
-
-
-int gfx::drawline(SDL_Surface* dst, int x1, int y1, int x2, int y2) {
+int gfx::drawpx(SDL_Surface* dst, int x, int y) {
 	uint32_t* px = (uint32_t*)dst->pixels;  // get pixels
+	if (y >= 0 && y < dst->h && x >= 0 && x < dst->w)  // bounds check
+		px[dst->w * y + x] = col;  // set
+	return 0;  // OK
+}
+int gfx::drawline(SDL_Surface* dst, int x1, int y1, int x2, int y2) {
+	// calculate line info
+	int ym = (y1 + y2) / 2;  // mid-point
+	int xm = (x1 + x2) / 2;
 	int dy = abs(y2 - y1);  // diff
 	int dx = abs(x2 - x1);
 	int mody = ( y2-y1 < 0 ? -1 : 1 );  // mod direction
 	int modx = ( x2-x1 < 0 ? -1 : 1 );
-	printf("%d %d\n", dy, dx);
-
 	// y dominant
 	if (dy > dx) {
-		for (int i=0; i<dy; i++) {
-			int y = y1 + (i * mody);  // current y position
-			int x = x1 + ((dx / double(dy)) * i * modx);  // find x position from y position
-			if (y >= 0 && y < dst->h && x >= 0 && x < dst->w)
-				px[dst->w * y + x] = col;
+		for (int i=0; i<dy/2; i++) {
+			int y = i * mody;  // current y position
+			int x = (dx / double(dy)) * i * modx;  // find x position from y position
+			gfx::drawpx(dst, xm+x, ym+y);  // draw forwards from mid point
+			gfx::drawpx(dst, xm-x, ym-y);  // draw backwards from mid point
 		}
 	}
 	// x dominant
 	else {
-		for (int i=0; i<dx; i++) {
-			int x = x1 + (i * modx);  // current x position
-			int y = y1 + ((dy / double(dx)) * i * mody);  // find y position from x position
-			if (y >= 0 && y < dst->h && x >= 0 && x < dst->w)
-				px[dst->w * y + x] = col;
+		for (int i=0; i<dx/2; i++) {
+			int x = i * modx;  // current x position
+			int y = (dy / double(dx)) * i * mody;  // find y position from x position
+			gfx::drawpx(dst, xm+x, ym+y);  // draw forwards from mid point
+			gfx::drawpx(dst, xm-x, ym-y);  // draw backwards from mid point
 		}
 	}
-
-	return 0;
+	return 0;  // OK
 }
