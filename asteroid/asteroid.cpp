@@ -42,6 +42,7 @@ namespace keys {
 class WireFrame {
 public:
 	double x=0, y=0, r=0, s=1;
+	double speed=0, drift=0;
 	vector<array<i32, 2>> points;
 	
 	int draw() {
@@ -66,6 +67,13 @@ public:
 		// gfx::drawc(0xff0000ff);
 		gfx::drawc( SDL_MapRGB(SDL_GetVideoSurface()->format, 0xff, 0, 0) );
 		gfx::drawpx(SDL_GetVideoSurface(), x, y);
+		return 0;
+	}
+
+	int step() {
+		x += cos((r+90) * M_PI/180) * speed;
+		y += cos(r * M_PI/180) * speed;
+		r += drift;
 		return 0;
 	}
 };
@@ -103,9 +111,12 @@ int main(int argc, char** argv) {
 		// movement
 		// wireframes[0].x += keys::r - keys::l;
 		// wireframes[0].y += keys::d - keys::u;
-		wireframes[0].r += (keys::r - keys::l) * 5;
-		wireframes[0].x += cos((wireframes[0].r + 90) * M_PI/180) * (keys::d - keys::u)*5;
-		wireframes[0].y += cos(wireframes[0].r * M_PI/180) * (keys::d - keys::u)*5;
+		// wireframes[0].r += (keys::r - keys::l) * 5;
+		// wireframes[0].x += cos((wireframes[0].r + 90) * M_PI/180) * (keys::d - keys::u)*5;
+		// wireframes[0].y += cos(wireframes[0].r * M_PI/180) * (keys::d - keys::u)*5;
+		wireframes[0].speed = (keys::d - keys::u) * 5;
+		wireframes[0].drift = (keys::r - keys::l) * 5;
+		wireframes[0].step();
 
 		// redraw
 		SDL_FillRect(screen, NULL, 0x000000ff);
