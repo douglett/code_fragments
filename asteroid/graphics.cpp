@@ -70,34 +70,6 @@ int gfx::drawpx(SDL_Surface* dst, int x, int y) {
 	return 0;  // OK
 }
 int gfx::drawline(SDL_Surface* dst, int x1, int y1, int x2, int y2) {
-	// calculate line info
-	int ym = (y1 + y2) / 2;  // mid-point
-	int xm = (x1 + x2) / 2;
-	int dy = abs(y2 - y1);  // diff
-	int dx = abs(x2 - x1);
-	int mody = ( y2-y1 < 0 ? -1 : 1 );  // mod direction
-	int modx = ( x2-x1 < 0 ? -1 : 1 );
-	// y dominant
-	if (dy > dx) {
-		for (int i=0; i<dy/2; i++) {
-			int y = i * mody;  // current y position
-			int x = (dx / double(dy)) * i * modx;  // find x position from y position
-			gfx::drawpx(dst, xm+x, ym+y);  // draw forwards from mid point
-			gfx::drawpx(dst, xm-x, ym-y);  // draw backwards from mid point
-		}
-	}
-	// x dominant
-	else {
-		for (int i=0; i<dx/2; i++) {
-			int x = i * modx;  // current x position
-			int y = (dy / double(dx)) * i * mody;  // find y position from x position
-			gfx::drawpx(dst, xm+x, ym+y);  // draw forwards from mid point
-			gfx::drawpx(dst, xm-x, ym-y);  // draw backwards from mid point
-		}
-	}
-	return 0;  // OK
-}
-int gfx::bresenham(SDL_Surface* dst, int x1, int y1, int x2, int y2) {
 	// Bresenham's line algorithm
 	// init values
 	const int steep = (abs(y2 - y1) > abs(x2 - x1));
