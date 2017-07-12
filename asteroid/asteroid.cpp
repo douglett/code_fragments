@@ -1,18 +1,18 @@
-// #include "globals.h"
+#include "globals.h"
 #include "graphics.h"
 #include <SDL.h>
 #include <iostream>
 #include <cassert>
 #include <cmath>
+#include <vector>
+#include <array>
 
 using namespace std;
 
 
 int makesprites();
 int paintspinner();
-SDL_Surface* screen = NULL;
-SDL_Surface* ship = NULL;
-SDL_Surface* spinner = NULL;
+
 
 namespace keys {
 	// stuff
@@ -44,6 +44,45 @@ namespace keys {
 }
 
 
+class WireFrame {
+public:
+	int x=0, y=0, r=0, s=100;
+	vector<array<i32, 2>> points;
+	
+	int draw() {
+		r %= 360;  // just in case
+		double t = r * M_PI/180.0;  // theta (radians)
+		double scale = s / 100.0;  // scale 1:xx
+		// paint
+		// x' = x cos⁡ θ − y sin⁡ θ
+		// y' = y cos θ + x sin θ
+		gfx::drawc(0xffffffff);
+		for (int i=0; i<points.size()-1; i++) {
+			auto& p1 = points[i];
+			auto& p2 = points[i+1];
+			gfx::drawline(SDL_GetVideoSurface(),
+				x + ((p1[0]*cos(t) - p1[1]*sin(t)) * scale),
+				y + ((p1[1]*cos(t) + p1[0]*sin(t)) * scale),
+				x + ((p2[0]*cos(t) - p2[1]*sin(t)) * scale),
+				y + ((p2[1]*cos(t) + p2[0]*sin(t)) * scale)
+			);
+		}
+		// mid point
+		// gfx::drawc(0xff0000ff);
+		gfx::drawc( SDL_MapRGB(SDL_GetVideoSurface()->format, 0xff, 0, 0) );
+		gfx::drawpx(SDL_GetVideoSurface(), x, y);
+		return 0;
+	}
+};
+
+
+SDL_Surface* screen = NULL;
+SDL_Surface* ship = NULL;
+SDL_Surface* spinner = NULL;
+
+vector<WireFrame> wireframes;
+
+
 int main(int argc, char** argv) {
 	printf("start\n");
 	assert(sizeof(int)==sizeof(int32_t));
@@ -60,6 +99,11 @@ int main(int argc, char** argv) {
 
 	makesprites();
 
+	wireframes.emplace_back();
+	wireframes.back().x = 100;
+	wireframes.back().y = 100;
+	wireframes.back().points = { {{-10,-10}}, {{0,-20}}, {{10,-10}}, {{10,10}}, {{-10,10}}, {{-10,-10}} };
+
 	int doloop=1;
 	while (doloop) {
 		// movement
@@ -75,6 +119,12 @@ int main(int argc, char** argv) {
 		// r.x=320-51,  r.y=240-51;
 		// paintspinner();
 		// SDL_BlitSurface(spinner, NULL, screen, &r);
+
+		for (auto& wf : wireframes) {
+			wf.r += 5;
+			// wf.s += 1;
+			wf.draw();
+		}
 
 		if (keys::update()==-1)  doloop=0;
 
