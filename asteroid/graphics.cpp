@@ -53,9 +53,17 @@ int gfx::scale2x(SDL_Surface* src, SDL_Surface* dst) {
 
 
 int gfx::flip() {
+	// clear events before flip
+	SDL_Event e;
+	while (SDL_PollEvent(&e))
+		if (e.type == SDL_QUIT) {
+			fprintf(stderr, "error: gfx::flip: untrapped window quit event\n");
+			exit(1);
+		}
+	// flip
 	SDL_Flip(SDL_GetVideoSurface());
 	SDL_Delay(16);
-	return 0;
+	return 0;  // flip OK
 }
 
 

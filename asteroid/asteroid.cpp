@@ -13,11 +13,35 @@ int paintspinner();
 SDL_Surface* screen = NULL;
 SDL_Surface* ship = NULL;
 SDL_Surface* spinner = NULL;
-struct pos_t {
+
+namespace keys {
+	// stuff
 	int u=0, d=0, l=0, r=0;
 	int x=20, y=20;
-};
-pos_t pos;
+
+	int update() {
+		SDL_Event e;
+		while (SDL_PollEvent(&e)) {
+			int keydir=0,  showkey=0;
+			switch (e.type) {
+			case SDL_QUIT:  return -1;  // quit signal
+			case SDL_KEYDOWN:
+			case SDL_KEYUP:
+				keydir = (e.type==SDL_KEYDOWN ? 1 : -1);
+				switch (e.key.keysym.sym) {
+				case SDLK_ESCAPE:  return -1;  // quit signal
+				case SDLK_LEFT:    if (showkey) printf("l %d\n", keydir);  l = (keydir==1 ? 1 : 0);  break;
+				case SDLK_RIGHT:   if (showkey) printf("r %d\n", keydir);  r = (keydir==1 ? 1 : 0);  break;
+				case SDLK_UP:      if (showkey) printf("u %d\n", keydir);  u = (keydir==1 ? 1 : 0);  break;
+				case SDLK_DOWN:    if (showkey) printf("d %d\n", keydir);  d = (keydir==1 ? 1 : 0);  break;
+				default:  printf("%d\n", e.key.keysym.sym);
+				}
+				break;
+			}
+		}
+		return 0;
+	}
+}
 
 
 int main(int argc, char** argv) {
@@ -37,41 +61,25 @@ int main(int argc, char** argv) {
 	makesprites();
 
 	int doloop=1;
-	SDL_Event e;
-	SDL_Rect r;
 	while (doloop) {
 		// movement
-		pos.x = pos.x + pos.r - pos.l;
-		pos.y = pos.y + pos.d - pos.u;
+		keys::x = keys::x + keys::r - keys::l;
+		keys::y = keys::y + keys::d - keys::u;
 
 		// draw
 		SDL_FillRect(screen, NULL, 0x000000ff);
-		r.x=pos.x,  r.y=pos.y;
-		SDL_BlitSurface(ship, NULL, screen, &r);
-		r.x=320-51,  r.y=240-51;
-		paintspinner();
-		SDL_BlitSurface(spinner, NULL, screen, &r);
-		gfx::scale2x(screen, screen);
-		gfx::flip();
 
-		while (SDL_PollEvent(&e)) {
-			int keydir=0,  showkey=0;
-			switch (e.type) {
-			case SDL_QUIT:  doloop=0;  break;
-			case SDL_KEYDOWN:
-			case SDL_KEYUP:
-				keydir = (e.type==SDL_KEYDOWN ? 1 : -1);
-				switch (e.key.keysym.sym) {
-				case SDLK_ESCAPE:  doloop=0;  break;
-				case SDLK_LEFT:    if (showkey) printf("l %d\n", keydir);  pos.l = (keydir==1 ? 1 : 0);  break;
-				case SDLK_RIGHT:   if (showkey) printf("r %d\n", keydir);  pos.r = (keydir==1 ? 1 : 0);  break;
-				case SDLK_UP:      if (showkey) printf("u %d\n", keydir);  pos.u = (keydir==1 ? 1 : 0);  break;
-				case SDLK_DOWN:    if (showkey) printf("d %d\n", keydir);  pos.d = (keydir==1 ? 1 : 0);  break;
-				default:  printf("%d\n", e.key.keysym.sym);
-				}
-				break;
-			}
-		}
+		// SDL_Rect r;
+		// r.x=pos.x,  r.y=pos.y;
+		// SDL_BlitSurface(ship, NULL, screen, &r);
+		// r.x=320-51,  r.y=240-51;
+		// paintspinner();
+		// SDL_BlitSurface(spinner, NULL, screen, &r);
+
+		if (keys::update()==-1)  doloop=0;
+
+		gfx::scale2x(screen, screen);
+		gfx::flip();		
 	}
 
 	SDL_Quit();
