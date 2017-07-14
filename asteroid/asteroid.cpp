@@ -42,9 +42,11 @@ namespace keys {
 class WireFrame {
 public:
 	static const int MID_POINT=1;
+	static const int HIT_DISPLAY=1;
 
 	double x=0, y=0, rotate=0, scale=100;
 	double speed=0, torque=0, drift=0, drifttorque=0;
+	double hit_distance=0;
 	vector<array<i32, 2>> points;
 	string id;
 	
@@ -71,6 +73,9 @@ public:
 		// gfx::drawc(0xff0000ff);
 		gfx::drawc( SDL_MapRGB(SDL_GetVideoSurface()->format, 0xff, 0, 0) );
 		if (MID_POINT)  gfx::drawpx(SDL_GetVideoSurface(), x, y);
+		if (HIT_DISPLAY)  
+			gfx::drawline(SDL_GetVideoSurface(), x, y, x+hit_distance, y),
+			gfx::drawline(SDL_GetVideoSurface(), x, y, x, y+hit_distance);
 		return 0;
 	}
 
@@ -95,11 +100,13 @@ int make_objects() {
 	WireFrame obj;
 	// spaceship
 	obj.x = 100,  obj.y = 100;
-	obj.points = { {{-10,-10}}, {{0,-20}}, {{10,-10}}, {{10,10}}, {{-10,10}}, {{-10,-10}} };
+	obj.hit_distance = 10;
+	obj.points = { {{-10,-7}}, {{0,-15}}, {{10,-7}}, {{10,10}}, {{-10,10}}, {{-10,-7}} };
 	obj.id = "spaceship";
 	wireframes.push_back(obj);
 	// asteroid
 	obj.x = 200,  obj.y = 100;
+	obj.hit_distance = 15;
 	obj.points = { {{-5,-16}}, {{0,-18}}, {{12,-13}}, {{15,-4}}, {{9,12}}, {{0,16}}, {{-16,0}}, {{-5,-16}} };
 	obj.id = "asteroid";
 	obj.rotate = 30,  obj.speed = 1,  obj.drifttorque = 3;
