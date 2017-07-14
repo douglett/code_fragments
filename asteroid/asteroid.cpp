@@ -44,7 +44,7 @@ public:
 	static const int MID_POINT=1;
 
 	double x=0, y=0, rotate=0, scale=100;
-	double speed=0, torque=0, drift=0;
+	double speed=0, torque=0, drift=0, drifttorque=0;
 	vector<array<i32, 2>> points;
 	string id;
 	
@@ -78,6 +78,7 @@ public:
 		x      += sin(rotate * M_PI/180) * speed;
 		y      -= cos(rotate * M_PI/180) * speed;  // cosine moves in negative (up) direction
 		rotate += torque;
+		drift  += drifttorque;
 		return 0;
 	}
 };
@@ -101,7 +102,7 @@ int make_objects() {
 	obj.x = 200,  obj.y = 100;
 	obj.points = { {{-5,-16}}, {{0,-18}}, {{12,-13}}, {{15,-4}}, {{9,12}}, {{0,16}}, {{-16,0}}, {{-5,-16}} };
 	obj.id = "asteroid";
-	obj.rotate = 30,  obj.speed = 1;
+	obj.rotate = 30,  obj.speed = 1,  obj.drifttorque = 3;
 	wireframes.push_back(obj);
 	return 0;
 }
@@ -130,14 +131,16 @@ int main(int argc, char** argv) {
 		// movement
 		wireframes[0].speed  = (keys::u - keys::d) * 3;
 		wireframes[0].torque = (keys::r - keys::l) * 5;
-		printf("speed: %f  torque %f \n", wireframes[0].speed, wireframes[0].torque);
+		// printf("speed: %f  torque %f \n", wireframes[0].speed, wireframes[0].torque);
 		// wireframes[1].drift += 5;
 
 		// redraw
 		SDL_FillRect(screen, NULL, 0x000000ff);
 		for (auto& wf : wireframes) {
-			// wf.r += 5;
-			// wf.s += 1;
+			if (wf.x < -10)  wf.x = 320+20 + wf.x;
+			if (wf.y < -10)  wf.y = 240+20 + wf.y;
+			if (wf.x > 330)  wf.x = -10 + fmod(wf.x, 330);
+			if (wf.y > 250)  wf.y = -10 + fmod(wf.y, 250);
 			wf.step();
 			wf.draw();
 		}
