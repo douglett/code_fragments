@@ -41,14 +41,18 @@ namespace keys {
 
 class WireFrame {
 public:
-	double x=0, y=0, r=0, s=1;
-	double speed=0, drift=0;
+	static const int MID_POINT=1;
+
+	double x=0, y=0, rotate=0, scale=100;
+	double speed=0, torque=0, drift=0;
 	vector<array<i32, 2>> points;
+	string id;
 	
 	int draw() {
-		r = fmod(r, 360);  // constrain just in case
-		double t = r * M_PI/180.0;  // theta (radians)
-		double scale = s;  // scale 1:xx
+		rotate = fmod(rotate, 360);  // constrain just in case
+		drift  = fmod(drift, 360);  // constrain just in case
+		double t = (rotate + drift) * M_PI/180.0;  // theta (radians)
+		double mscale = scale / 100.0;  // scale: percentage to 1:xx
 		// paint
 		// x' = x cos⁡ θ − y sin⁡ θ
 		// y' = y cos θ + x sin θ
@@ -57,23 +61,23 @@ public:
 			auto& p1 = points[i];
 			auto& p2 = points[i+1];
 			gfx::drawline(SDL_GetVideoSurface(),
-				x + ((p1[0]*cos(t) - p1[1]*sin(t)) * scale),
-				y + ((p1[1]*cos(t) + p1[0]*sin(t)) * scale),
-				x + ((p2[0]*cos(t) - p2[1]*sin(t)) * scale),
-				y + ((p2[1]*cos(t) + p2[0]*sin(t)) * scale)
+				x + ((p1[0]*cos(t) - p1[1]*sin(t)) * mscale),
+				y + ((p1[1]*cos(t) + p1[0]*sin(t)) * mscale),
+				x + ((p2[0]*cos(t) - p2[1]*sin(t)) * mscale),
+				y + ((p2[1]*cos(t) + p2[0]*sin(t)) * mscale)
 			);
 		}
 		// mid point
 		// gfx::drawc(0xff0000ff);
 		gfx::drawc( SDL_MapRGB(SDL_GetVideoSurface()->format, 0xff, 0, 0) );
-		gfx::drawpx(SDL_GetVideoSurface(), x, y);
+		if (MID_POINT)  gfx::drawpx(SDL_GetVideoSurface(), x, y);
 		return 0;
 	}
 
 	int step() {
-		x += cos((r+90) * M_PI/180) * speed;
-		y += cos(r * M_PI/180) * speed;
-		r += drift;
+		x      += sin(rotate * M_PI/180) * speed;
+		y      -= cos(rotate * M_PI/180) * speed;  // cosine moves in negative (up) direction
+		rotate += torque;
 		return 0;
 	}
 };
@@ -84,6 +88,23 @@ SDL_Surface* ship = NULL;
 SDL_Surface* spinner = NULL;
 
 vector<WireFrame> wireframes;
+
+
+int make_objects() {
+	WireFrame obj;
+	// spaceship
+	obj.x = 100,  obj.y = 100;
+	obj.points = { {{-10,-10}}, {{0,-20}}, {{10,-10}}, {{10,10}}, {{-10,10}}, {{-10,-10}} };
+	obj.id = "spaceship";
+	wireframes.push_back(obj);
+	// asteroid
+	obj.x = 200,  obj.y = 100;
+	obj.points = { {{-5,-16}}, {{0,-18}}, {{12,-13}}, {{15,-4}}, {{9,12}}, {{0,16}}, {{-16,0}}, {{-5,-16}} };
+	obj.id = "asteroid";
+	obj.rotate = 30,  obj.speed = 1;
+	wireframes.push_back(obj);
+	return 0;
+}
 
 
 int main(int argc, char** argv) {
@@ -99,30 +120,25 @@ int main(int argc, char** argv) {
 		fprintf(stderr, "error: could not load video\n");
 		return 1;
 	}
+	SDL_WM_SetCaption("asteroids", "asteroids");
 
-	// make wireframe
-	wireframes.emplace_back();
-	wireframes.back().x = 100;
-	wireframes.back().y = 100;
-	wireframes.back().points = { {{-10,-10}}, {{0,-20}}, {{10,-10}}, {{10,10}}, {{-10,10}}, {{-10,-10}} };
+	// make wireframes
+	make_objects();
 
 	int doloop=1;
 	while (doloop) {
 		// movement
-		// wireframes[0].x += keys::r - keys::l;
-		// wireframes[0].y += keys::d - keys::u;
-		// wireframes[0].r += (keys::r - keys::l) * 5;
-		// wireframes[0].x += cos((wireframes[0].r + 90) * M_PI/180) * (keys::d - keys::u)*5;
-		// wireframes[0].y += cos(wireframes[0].r * M_PI/180) * (keys::d - keys::u)*5;
-		wireframes[0].speed = (keys::d - keys::u) * 5;
-		wireframes[0].drift = (keys::r - keys::l) * 5;
-		wireframes[0].step();
+		wireframes[0].speed  = (keys::u - keys::d) * 3;
+		wireframes[0].torque = (keys::r - keys::l) * 5;
+		printf("speed: %f  torque %f \n", wireframes[0].speed, wireframes[0].torque);
+		// wireframes[1].drift += 5;
 
 		// redraw
 		SDL_FillRect(screen, NULL, 0x000000ff);
 		for (auto& wf : wireframes) {
 			// wf.r += 5;
 			// wf.s += 1;
+			wf.step();
 			wf.draw();
 		}
 
