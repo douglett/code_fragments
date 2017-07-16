@@ -58,7 +58,7 @@ public:
 		// paint
 		// x' = x cos⁡ θ − y sin⁡ θ
 		// y' = y cos θ + x sin θ
-		gfx::drawc(0xffffffff);
+		gfx::drawc(255,255,255);
 		for (int i=0; i<points.size()-1; i++) {
 			auto& p1 = points[i];
 			auto& p2 = points[i+1];
@@ -71,7 +71,7 @@ public:
 		}
 		// mid point
 		// gfx::drawc(0xff0000ff);
-		gfx::drawc( SDL_MapRGB(SDL_GetVideoSurface()->format, 0xff, 0, 0) );
+		gfx::drawc(255, 0, 0);
 		if (MID_POINT)  gfx::drawpx(SDL_GetVideoSurface(), x, y);
 		if (HIT_DISPLAY)  
 			gfx::drawline(SDL_GetVideoSurface(), x, y, x+hit_distance, y),
@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
 		// wireframes[1].drift += 5;
 
 		// redraw
-		SDL_FillRect(screen, NULL, 0x000000ff);
+		SDL_FillRect(screen, NULL, gfx::drawc(0,0,0));
 		for (auto& wf : wireframes) {
 			if (wf.x < -10)  wf.x = 320+20 + wf.x;
 			if (wf.y < -10)  wf.y = 240+20 + wf.y;

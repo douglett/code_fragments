@@ -67,9 +67,13 @@ int gfx::flip() {
 }
 
 
-int gfx::drawc(uint32_t color) {
+uint32_t gfx::drawc(uint32_t color) {
 	col = color;  // set global draw color
-	return 0;
+	return col;
+}
+uint32_t gfx::drawc(uint8_t r, uint8_t g, uint8_t b) {
+	col = SDL_MapRGB(SDL_GetVideoSurface()->format, r, g, b);
+	return col;
 }
 int gfx::drawpx(SDL_Surface* dst, int x, int y) {
 	uint32_t* px = (uint32_t*)dst->pixels;  // get pixels
