@@ -13,22 +13,24 @@ using namespace std;
 namespace keys {
 	// directions
 	int u=0, d=0, l=0, r=0;
+	int action=0;
 
 	int update() {
 		SDL_Event e;
 		while (SDL_PollEvent(&e)) {
-			int keydir=0,  showkey=0;
+			int keydir=0,  showkey=1;
 			switch (e.type) {
 			case SDL_QUIT:  return -1;  // quit signal
 			case SDL_KEYDOWN:
 			case SDL_KEYUP:
-				keydir = (e.type==SDL_KEYDOWN ? 1 : -1);
+				keydir = (e.type==SDL_KEYDOWN ? 1 : 0);
 				switch (e.key.keysym.sym) {
 				case SDLK_ESCAPE:  return -1;  // quit signal
-				case SDLK_LEFT:    if (showkey) printf("l %d\n", keydir);  l = (keydir==1 ? 1 : 0);  break;
-				case SDLK_RIGHT:   if (showkey) printf("r %d\n", keydir);  r = (keydir==1 ? 1 : 0);  break;
-				case SDLK_UP:      if (showkey) printf("u %d\n", keydir);  u = (keydir==1 ? 1 : 0);  break;
-				case SDLK_DOWN:    if (showkey) printf("d %d\n", keydir);  d = (keydir==1 ? 1 : 0);  break;
+				case SDLK_LEFT:    if (showkey) printf("l %d\n", keydir);  l = keydir;  break;
+				case SDLK_RIGHT:   if (showkey) printf("r %d\n", keydir);  r = keydir;  break;
+				case SDLK_UP:      if (showkey) printf("u %d\n", keydir);  u = keydir;  break;
+				case SDLK_DOWN:    if (showkey) printf("d %d\n", keydir);  d = keydir;  break;
+				case SDLK_SPACE:   if (showkey) printf("SPC %d\n", keydir);  action = keydir;  break;
 				default:  printf("%d\n", e.key.keysym.sym);
 				}
 				break;
@@ -49,6 +51,7 @@ public:
 	double hit_distance=0;
 	vector<array<i32, 2>> points;
 	string id;
+	int flags=0;
 	
 	int draw() {
 		rotate = fmod(rotate, 360);  // constrain just in case
@@ -115,6 +118,19 @@ int make_objects() {
 }
 
 
+int make_laser() {
+	printf("make laser\n");
+	WireFrame obj;
+	obj.points = { {{0,-4}}, {{0,4}} };
+	obj.id = "laser";
+	obj.hit_distance = 3;
+	obj.x = wireframes[0].x,  obj.y = wireframes[0].y,  obj.rotate = wireframes[0].rotate;
+	obj.speed = 5;
+	wireframes.push_back(obj);
+	return 0;
+}
+
+
 int main(int argc, char** argv) {
 	printf("start\n");
 	assert(sizeof(int)==sizeof(int32_t));
@@ -134,23 +150,34 @@ int main(int argc, char** argv) {
 	make_objects();
 
 	int doloop=1;
+	int action=0;
 	while (doloop) {
 		// movement
 		wireframes[0].speed  = (keys::u - keys::d) * 3;
 		wireframes[0].torque = (keys::r - keys::l) * 5;
-		// printf("speed: %f  torque %f \n", wireframes[0].speed, wireframes[0].torque);
-		// wireframes[1].drift += 5;
+		if (keys::action && !action)  action = 1,  make_laser();
+		if (!keys::action && action)  action = 0;
 
 		// redraw
 		SDL_FillRect(screen, NULL, gfx::drawc(0,0,0));
 		for (auto& wf : wireframes) {
-			if (wf.x < -10)  wf.x = 320+20 + wf.x;
-			if (wf.y < -10)  wf.y = 240+20 + wf.y;
-			if (wf.x > 330)  wf.x = -10 + fmod(wf.x, 330);
-			if (wf.y > 250)  wf.y = -10 + fmod(wf.y, 250);
 			wf.step();
+			int offdir = 0;
+			if (wf.x < -10)  wf.x = 320+20 + wf.x,  offdir = 1;
+			if (wf.y < -10)  wf.y = 240+20 + wf.y,  offdir = 2;
+			if (wf.x > 330)  wf.x = -10 + fmod(wf.x, 330),  offdir = 3;
+			if (wf.y > 250)  wf.y = -10 + fmod(wf.y, 250),  offdir = 4;
+			if (offdir && wf.id == "laser") {
+				wf.flags = -1;
+				continue;
+			}
 			wf.draw();
 		}
+
+		// erase dead
+		for (int i=wireframes.size()-1; i>=0; i--)
+			if (wireframes[i].flags==-1)
+				wireframes.erase(wireframes.begin()+i);
 
 		// flip and update
 		gfx::scale2x(screen, screen);
