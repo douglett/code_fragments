@@ -133,18 +133,8 @@ int make_laser() {
 
 int main(int argc, char** argv) {
 	printf("start\n");
-	assert(sizeof(int)==sizeof(int32_t));
-	int err = SDL_Init(SDL_INIT_VIDEO);
-	if (err!=0) {
-		fprintf(stderr, "error loading SDL: %d\n", err);
-		return 1;
-	}
-	screen = SDL_SetVideoMode(640, 480, 32, SDL_HWSURFACE);
-	if (screen==NULL) {
-		fprintf(stderr, "error: could not load video\n");
-		return 1;
-	}
-	SDL_WM_SetCaption("asteroids", "asteroids");
+	gfx::init(640, 480, "asteroids");
+	screen = SDL_GetVideoSurface();
 
 	// make wireframes
 	make_objects();
@@ -152,14 +142,16 @@ int main(int argc, char** argv) {
 	int doloop=1;
 	int action=0;
 	while (doloop) {
-		// movement
-		wireframes[0].speed  = (keys::u - keys::d) * 3;
-		wireframes[0].torque = (keys::r - keys::l) * 5;
-		if (keys::action && !action)  action = 1,  make_laser();
-		if (!keys::action && action)  action = 0;
+		// move ship
+		if (wireframes.size() && wireframes[0].id == "spaceship") {
+			wireframes[0].speed  = (keys::u - keys::d) * 3;
+			wireframes[0].torque = (keys::r - keys::l) * 5;
+			if (keys::action && !action)  action = 10,  make_laser();
+			// if (!keys::action && action)  action = 0;
+			if (action)  action--;
+		}
 
-		// redraw
-		SDL_FillRect(screen, NULL, gfx::drawc(0,0,0));
+		// move characters
 		for (auto& wf : wireframes) {
 			wf.step();
 			int offdir = 0;
@@ -167,17 +159,38 @@ int main(int argc, char** argv) {
 			if (wf.y < -10)  wf.y = 240+20 + wf.y,  offdir = 2;
 			if (wf.x > 330)  wf.x = -10 + fmod(wf.x, 330),  offdir = 3;
 			if (wf.y > 250)  wf.y = -10 + fmod(wf.y, 250),  offdir = 4;
-			if (offdir && wf.id == "laser") {
-				wf.flags = -1;
-				continue;
+			if (offdir && wf.id == "laser")  wf.flags = -1;
+		}
+
+		// collisions
+		for (int i=wireframes.size()-1; i>=0; i--)
+		for (int j=i-1; j>=0; j--) {
+			// get info
+			auto &w1 = wireframes[i],  &w2 = wireframes[j];
+			if (w1.flags == -1 || w2.flags == -1)  continue;  // ignore dead
+			double hit_dist = max(w1.hit_distance, w2.hit_distance);
+			double dx = abs(w1.x - w2.x),  dy = abs(w1.y - w2.y);
+			// printf("%s %s  %f %f %f\n", w1.id.c_str(), w1.id.c_str(), hit_dist, dx, dy);
+			// do collision
+			if (dx <= hit_dist && dy <= hit_dist) {
+				if ((w1.id=="spaceship" && w2.id=="asteroid") || (w2.id=="spaceship" && w1.id=="asteroid"))
+					w1.flags = w2.flags = -1;
+				if ((w1.id=="spaceship" && w2.id=="asteroid") || (w2.id=="spaceship" && w1.id=="asteroid"))
+					w1.flags = w2.flags = -1;
+				if ((w1.id=="laser" && w2.id=="asteroid") || (w2.id=="laser" && w1.id=="asteroid"))
+					w1.flags = w2.flags = -1;
 			}
-			wf.draw();
 		}
 
 		// erase dead
 		for (int i=wireframes.size()-1; i>=0; i--)
 			if (wireframes[i].flags==-1)
 				wireframes.erase(wireframes.begin()+i);
+
+		// redraw
+		SDL_FillRect(screen, NULL, gfx::drawc(0,0,0));
+		for (auto& wf : wireframes) 
+			wf.draw();
 
 		// flip and update
 		gfx::scale2x(screen, screen);

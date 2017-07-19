@@ -4,8 +4,9 @@
 #include <string>
 
 namespace gfx {
-	const int VERSION=1;
+	const int VERSION=1, ERROR_EXIT=1;
 	const std::string INFO="required: SDL 1.2";
+	int init(int w, int h, std::string winname);
 	SDL_Surface* mksprite(int w, int h);
 	int rmsprite(SDL_Surface* s);
 	int rmall();

@@ -12,6 +12,30 @@ using namespace std;
 static uint32_t col = 0;
 
 
+int gfx::init(int w, int h, std::string winname) {
+	if (sizeof(int) != sizeof(int32_t)) {
+		fprintf(stderr, "error: expected 32 bit standard int\n");
+		if (gfx::ERROR_EXIT)  exit(1);
+		return 1;
+	}
+	int err = SDL_Init(SDL_INIT_VIDEO);
+	if (err!=0) {
+		fprintf(stderr, "error loading SDL: %d\n", err);
+		if (gfx::ERROR_EXIT)  exit(1);
+		return err;
+	}
+	SDL_Surface* screen = SDL_SetVideoMode(w, h, 32, SDL_HWSURFACE);
+	if (screen==NULL) {
+		fprintf(stderr, "error: could not load video\n");
+		if (gfx::ERROR_EXIT)  exit(1);
+		return 1;
+	}
+	SDL_WM_SetCaption(winname.c_str(), winname.c_str());
+	printf("gfx::init: init OK: w:%d h:%d  %s\n", w, h, winname.c_str());
+	return 0;
+}
+
+
 SDL_Surface* gfx::mksprite(int w, int h) {
 	SDL_Surface* s = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h,
 		32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
