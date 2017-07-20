@@ -32,6 +32,7 @@ int gfx::init(int w, int h, std::string winname) {
 	}
 	SDL_WM_SetCaption(winname.c_str(), winname.c_str());
 	printf("gfx::init: init OK: w:%d h:%d  %s\n", w, h, winname.c_str());
+	srand( time(NULL) );
 	return 0;
 }
 

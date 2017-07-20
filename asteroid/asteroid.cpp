@@ -92,11 +92,9 @@ public:
 };
 
 
-SDL_Surface* screen = NULL;
-SDL_Surface* ship = NULL;
-SDL_Surface* spinner = NULL;
-
+SDL_Surface *screen = NULL,  *ship = NULL,  *spinner = NULL;
 vector<WireFrame> wireframes;
+WireFrame wfspaceship, wfasteroid, wflaser;  // prototypes
 
 
 int make_objects() {
@@ -106,26 +104,47 @@ int make_objects() {
 	obj.hit_distance = 10;
 	obj.points = { {{-10,-7}}, {{0,-15}}, {{10,-7}}, {{10,10}}, {{-10,10}}, {{-10,-7}} };
 	obj.id = "spaceship";
-	wireframes.push_back(obj);
+	wfspaceship = obj;
 	// asteroid
 	obj.x = 200,  obj.y = 100;
 	obj.hit_distance = 15;
 	obj.points = { {{-5,-16}}, {{0,-18}}, {{12,-13}}, {{15,-4}}, {{9,12}}, {{0,16}}, {{-16,0}}, {{-5,-16}} };
 	obj.id = "asteroid";
 	obj.rotate = 30,  obj.speed = 1,  obj.drifttorque = 3;
-	wireframes.push_back(obj);
+	wfasteroid = obj;
+	// laser
+	obj.points = { {{0,-4}}, {{0,4}} };
+	obj.id = "laser";
+	obj.hit_distance = 3;
+	// obj.x = wireframes[0].x,  obj.y = wireframes[0].y,  obj.rotate = wireframes[0].rotate;
+	obj.speed = 5,  obj.drifttorque = 0;
+	wflaser = obj;
+	// add to scene
+	wireframes.push_back(wfspaceship);
+	wireframes.push_back(wfasteroid);
 	return 0;
 }
 
 
 int make_laser() {
 	printf("make laser\n");
-	WireFrame obj;
-	obj.points = { {{0,-4}}, {{0,4}} };
-	obj.id = "laser";
-	obj.hit_distance = 3;
+	WireFrame obj = wflaser;
 	obj.x = wireframes[0].x,  obj.y = wireframes[0].y,  obj.rotate = wireframes[0].rotate;
-	obj.speed = 5;
+	wireframes.push_back(obj);
+	return 0;
+}
+
+
+int make_asteroid(int type) {
+	WireFrame obj = wfasteroid;
+	obj.x = rand() % 320;
+	obj.y = rand() % 240;
+	obj.rotate = rand() % 360;
+	if (type == 2) {
+		obj.id += "2";
+		obj.scale *= 0.5;
+		obj.hit_distance *= 0.5;
+	}
 	wireframes.push_back(obj);
 	return 0;
 }
@@ -147,8 +166,8 @@ int main(int argc, char** argv) {
 			wireframes[0].speed  = (keys::u - keys::d) * 3;
 			wireframes[0].torque = (keys::r - keys::l) * 5;
 			if (keys::action && !action)  action = 10,  make_laser();
-			// if (!keys::action && action)  action = 0;
-			if (action)  action--;
+			if (!keys::action && action)  action = 0;
+			// if (action)  action--;
 		}
 
 		// move characters
@@ -175,9 +194,23 @@ int main(int argc, char** argv) {
 			if (dx <= hit_dist && dy <= hit_dist) {
 				if ((w1.id=="spaceship" && w2.id=="asteroid") || (w2.id=="spaceship" && w1.id=="asteroid"))
 					w1.flags = w2.flags = -1;
-				if ((w1.id=="spaceship" && w2.id=="asteroid") || (w2.id=="spaceship" && w1.id=="asteroid"))
+				if ((w1.id=="spaceship" && w2.id=="asteroid2") || (w2.id=="spaceship" && w1.id=="asteroid2"))
 					w1.flags = w2.flags = -1;
-				if ((w1.id=="laser" && w2.id=="asteroid") || (w2.id=="laser" && w1.id=="asteroid"))
+				if ((w1.id=="laser" && w2.id=="asteroid")) {
+					w1.flags = w2.flags = -1;
+					for (int z=0; z<3; z++) {
+						make_asteroid(2);
+						wireframes.back().x = w2.x,  wireframes.back().y = w2.y;
+					}
+				}
+				if ((w2.id=="laser" && w1.id=="asteroid")) {
+					w1.flags = w2.flags = -1;
+					for (int z=0; z<3; z++) {
+						make_asteroid(2);
+						wireframes.back().x = w1.x,  wireframes.back().y = w1.y;
+					}
+				}
+				if ((w1.id=="laser" && w2.id=="asteroid2") || (w2.id=="laser" && w1.id=="asteroid2"))
 					w1.flags = w2.flags = -1;
 			}
 		}
