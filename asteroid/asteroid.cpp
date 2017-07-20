@@ -95,6 +95,16 @@ public:
 SDL_Surface *screen = NULL,  *ship = NULL,  *spinner = NULL;
 vector<WireFrame> wireframes;
 WireFrame wfspaceship, wfasteroid, wflaser;  // prototypes
+int game_level = 0;
+
+
+pair<WireFrame*, WireFrame*> idmatch(WireFrame* wf1, WireFrame* wf2, const string& id1, const string& id2) {
+	if (wf1->id == id1 && wf2->id == id2) 
+		return { wf1, wf2 };
+	if (wf2->id == id1 && wf1->id == id2) 
+		return { wf2, wf1 };
+	return { NULL, NULL };
+}
 
 
 int make_objects() {
@@ -135,15 +145,6 @@ int make_laser() {
 }
 
 
-pair<WireFrame*, WireFrame*> idmatch(WireFrame* wf1, WireFrame* wf2, const string& id1, const string& id2) {
-	if (wf1->id == id1 && wf2->id == id2) 
-		return { wf1, wf2 };
-	if (wf2->id == id1 && wf1->id == id2) 
-		return { wf2, wf1 };
-	return { NULL, NULL };
-}
-
-
 int make_asteroid(int type) {
 	WireFrame obj = wfasteroid;
 	obj.x = rand() % 320;
@@ -159,6 +160,15 @@ int make_asteroid(int type) {
 }
 
 
+int next_level() {
+	game_level++;
+	wireframes = { wfspaceship };
+	for (int i=0; i<game_level; i++)
+		make_asteroid(1);
+	return 0;
+}
+
+
 int main(int argc, char** argv) {
 	printf("start\n");
 	wireframes.reserve(200);  // prevent cascade reassigns
@@ -167,6 +177,7 @@ int main(int argc, char** argv) {
 
 	// make wireframes
 	make_objects();
+	next_level();
 
 	int doloop=1;
 	int action=0;
@@ -225,10 +236,15 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		// erase dead
+		// erase dead, check next level state
+		int asteroid_count = 0;
 		for (int i=wireframes.size()-1; i>=0; i--)
 			if (wireframes[i].flags==-1)
 				wireframes.erase(wireframes.begin()+i);
+			else if (wireframes[i].id.substr(0,8)=="asteroid")
+				asteroid_count++;
+		if (asteroid_count==0)
+			next_level();
 
 		// redraw
 		SDL_FillRect(screen, NULL, gfx::drawc(0,0,0));
