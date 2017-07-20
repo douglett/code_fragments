@@ -135,6 +135,15 @@ int make_laser() {
 }
 
 
+pair<WireFrame*, WireFrame*> idmatch(WireFrame* wf1, WireFrame* wf2, const string& id1, const string& id2) {
+	if (wf1->id == id1 && wf2->id == id2) 
+		return { wf1, wf2 };
+	if (wf2->id == id1 && wf1->id == id2) 
+		return { wf2, wf1 };
+	return { NULL, NULL };
+}
+
+
 int make_asteroid(int type) {
 	WireFrame obj = wfasteroid;
 	obj.x = rand() % 320;
@@ -192,26 +201,26 @@ int main(int argc, char** argv) {
 			// printf("%s %s  %f %f %f\n", w1.id.c_str(), w1.id.c_str(), hit_dist, dx, dy);
 			// do collision
 			if (dx <= hit_dist && dy <= hit_dist) {
-				if ((w1.id=="spaceship" && w2.id=="asteroid") || (w2.id=="spaceship" && w1.id=="asteroid"))
-					w1.flags = w2.flags = -1;
-				if ((w1.id=="spaceship" && w2.id=="asteroid2") || (w2.id=="spaceship" && w1.id=="asteroid2"))
-					w1.flags = w2.flags = -1;
-				if ((w1.id=="laser" && w2.id=="asteroid")) {
-					w1.flags = w2.flags = -1;
+				// asteroid collisions - die
+				auto pm = idmatch(&w1, &w2, "spaceship", "asteroid");
+				if (pm.first != NULL)
+					pm.first->flags = pm.second->flags = -1;
+				pm = idmatch(&w1, &w2, "spaceship", "asteroid2");
+				if (pm.first != NULL)
+					pm.first->flags = pm.second->flags = -1;
+				// laster shoots asteroid 1 - dissolve
+				pm = idmatch(&w1, &w2, "laser", "asteroid");
+				if (pm.first != NULL) {
+					pm.first->flags = pm.second->flags = -1;
 					for (int z=0; z<3; z++) {
 						make_asteroid(2);
-						wireframes.back().x = w2.x,  wireframes.back().y = w2.y;
+						wireframes.back().x = pm.second->x,  wireframes.back().y = pm.second->y;
 					}
 				}
-				if ((w2.id=="laser" && w1.id=="asteroid")) {
-					w1.flags = w2.flags = -1;
-					for (int z=0; z<3; z++) {
-						make_asteroid(2);
-						wireframes.back().x = w1.x,  wireframes.back().y = w1.y;
-					}
-				}
-				if ((w1.id=="laser" && w2.id=="asteroid2") || (w2.id=="laser" && w1.id=="asteroid2"))
-					w1.flags = w2.flags = -1;
+				// laser shoots asteroid 2 - die
+				pm = idmatch(&w1, &w2, "laser", "asteroid2");
+				if (pm.first != NULL)
+					pm.first->flags = pm.second->flags = -1;
 			}
 		}
 
