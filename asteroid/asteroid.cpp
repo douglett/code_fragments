@@ -36,6 +36,7 @@ namespace keys {
 				case SDLK_RIGHT:   if (showkey) printf("r %d\n", keydir);  r = keydir;  break;
 				case SDLK_UP:      if (showkey) printf("u %d\n", keydir);  u = keydir;  break;
 				case SDLK_DOWN:    if (showkey) printf("d %d\n", keydir);  d = keydir;  break;
+				case 'z':
 				case SDLK_SPACE:   if (showkey) printf("SPC %d\n", keydir);  action = keydir;  break;
 				case SDLK_RETURN:  if (showkey) printf("RET %d\n", keydir);  start = keydir;  break;
 				default:  printf("%d\n", e.key.keysym.sym);
@@ -50,8 +51,7 @@ namespace keys {
 
 class WireFrame {
 public:
-	static const int MID_POINT=1;
-	static const int HIT_DISPLAY=1;
+	static const int DEBUG_DISPLAY=0;  // 0, 1, 2
 
 	double x=0, y=0, rotate=0, scale=100;
 	double speed=0, torque=0, drift=0, drifttorque=0;
@@ -82,8 +82,9 @@ public:
 		// mid point
 		// gfx::drawc(0xff0000ff);
 		gfx::drawc(255, 0, 0);
-		if (MID_POINT)  gfx::drawpx(SDL_GetVideoSurface(), x, y);
-		if (HIT_DISPLAY)  
+		if (DEBUG_DISPLAY == 1) 
+			gfx::drawpx(SDL_GetVideoSurface(), x, y);
+		else if (DEBUG_DISPLAY == 2)  
 			gfx::drawline(SDL_GetVideoSurface(), x, y, x+hit_distance, y),
 			gfx::drawline(SDL_GetVideoSurface(), x, y, x, y+hit_distance);
 		return 0;
@@ -142,7 +143,6 @@ int create_objects() {
 	obj.points = { {{0,-4}}, {{0,4}} };
 	obj.id = "laser";
 	obj.hit_distance = 3;
-	// obj.x = wireframes[0].x,  obj.y = wireframes[0].y,  obj.rotate = wireframes[0].rotate;
 	obj.speed = 5,  obj.drifttorque = 0;
 	wflaser = obj;
 	return 0;
@@ -151,7 +151,7 @@ int create_objects() {
 
 int make_laser() {
 	WireFrame obj = wflaser;
-	obj.x = wireframes[0].x,  obj.y = wireframes[0].y,  obj.rotate = wireframes[0].rotate;
+	obj.x = getship()->x,  obj.y = getship()->y,  obj.rotate = getship()->rotate;
 	wireframes.push_back(obj);
 	return 0;
 }
@@ -199,9 +199,9 @@ int main(int argc, char** argv) {
 		if (!keys::start)  kstart=0;
 
 		// move ship
-		if (wireframes.size() && wireframes[0].id == "spaceship") {
-			wireframes[0].speed  = (keys::u - keys::d) * 3;
-			wireframes[0].torque = (keys::r - keys::l) * 5;
+		if (getship()) {
+			getship()->speed  = (keys::u - keys::d) * 3;
+			getship()->torque = (keys::r - keys::l) * 5;
 			if (keys::action && !action)  action = 10,  make_laser();
 			if (!keys::action)  action = 0;
 			// if (action)  action--;
@@ -262,7 +262,7 @@ int main(int argc, char** argv) {
 				wireframes.erase(wireframes.begin()+i);
 			else if (wireframes[i].id.substr(0,8)=="asteroid")
 				asteroid_count++;
-		if (wireframes.size() && wireframes[0].id == "spaceship" && asteroid_count==0)
+		if (getship() && asteroid_count==0)
 			next_level();
 
 		// redraw scene
@@ -270,13 +270,12 @@ int main(int argc, char** argv) {
 		for (auto& wf : wireframes) 
 			wf.draw();
 		// draw score
-		SDL_Rect r={ 4, 4, 82, 10 };
-		SDL_FillRect(screen, &r, gfx::drawc(100,100,255));
-		gfx::drawc(255,255,255);
+		// SDL_Rect r={ 4, 4, 82, 10 };
+		// SDL_FillRect(screen, &r, gfx::drawc(100,100,255));
 		gfx::drawstr(screen, 5, 5, "asteroids!");
-		r={ 320-82, 4, 82, 10 };
-		SDL_FillRect(screen, &r, gfx::drawc(100,100,255));
-		gfx::drawstr(screen, 320-80, 5, strfmt("score: %d", game_score));
+		// r={ 320-84, 4, 82, 10 };
+		// SDL_FillRect(screen, &r, gfx::drawc(100,100,255));
+		gfx::drawstr(screen, 320-82, 5, strfmt("score %d", game_score));
 
 		// flip and update
 		gfx::scale2x(screen, screen);
