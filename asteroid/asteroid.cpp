@@ -11,6 +11,11 @@
 using namespace std;
 
 
+const int C_STR_MAX=255;
+char C_STR[C_STR_MAX]={0};
+#define  strfmt(...)  ( snprintf(C_STR, C_STR_MAX, __VA_ARGS__), C_STR )
+
+
 namespace keys {
 	// directions
 	int u=0, d=0, l=0, r=0;
@@ -19,7 +24,7 @@ namespace keys {
 	int update() {
 		SDL_Event e;
 		while (SDL_PollEvent(&e)) {
-			int keydir=0,  showkey=1;
+			int keydir=0,  showkey=0;
 			switch (e.type) {
 			case SDL_QUIT:  return -1;  // quit signal
 			case SDL_KEYDOWN:
@@ -102,6 +107,7 @@ WireFrame wfspaceship, wfasteroid, wflaser;  // prototypes
 int game_level = 0,  game_score = 0;
 
 
+// helpers
 pair<WireFrame*, WireFrame*> idmatch(WireFrame* wf1, WireFrame* wf2, const string& id1, const string& id2) {
 	if (wf1->id == id1 && wf2->id == id2) 
 		return { wf1, wf2 };
@@ -109,13 +115,19 @@ pair<WireFrame*, WireFrame*> idmatch(WireFrame* wf1, WireFrame* wf2, const strin
 		return { wf2, wf1 };
 	return { NULL, NULL };
 }
+WireFrame* getship() {
+	if (wireframes.size() && wireframes[0].id == "spaceship")
+		return &wireframes[0];
+	return NULL;
+}
 
 
-int make_objects() {
+// init wireframes
+int create_objects() {
 	WireFrame obj;
 	// spaceship
 	obj.x = 320/2,  obj.y = 240/2;
-	obj.hit_distance = 10;
+	obj.hit_distance = 12;
 	obj.points = { {{-10,-7}}, {{0,-15}}, {{10,-7}}, {{10,10}}, {{-10,10}}, {{-10,-7}} };
 	obj.id = "spaceship";
 	wfspaceship = obj;
@@ -133,22 +145,16 @@ int make_objects() {
 	// obj.x = wireframes[0].x,  obj.y = wireframes[0].y,  obj.rotate = wireframes[0].rotate;
 	obj.speed = 5,  obj.drifttorque = 0;
 	wflaser = obj;
-	// add to scene
-	// wireframes.push_back(wfspaceship);
-	// wireframes.push_back(wfasteroid);
 	return 0;
 }
 
 
 int make_laser() {
-	printf("make laser\n");
 	WireFrame obj = wflaser;
 	obj.x = wireframes[0].x,  obj.y = wireframes[0].y,  obj.rotate = wireframes[0].rotate;
 	wireframes.push_back(obj);
 	return 0;
 }
-
-
 int make_asteroid(int type) {
 	WireFrame obj = wfasteroid;
 	obj.x = rand() % 320;
@@ -162,13 +168,12 @@ int make_asteroid(int type) {
 	wireframes.push_back(obj);
 	return 0;
 }
-
-
 int next_level() {
 	game_level++;
 	wireframes = { wfspaceship };
 	for (int i=0; i<game_level; i++)
 		make_asteroid(1);
+	printf("moving to level: %d\n", game_level);
 	return 0;
 }
 
@@ -180,8 +185,7 @@ int main(int argc, char** argv) {
 	screen = SDL_GetVideoSurface();
 
 	// make wireframes
-	make_objects();
-	// next_level();
+	create_objects();
 
 	int doloop=1;
 	int action=0, kstart=0;
@@ -270,11 +274,9 @@ int main(int argc, char** argv) {
 		SDL_FillRect(screen, &r, gfx::drawc(100,100,255));
 		gfx::drawc(255,255,255);
 		gfx::drawstr(screen, 5, 5, "asteroids!");
-		stringstream ss;
-		ss << "score: " << game_score;
 		r={ 320-82, 4, 82, 10 };
 		SDL_FillRect(screen, &r, gfx::drawc(100,100,255));
-		gfx::drawstr(screen, 320-80, 5, ss.str().c_str());
+		gfx::drawstr(screen, 320-80, 5, strfmt("score: %d", game_score));
 
 		// flip and update
 		gfx::scale2x(screen, screen);
