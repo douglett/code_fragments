@@ -110,7 +110,7 @@ pair<WireFrame*, WireFrame*> idmatch(WireFrame* wf1, WireFrame* wf2, const strin
 int make_objects() {
 	WireFrame obj;
 	// spaceship
-	obj.x = 100,  obj.y = 100;
+	obj.x = 320/2,  obj.y = 240/2;
 	obj.hit_distance = 10;
 	obj.points = { {{-10,-7}}, {{0,-15}}, {{10,-7}}, {{10,10}}, {{-10,10}}, {{-10,-7}} };
 	obj.id = "spaceship";
@@ -250,6 +250,8 @@ int main(int argc, char** argv) {
 		SDL_FillRect(screen, NULL, gfx::drawc(0,0,0));
 		for (auto& wf : wireframes) 
 			wf.draw();
+		SDL_Rect r={5,5};
+		SDL_BlitSurface(gfx::font, NULL, screen, &r);
 
 		// flip and update
 		gfx::scale2x(screen, screen);
