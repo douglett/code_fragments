@@ -161,6 +161,7 @@ int make_asteroid(int type) {
 
 int main(int argc, char** argv) {
 	printf("start\n");
+	wireframes.reserve(200);  // prevent cascade reassigns
 	gfx::init(640, 480, "asteroids");
 	screen = SDL_GetVideoSurface();
 
