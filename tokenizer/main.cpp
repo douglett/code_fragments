@@ -1,18 +1,15 @@
 #include "tokenizer.h"
 #include <iostream>
 #include <string>
-#include <vector>
 
 using namespace std;
 
 
-static vector<string> args;
-
-
 int main(int argc, char** argv) {
-	for (int i=0; i<argc; i++)
-		args.push_back(argv[i]);
-
-	tokenizer::parsefile("tokenizer.cpp");
+	if (argc < 2)
+		return fprintf(stderr, "expected argument: filename\n"), 1;
+	int err = tokenizer::parsefile("tokenizer.cpp");
+	if (err)  return err;
 	tokenizer::showtokens();
+	return 0;
 }
