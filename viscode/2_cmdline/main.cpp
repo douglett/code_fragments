@@ -29,11 +29,11 @@ int prog_load() {
 		else if (s=="[func]")  flag=2;
 		else if (flag==1) {
 			// load all structs
-			if (s.substr(0,2)=="++") {
+			if (s.substr(0,2)=="++" || s.substr(0,2)=="\t\t") {
 				assert(mstructs.size()>0);
 				mstructs.back().members.push_back( s.substr(2) );
 			}
-			else if (s.substr(0,1)=="+") {
+			else if (s.substr(0,1)=="+" || s.substr(0,1)=="\t") {
 				mstructs.push_back({ .name=s.substr(1) });
 			}
 		}
@@ -48,14 +48,14 @@ int prog_save() {
 		return fprintf(stderr, "error: could not save prog file (%s)\n", PROG_FNAME.c_str()), 1;
 	fs << "[struct]" << endl;
 	for (const auto& ms : mstructs) {
-		fs << "+" << ms.name << endl;
+		fs << "\t" << ms.name << endl;
 		for (const auto& t : ms.members)
-			fs << "++" << t << endl;
+			fs << "\t\t" << t << endl;
 	}
 	fs << "[func]" << endl;
-	fs << "+name" << endl;
-	fs << "++arg1" << endl;
-	fs << "++arg2" << endl;
+	fs << "\tname" << endl;
+	fs << "\t\targ1" << endl;
+	fs << "\t\targ2" << endl;
 	return 0;
 }
 
@@ -89,12 +89,24 @@ int cmd_struct() {
 		for (const auto& ms : mstructs)
 			printf("  %s\n", ms.name.c_str());
 	}
-	else if (argl[2]=="-add") {
+	else if (argl[2]=="-add" || argl[2]=="-a") {
 		// add new member
 		if (argl.size()<4)
-			return fprintf(stderr, "error: expected: struct add <name>\n"), 1;
+			return fprintf(stderr, "error: expected: struct -add <name>\n"), 1;
 		mstructs.push_back({ .name=argl[3] });
 		printf("added struct: %s\n", argl[3].c_str());
+		return prog_save();
+	}
+	else if (argl[2]=="-del" || argl[2]=="-d") {
+		// add new member
+		if (argl.size()<4)
+			return fprintf(stderr, "error: expected: struct -del <name>\n"), 1;
+		string name = argl[3];
+		int pos = get_struct_pos(name);
+		if (pos==-1)
+			return fprintf(stderr, "error: struct not found: %s\n", name.c_str()), 1;
+		mstructs.erase(mstructs.begin()+pos);
+		printf("struct deleted: %s\n", name.c_str());
 		return prog_save();
 	}
 	else {
