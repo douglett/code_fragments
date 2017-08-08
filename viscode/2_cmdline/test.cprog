@@ -5,6 +5,7 @@
 +name2
 ++type
 ++type2
++namey
 [func]
 +name
 ++arg1
