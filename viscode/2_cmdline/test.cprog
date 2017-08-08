@@ -1,0 +1,11 @@
+[struct]
++name
+++type
+++type2
++name2
+++type
+++type2
+[func]
++name
+++arg1
+++arg2

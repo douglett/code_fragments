@@ -12,6 +12,12 @@ const int
 	OP_QUIT=-2,
 	OP_BACK=-1;
 
+vector<string> mlist_example={
+	"blahA", "blahB", "blahC", "blahD", "blahE",
+	"blahF", "blahG", "blahH", "blahI", "blahJ",
+	"blahK", "blahL", "blahM", "blahN", "blahO",
+};
+
 struct M_Structs {
 	string name;
 };
@@ -43,32 +49,41 @@ int l_menu(const vector<string>& mlist) {
 		case 'a':  if (page > 0) page--;  break;
 		case 'z':  if ((page+1)*10 < mlist.size()) page++;  break;
 		}
-		if (c>='1' && c<='9')  return c-'1';
-		if (c=='0')  return 0;
+		if (c>='1' && c<='9')  return page*10 + (c-'1');
+		if (c=='0')  return page*10;
 	}
 	return -2;
 }
 
 
-// int l_struct() {
-// 	return 0;
-// }
-int l_structmenu() {
-	vector<string> mlist={
-		"blahA", "blahB", "blahC", "blahD", "blahE",
-		"blahF", "blahG", "blahH", "blahI", "blahJ",
-		"blahK", "blahL", "blahM", "blahN", "blahO",
-	};
+int l_struct(int index) {
+	auto& mstruct = MSlist[index];
+	vector<string> mlist={ };
+	// display loop
 	while (true) {
 		int opt = l_menu(mlist);
 		if (opt < 0) { return opt; }
+		// if (opt > 0 && opt < mlist.size())  l_struct(opt);
+	}
+	return 0;
+}
+int l_structmenu() {
+	vector<string> mlist;
+	for (const auto& m : MSlist)
+		mlist.push_back(m.name);
+	// display loop
+	while (true) {
+		int opt = l_menu(mlist);
+		if (opt < 0) { return opt; }
+		if (opt >= 0 && opt < mlist.size()) { if (l_struct(opt) == OP_QUIT) return OP_QUIT; }
 	}
 }
 int l_mainmenu() {
 	vector<string> mlist={ "structs", "functions" };
+	// display loop
 	while (true) {
 		int opt = l_menu(mlist);
-		if      (opt < 0)  { return opt; }
+		if      (opt == OP_QUIT)  { return OP_QUIT; }
 		else if (opt == 0) { if (l_structmenu() == OP_QUIT) return OP_QUIT; }
 	}
 }
@@ -90,7 +105,6 @@ int main() {
 	clear();  // cls
 	
 	l_mainmenu();
-	// l_structmenu();
 	
 	endwin();
 	return 0;
