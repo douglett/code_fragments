@@ -70,6 +70,14 @@ int load() {
 			else if (s.substr(0,5)=="body:")  state=33;
 		}
 		else if (state==31) {  // func args
+			if      (s.substr(0,5)=="head:")  state=32;
+			else if (s.substr(0,5)=="body:")  state=33;
+			// funclist.back().args.push_back(s);
+		}
+		else if (state==32) {  // func head
+			if (s.substr(0,5)=="body:")  state=33;
+		}
+		else if (state==33) {  // func body
 			funclist.back().body.push_back(s);
 		}
 	}
@@ -90,7 +98,7 @@ int show() {
 	return 0;
 }
 
-map<string,string> exdef(const string& def) {
+Ndef exdef(const string& def) {
 	string id, type, cons;
 	int i=0;
 	for ( ; i<def.size() && def[i]!='('; i++)
@@ -99,7 +107,7 @@ map<string,string> exdef(const string& def) {
 		type+=def[i];
 	for (i++ ; i<def.size(); i++)
 		cons+=def[i];
-	return { {"id",id}, {"type",type}, {"cons",cons} };
+	return { .id=id, .type=type, .construct=cons };
 }
 
 int compile() {
@@ -115,7 +123,7 @@ int compile() {
 		for (const auto& b : s.body) {
 			// fs<<'\t'<<exdef(b)<<";"<<endl;
 			auto d=exdef(b);
-			string s=d["type"]+" "+d["id"]+"="+d["cons"];
+			string s=d.type+" "+d.id+"="+d.construct;
 			fs<<'\t'<<s<<";"<<endl;
 		}
 		fs<<"};"<<endl;
@@ -123,8 +131,11 @@ int compile() {
 	// functions
 	for (const auto& f : funclist) {
 		auto rval = exdef(f.rval);
-		fs<<rval["type"]<<" "<<f.id<<"() {"<<endl;
-		fs<<'\t'<<rval["type"]<<" rval="<<rval["cons"]<<";"<<endl;
+		fs<<rval.type<<" "<<f.id<<"() {"<<endl;
+		fs<<'\t'<<rval.type<<" rval="<<rval.construct<<";"<<endl;
+		for (const auto& b : f.body)
+			fs<<'\t'<<b<<endl;
+		fs<<"\treturn rval;"<<endl;
 		fs<<"}"<<endl;
 	}
 	return 0;

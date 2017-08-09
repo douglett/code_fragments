@@ -12,3 +12,6 @@ struct person {
 };
 string hello() {
 	string rval=("");
+	rval = format + name;
+	return rval;
+}
