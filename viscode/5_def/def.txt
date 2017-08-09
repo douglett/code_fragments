@@ -1,0 +1,17 @@
+namespace: def
+
+struct:
+	id: person
+	body:
+		name(string)("")
+		age(int)(0)
+
+func:
+	id: hello
+	rval: (string)("")
+	args:
+		name(const string&)
+	head:
+		format(const string)("hello ")
+	body:
+		rval = format + name;
