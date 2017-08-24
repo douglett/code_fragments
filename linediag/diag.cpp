@@ -5,10 +5,14 @@
 using namespace std;
 
 
-const int grid_size = 50;
-int grid_offx = 20;
-int grid_offy = 20;
 SDL_Surface* scr = NULL;
+
+struct Grid {
+	int size=50;
+	int offx=20, offy=20;
+	int cursx=0, cursy=0;
+};
+Grid grid;
 
 
 struct Component {
@@ -19,8 +23,8 @@ struct Component {
 struct C_start : Component {
 	int x=3, y=3;
 	virtual int draw() const {
-		int xx = gridx * grid_size + grid_offx + x;
-		int yy = gridy * grid_size + grid_offx + y;
+		int xx = gridx * grid.size + grid.offx + x;
+		int yy = gridy * grid.size + grid.offx + y;
 		SDL_Rect r={ short(xx), short(yy), 5*8+3, 11};
 		SDL_FillRect(scr, &r, gfx::drawc(200,0,0));
 		gfx::drawstr(scr, xx+2, yy+2, "start");
@@ -30,8 +34,8 @@ struct C_start : Component {
 struct C_end : Component {
 	int x=3, y=3;
 	virtual int draw() const {
-		int xx = gridx * grid_size + grid_offx + x;
-		int yy = gridy * grid_size + grid_offy + y;
+		int xx = gridx * grid.size + grid.offx + x;
+		int yy = gridy * grid.size + grid.offy + y;
 		SDL_Rect r={ short(xx), short(yy), 5*8+3, 11};
 		SDL_FillRect(scr, &r, gfx::drawc(0,0,200));
 		gfx::drawstr(scr, xx+2, yy+2, " end");
@@ -45,10 +49,15 @@ int pollkeys() {
 	SDL_Event e;
 	while (SDL_PollEvent(&e)) {
 		if (e.type==SDL_QUIT)  return 1;
-		if (e.type==SDL_KEYDOWN || e.type==SDL_KEYUP) {
+		if (e.type==SDL_KEYDOWN) {
 			// int dir=( e.type==SDL_KEYDOWN ? 1 : 0 );
 			switch (e.key.keysym.sym) {
 			case SDLK_ESCAPE:  return 1;
+			case SDLK_UP:     if (grid.cursy>0) grid.cursy--;  break;
+			case SDLK_DOWN:   grid.cursy++;  break;
+			case SDLK_LEFT:   if (grid.cursx>0) grid.cursx--;  break;
+			case SDLK_RIGHT:  grid.cursx++;  break;
+			// case 
 			default:  printf("key: %d\n", e.key.keysym.sym);
 			}
 		}
@@ -68,15 +77,19 @@ int main(int argc, char** argv) {
 	c->gridy = 2;
 	clist.push_back(c);
 
+	SDL_Rect r;
 	while (true) {
 		SDL_FillRect(scr, NULL, gfx::drawc(0,0,0));
 
 		// draw grid
 		gfx::drawc(50,50,50);
-		for (int i=grid_offx; i<640; i+=grid_size)
+		for (int i=grid.offx; i<640; i+=grid.size)
 			gfx::drawline(scr, i, 0, i, 480);
-		for (int i=grid_offy; i<480; i+=grid_size)
+		for (int i=grid.offy; i<480; i+=grid.size)
 			gfx::drawline(scr, 0, i, 640, i);
+		// current
+		r.w=r.h=grid.size, r.x=grid.offx+grid.size*grid.cursx, r.y=grid.offy+grid.size*grid.cursy;
+		SDL_FillRect(scr, &r, gfx::drawc(100,100,100));
 
 		// components
 		for (const auto c : clist)
