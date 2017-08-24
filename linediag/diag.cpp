@@ -1,6 +1,7 @@
 #include "graphics/graphics.h"
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 using namespace std;
 
@@ -13,6 +14,15 @@ struct Grid {
 	int cursx=0, cursy=0;
 };
 Grid grid;
+
+
+void turtle(int x, int y, const vector<int>& pos) {
+	assert(pos.size()%2 == 0);
+	for (int i=0; i+1<pos.size(); i+=2) {
+		gfx::drawline(scr, x, y, pos[i]+x, pos[i+1]+y);
+		x+=pos[i], y+=pos[i+1];
+	}
+}
 
 
 struct Component {
@@ -58,6 +68,28 @@ struct C_end : Component {
 		return 0;
 	}
 };
+struct C_split : Component {
+	virtual int draw() const {
+		int xx = gridx * grid.size + grid.offx;
+		int yy = gridy * grid.size + grid.offy;
+		// arrows out
+		gfx::drawc(150,150,150);
+		// int x = xx+grid.size/2;
+		// int y = yy+2;
+		// gfx::drawline(scr, x, y, x, y+25);
+		// gfx::drawline(scr, x, y+32, x-4, y+32-4);
+		// gfx::drawline(scr, x, y+32, x+4, y+32-4);
+		turtle(xx+grid.size/2, yy+2, {
+			0,25,
+			-10,5, -8,0, // left line
+			4,-4, -4,4, 4,4, -4,-4, // arrow
+			8,0, 10,-5, // back
+			10,5, 8,0, // right line
+			-4,-4, 4,4, -4,4 // arrow 2
+		});
+		return 0;
+	}
+};
 vector<shared_ptr<Component>> clist;
 
 
@@ -91,6 +123,9 @@ int main(int argc, char** argv) {
 	clist.push_back(c);
 	c = make_shared<C_end>();
 	c->gridy = 2;
+	clist.push_back(c);
+	c = make_shared<C_split>();
+	c->gridy = 1;
 	clist.push_back(c);
 
 	SDL_Rect r;
