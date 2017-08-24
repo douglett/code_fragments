@@ -21,24 +21,40 @@ struct Component {
 	virtual int draw() const { return 0; }
 };
 struct C_start : Component {
-	int x=3, y=3;
+	// int x=3, y=3;
 	virtual int draw() const {
-		int xx = gridx * grid.size + grid.offx + x;
-		int yy = gridy * grid.size + grid.offx + y;
-		SDL_Rect r={ short(xx), short(yy), 5*8+3, 11};
+		// pos
+		int xx = gridx * grid.size + grid.offx;
+		int yy = gridy * grid.size + grid.offx;
+		// draw box
+		SDL_Rect r={ short(xx+3), short(yy+3), 5*8+3, 11};
 		SDL_FillRect(scr, &r, gfx::drawc(200,0,0));
-		gfx::drawstr(scr, xx+2, yy+2, "start");
+		gfx::drawstr(scr, xx+5, yy+5, "start");
+		// arrows out
+		gfx::drawc(150,150,150);
+		int x = xx+grid.size/2;
+		int y = yy+15;
+		gfx::drawline(scr, x, y, x, y+32);
+		gfx::drawline(scr, x, y+32, x-4, y+32-4);
+		gfx::drawline(scr, x, y+32, x+4, y+32-4);
 		return 0;
 	}
 };
 struct C_end : Component {
-	int x=3, y=3;
 	virtual int draw() const {
-		int xx = gridx * grid.size + grid.offx + x;
-		int yy = gridy * grid.size + grid.offy + y;
-		SDL_Rect r={ short(xx), short(yy), 5*8+3, 11};
+		int xx = gridx * grid.size + grid.offx;
+		int yy = gridy * grid.size + grid.offy;
+		// box and text
+		SDL_Rect r={ short(xx+3), short(yy+36), 5*8+3, 11};
 		SDL_FillRect(scr, &r, gfx::drawc(0,0,200));
-		gfx::drawstr(scr, xx+2, yy+2, " end");
+		gfx::drawstr(scr, xx+5, yy+36+2, " end");
+		// arrows out
+		gfx::drawc(150,150,150);
+		int x = xx+grid.size/2;
+		int y = yy+2;
+		gfx::drawline(scr, x, y, x, y+32);
+		gfx::drawline(scr, x, y+32, x-4, y+32-4);
+		gfx::drawline(scr, x, y+32, x+4, y+32-4);
 		return 0;
 	}
 };
