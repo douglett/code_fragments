@@ -33,7 +33,26 @@ void mullines(int x, int y, const vector<array<int, 4>>& coords) {
 struct Component {
 	int x=0, y=0;
 	int gridx=0, gridy=0;
+	int flag[100]={0};
 	virtual int draw() const { return 0; }
+	int pixx() const { return gridx * grid.size + grid.offx; }
+	int pixy() const { return gridy * grid.size + grid.offy; }
+	void dline(int x, int y, int d) const {
+		switch (d) {
+		case 0:  gfx::drawline(scr, x, y, x, y-23);  break;
+		case 1:  gfx::drawline(scr, x, y, x+23, y);  break;
+		case 2:  gfx::drawline(scr, x, y, x, y+23);  break;
+		case 3:  gfx::drawline(scr, x, y, x-23, y);  break;
+		}
+	}
+	void darrow(int x, int y, int d) const {
+		switch (d) {
+		case 0:  mullines(x, y-23, { {{0,0,-4,4}},  {{0,0,4,4}}  });  break;
+		case 1:  mullines(x+23, y, { {{0,0,-4,-4}}, {{0,0,-4,4}} });  break;
+		case 2:  mullines(x, y+23, { {{0,0,-4,-4}}, {{0,0,4,-4}} });  break;
+		case 3:  mullines(x-23, y, { {{0,0,4,-4}},  {{0,0,4,4}}  });  break;
+		}
+	}
 };
 struct C_start : Component {
 	// int x=3, y=3;
@@ -75,11 +94,9 @@ struct C_end : Component {
 };
 struct C_split : Component {
 	virtual int draw() const {
-		int xx = gridx * grid.size + grid.offx;
-		int yy = gridy * grid.size + grid.offy;
 		// arrows out
 		gfx::drawc(150,150,150);
-		mullines(xx+grid.size/2, yy+2, {
+		mullines(pixx()+grid.size/2, pixy()+2, {
 			{{0,0,0,23}},
 			{{0,23,-20,23}},
 			{{-20,23,-20+4,23-4}},
@@ -88,43 +105,51 @@ struct C_split : Component {
 			{{20,23,20-4,23-4}},
 			{{20,23,20-4,23+4}}
 		});
-		gfx::drawstr(scr, xx+4, yy+34, "0");
-		gfx::drawstr(scr, xx+40, yy+34, "1");
+		gfx::drawstr(scr, pixx()+4, pixy()+34, "0");
+		gfx::drawstr(scr, pixx()+40, pixy()+34, "1");
 		return 0;
 	}
 };
 struct C_join : Component {
 	int dirin=1, dirout=2;
-	void dline(int x, int y, int d) const {
-		switch (d) {
-		case 0:  gfx::drawline(scr, x, y, x, y-23);  break;
-		case 1:  gfx::drawline(scr, x, y, x+23, y);  break;
-		case 2:  gfx::drawline(scr, x, y, x, y+23);  break;
-		case 3:  gfx::drawline(scr, x, y, x-23, y);  break;
-		}
-	}
-	void darrow(int x, int y, int d) const {
-		switch (d) {
-		case 0:  mullines(x, y-23, { {{0,0,-4,4}},  {{0,0,4,4}}  });  break;
-		case 1:  mullines(x+23, y, { {{0,0,-4,-4}}, {{0,0,-4,4}} });  break;
-		case 2:  mullines(x, y+23, { {{0,0,-4,-4}}, {{0,0,4,-4}} });  break;
-		case 3:  mullines(x-23, y, { {{0,0,4,-4}},  {{0,0,4,4}}  });  break;
-		}
-	}
 	virtual int draw() const {
-		int xx = gridx * grid.size + grid.offx;
-		int yy = gridy * grid.size + grid.offy;
 		// arrow connection
 		gfx::drawc(150,150,150);
 		// mullines(xx+grid.size/2, yy+grid.size/2, {
 		// 	{{-23,0,23,0}},
 		// 	{{0,-23,0,23}}
 		// });
-		xx += grid.size/2;
-		yy += grid.size/2;
+		int xx = pixx() + grid.size/2;
+		int yy = pixy() + grid.size/2;
 		dline (xx, yy, dirin );
 		dline (xx, yy, dirout);
 		darrow(xx, yy, dirout);
+		return 0;
+	}
+};
+struct C_logic : Component {
+	virtual int draw() const {
+		int xx = pixx() + grid.size/2;
+		int yy = pixy() + grid.size/2;
+		int w = 8;
+		// draw triangle
+		switch (flag[0]) {
+		case 1:
+			mullines(xx, yy, {
+				{{ -w,-w,w,-w }},
+				{{ w,-w,0,w }},
+				{{ -w,-w,0,w }}
+			});
+			break;
+		}
+		// draw outer arrows
+		// dline (xx, yy, 0);
+		// dline (xx, yy, 2);
+		mullines(xx, yy, {
+			{{ 0,-23,0,-w }},
+			{{ 0,w,0,23 }}
+		});
+		darrow(xx, yy, 2);
 		return 0;
 	}
 };
@@ -156,17 +181,25 @@ int main(int argc, char** argv) {
 	gfx::init(640, 480, "test");
 	scr = SDL_GetVideoSurface();
 
+	// start
 	shared_ptr<Component> c = make_shared<C_start>();
-	c->gridx = 2;  c->gridy = 0;
+	c->gridx=2, c->gridy=0;
 	clist.push_back(c);
+	// end
 	c = make_shared<C_end>();
-	c->gridx = 2;  c->gridy = 2;
+	c->gridx=2, c->gridy=5;
 	clist.push_back(c);
+	// split
 	c = make_shared<C_split>();
-	c->gridx = 2;  c->gridy = 1;
+	c->gridx=2, c->gridy=1;
 	clist.push_back(c);
+	// join
 	c = make_shared<C_join>();
 	c->gridx=1, c->gridy=1;
+	clist.push_back(c);
+	// not
+	c = make_shared<C_logic>();
+	c->gridx=1, c->gridy=2, c->flag[0]=1;
 	clist.push_back(c);
 
 	SDL_Rect r;
