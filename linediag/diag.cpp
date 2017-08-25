@@ -80,16 +80,51 @@ struct C_split : Component {
 		// arrows out
 		gfx::drawc(150,150,150);
 		mullines(xx+grid.size/2, yy+2, {
-			{{0,0,0,25}},
-			{{0,25,-10,30}},
-			{{-10,30,-18,30}},
-			{{-18,30,-18+4,30-4}},
-			{{-18,30,-18+4,30+4}},
-			{{0,25,10,30}},
-			{{10,30,18,30}},
-			{{18,30,18-4,30-4}},
-			{{18,30,18-4,30+4}}
+			{{0,0,0,23}},
+			{{0,23,-20,23}},
+			{{-20,23,-20+4,23-4}},
+			{{-20,23,-20+4,23+4}},
+			{{0,23,20,23}},
+			{{20,23,20-4,23-4}},
+			{{20,23,20-4,23+4}}
 		});
+		gfx::drawstr(scr, xx+4, yy+34, "0");
+		gfx::drawstr(scr, xx+40, yy+34, "1");
+		return 0;
+	}
+};
+struct C_join : Component {
+	int dirin=1, dirout=2;
+	void dline(int x, int y, int d) const {
+		switch (d) {
+		case 0:  gfx::drawline(scr, x, y, x, y-23);  break;
+		case 1:  gfx::drawline(scr, x, y, x+23, y);  break;
+		case 2:  gfx::drawline(scr, x, y, x, y+23);  break;
+		case 3:  gfx::drawline(scr, x, y, x-23, y);  break;
+		}
+	}
+	void darrow(int x, int y, int d) const {
+		switch (d) {
+		case 0:  mullines(x, y-23, { {{0,0,-4,4}},  {{0,0,4,4}}  });  break;
+		case 1:  mullines(x+23, y, { {{0,0,-4,-4}}, {{0,0,-4,4}} });  break;
+		case 2:  mullines(x, y+23, { {{0,0,-4,-4}}, {{0,0,4,-4}} });  break;
+		case 3:  mullines(x-23, y, { {{0,0,4,-4}},  {{0,0,4,4}}  });  break;
+		}
+	}
+	virtual int draw() const {
+		int xx = gridx * grid.size + grid.offx;
+		int yy = gridy * grid.size + grid.offy;
+		// arrow connection
+		gfx::drawc(150,150,150);
+		// mullines(xx+grid.size/2, yy+grid.size/2, {
+		// 	{{-23,0,23,0}},
+		// 	{{0,-23,0,23}}
+		// });
+		xx += grid.size/2;
+		yy += grid.size/2;
+		dline (xx, yy, dirin );
+		dline (xx, yy, dirout);
+		darrow(xx, yy, dirout);
 		return 0;
 	}
 };
@@ -129,6 +164,9 @@ int main(int argc, char** argv) {
 	clist.push_back(c);
 	c = make_shared<C_split>();
 	c->gridx = 2;  c->gridy = 1;
+	clist.push_back(c);
+	c = make_shared<C_join>();
+	c->gridx=1, c->gridy=1;
 	clist.push_back(c);
 
 	SDL_Rect r;
