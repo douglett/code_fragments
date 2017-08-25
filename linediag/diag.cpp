@@ -1,6 +1,7 @@
 #include "graphics/graphics.h"
 #include <iostream>
 #include <vector>
+#include <array>
 #include <cassert>
 
 using namespace std;
@@ -23,6 +24,10 @@ void turtle(int x, int y, const vector<int>& pos) {
 		x+=pos[i], y+=pos[i+1];
 	}
 }
+void mullines(int x, int y, const vector<array<int, 4>>& coords) {
+	for (const auto& c : coords)
+		gfx::drawline(scr, x+c[0], y+c[1], x+c[2], y+c[3]);
+}
 
 
 struct Component {
@@ -42,11 +47,11 @@ struct C_start : Component {
 		gfx::drawstr(scr, xx+5, yy+5, "start");
 		// arrows out
 		gfx::drawc(150,150,150);
-		int x = xx+grid.size/2;
-		int y = yy+15;
-		gfx::drawline(scr, x, y, x, y+32);
-		gfx::drawline(scr, x, y+32, x-4, y+32-4);
-		gfx::drawline(scr, x, y+32, x+4, y+32-4);
+		mullines(xx+grid.size/2, yy+15, {
+			{{0,0,0,32}},
+			{{0,32,-4,32-4}},
+			{{0,32,+4,32-4}}
+		});
 		return 0;
 	}
 };
@@ -60,11 +65,11 @@ struct C_end : Component {
 		gfx::drawstr(scr, xx+5, yy+36+2, " end");
 		// arrows out
 		gfx::drawc(150,150,150);
-		int x = xx+grid.size/2;
-		int y = yy+2;
-		gfx::drawline(scr, x, y, x, y+32);
-		gfx::drawline(scr, x, y+32, x-4, y+32-4);
-		gfx::drawline(scr, x, y+32, x+4, y+32-4);
+		mullines(xx+grid.size/2, yy+2, {
+			{{0,0,0,32}},
+			{{0,32,-4,32-4}},
+			{{0,32,+4,32-4}}
+		});
 		return 0;
 	}
 };
@@ -74,18 +79,16 @@ struct C_split : Component {
 		int yy = gridy * grid.size + grid.offy;
 		// arrows out
 		gfx::drawc(150,150,150);
-		// int x = xx+grid.size/2;
-		// int y = yy+2;
-		// gfx::drawline(scr, x, y, x, y+25);
-		// gfx::drawline(scr, x, y+32, x-4, y+32-4);
-		// gfx::drawline(scr, x, y+32, x+4, y+32-4);
-		turtle(xx+grid.size/2, yy+2, {
-			0,25,
-			-10,5, -8,0, // left line
-			4,-4, -4,4, 4,4, -4,-4, // arrow
-			8,0, 10,-5, // back
-			10,5, 8,0, // right line
-			-4,-4, 4,4, -4,4 // arrow 2
+		mullines(xx+grid.size/2, yy+2, {
+			{{0,0,0,25}},
+			{{0,25,-10,30}},
+			{{-10,30,-18,30}},
+			{{-18,30,-18+4,30-4}},
+			{{-18,30,-18+4,30+4}},
+			{{0,25,10,30}},
+			{{10,30,18,30}},
+			{{18,30,18-4,30-4}},
+			{{18,30,18-4,30+4}}
 		});
 		return 0;
 	}
@@ -119,13 +122,13 @@ int main(int argc, char** argv) {
 	scr = SDL_GetVideoSurface();
 
 	shared_ptr<Component> c = make_shared<C_start>();
-	c->gridx = c->gridy = 0;
+	c->gridx = 2;  c->gridy = 0;
 	clist.push_back(c);
 	c = make_shared<C_end>();
-	c->gridy = 2;
+	c->gridx = 2;  c->gridy = 2;
 	clist.push_back(c);
 	c = make_shared<C_split>();
-	c->gridy = 1;
+	c->gridx = 2;  c->gridy = 1;
 	clist.push_back(c);
 
 	SDL_Rect r;
