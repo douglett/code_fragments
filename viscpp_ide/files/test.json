@@ -1,1 +1,0 @@
-[{"sig":"<header>","body":[]},{"sig":"int main()","body":["printf(\"hello world\\n\");","printf(\"%s\\n\", hello().c_str());"]},{"sig":"std::string hello()","body":["return \"hello\";"]}]
