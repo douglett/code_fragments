@@ -6,7 +6,7 @@ using namespace std;
 
 
 int main() {
-	fstream fs("/tmp/dswapd/vterm1.swap", fstream::out | fstream::binary);
+	fstream fs("/tmp/dswapd/vterm1.swap", fstream::in | fstream::out | fstream::binary);
 	if (!fs.is_open())
 		return fprintf(stderr, "error: could not open swap file\n"), 1;
 	const int SSIZE = 320*240*sizeof(uint32_t);
@@ -24,6 +24,6 @@ int main() {
 		fs.seekp(128);
 		fs.write(buf, SSIZE);
 
-		usleep(100);
+		usleep(100*1000);
 	}
 }
