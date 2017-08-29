@@ -12,16 +12,32 @@ struct Model {
 	double roll=0, pitch=0, yaw=0;
 	vector<array<double, 6>> lines;
 	void draw() {
-		double t = M_PI/180 * roll;  // theta
+		double thr = M_PI/180 * roll;   // theta roll
+		double thp = M_PI/180 * pitch;  // theta pitch
+		double thy = M_PI/180 * yaw;    // theta yaw
 		for (auto l : lines) {
-			// translate
 			double xt, yt;
-			xt = l[0]*cos(t) - l[1]*sin(t);
-			yt = l[0]*sin(t) + l[1]*cos(t);
+			// translate roll
+			xt = l[0]*cos(thr) - l[1]*sin(thr);
+			yt = l[0]*sin(thr) + l[1]*cos(thr);
 			l[0]=xt, l[1]=yt;
-			xt = l[3]*cos(t) - l[4]*sin(t);
-			yt = l[3]*sin(t) + l[4]*cos(t);
+			xt = l[3]*cos(thr) - l[4]*sin(thr);
+			yt = l[3]*sin(thr) + l[4]*cos(thr);
 			l[3]=xt, l[4]=yt;
+			// translate pitch
+			xt = l[1]*cos(thp) - l[2]*sin(thp);
+			yt = l[1]*sin(thp) + l[2]*cos(thp);
+			l[1]=xt, l[2]=yt;
+			xt = l[4]*cos(thp) - l[5]*sin(thp);
+			yt = l[4]*sin(thp) + l[5]*cos(thp);
+			l[4]=xt, l[5]=yt;
+			// translate yaw
+			xt = l[0]*cos(thy) - l[2]*sin(thy);
+			yt = l[0]*sin(thy) + l[2]*cos(thy);
+			l[0]=xt, l[2]=yt;
+			xt = l[3]*cos(thy) - l[5]*sin(thy);
+			yt = l[3]*sin(thy) + l[5]*cos(thy);
+			l[3]=xt, l[5]=yt;
 			// draw
 			gfx::drawline(SDL_GetVideoSurface(), 
 				x + l[0] * scale,
@@ -41,12 +57,14 @@ int main(int argc, char** argv) {
 	Model m;
 	m.x=160, m.y=120;
 	m.scale=30;
-	m.roll=30;
+	// m.roll=30;
+	// m.pitch=30;
+	// m.yaw=30;
 	m.lines={
-		{{-1,-1,0, 1,-1,0}},
-		{{1,-1,0,  1,1,0}},
-		{{1,1,0,  -1,1,0}},
-		{{-1,1,0, -1,-1,0}},
+		{{-1,-1,1, 1,-1,1}},
+		{{1,-1,1,  1,1,1}},
+		{{1,1,1,  -1,1,1}},
+		{{-1,1,1, -1,-1,1}},
 
 		{{-1,-1,-1, 1,-1,-1}},
 		{{1,-1,-1,  1,1,-1}},
@@ -60,6 +78,7 @@ int main(int argc, char** argv) {
 		// gfx::drawline(scr, 10, 10, 100, 100);
 
 		m.draw();
+		m.yaw += 2;
 
 		gfx::scale2x(scr, scr);
 		gfx::flip();
