@@ -22,6 +22,13 @@ inline void rotateline(array<double,6>& l, double roll, double pitch, double yaw
 	rotatepoint(l[0], l[2], yaw);
 	rotatepoint(l[3], l[5], yaw);
 }
+inline void rotate(char axis, double theta, double* p) {
+	switch(axis) {
+	case 'r':  rotatepoint(p[0], p[1], theta);  break;
+	case 'p':  rotatepoint(p[1], p[2], theta);  break;
+	case 'y':  rotatepoint(p[0], p[2], theta);  break;
+	}
+}
 
 
 struct Model {
