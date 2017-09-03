@@ -7,6 +7,7 @@
 using namespace std;
 
 
+// transform
 inline void rotatepoint(double& ax1, double& ax2, double rot) {
 	static double xt, yt, th;
 	th = M_PI/180 * rot;
@@ -32,6 +33,7 @@ inline void transformln(char axis, double delta, double* p) {
 vector<pair<char,double>> tglobal;
 
 
+// models
 struct Model {
 	string id;
 	double x=0, y=0, z=0;
@@ -65,7 +67,6 @@ struct Model {
 	}
 };
 vector<Model> models;
-
 Model& getmodel(const string& id) {
 	static Model tmp;
 	for (auto& m : models)
@@ -77,12 +78,37 @@ bool models_sort_z(const Model& l, const Model& r) {
 }
 
 
+// events
+int do_rot=0;
+int pollevents() {
+	static int last_key=0;
+	SDL_Event e;
+	int keydir;
+	last_key++;
+	while (SDL_PollEvent(&e))
+	switch (e.type) {
+		case SDL_QUIT:  return 1;
+		case SDL_KEYDOWN:
+		case SDL_KEYUP:
+			last_key=0;
+			keydir=(e.type==SDL_KEYDOWN);
+			switch (e.key.keysym.sym) {
+				case SDLK_ESCAPE:  return 1;
+				case 'r':  if (keydir==1) { do_rot=!do_rot; if(!do_rot) tglobal[0].second=35; }  break;
+				default:  printf("key: %d\n", e.key.keysym.sym);
+			}
+	}
+	if (last_key>2*60)  do_rot=1;
+	return 0;
+}
+
+
 int main(int argc, char** argv) {
 	gfx::init(640, 480, "iso3d");
 	SDL_Surface* scr = SDL_GetVideoSurface();
 
 	tglobal={
-		{'r',45},
+		{'r',35},
 		{'p',180-45},
 		{'x',160},{'y',120} // recenter origin (final)
 	};
@@ -129,9 +155,12 @@ int main(int argc, char** argv) {
 		for (const auto& m : models)
 			m.draw();
 		getmodel("cube").roll += 2;
+		if (do_rot)
+			tglobal[0].second += 0.5;
 
 		gfx::scale2x(scr, scr);
 		gfx::flip();
+		if (pollevents()) break;
 	}
 
 	SDL_Quit();
