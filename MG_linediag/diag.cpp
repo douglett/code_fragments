@@ -3,6 +3,7 @@
 #include <vector>
 #include <array>
 #include <cassert>
+#include <memory>
 
 using namespace std;
 
