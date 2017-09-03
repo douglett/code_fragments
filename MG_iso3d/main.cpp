@@ -25,31 +25,39 @@ void transform(char axis, double delta, double* p) {
 	case 's':  p[0]*=delta, p[1]*=delta, p[2]*=delta;  break;
 	}
 }
+inline void transformln(char axis, double delta, double* p) {
+	transform(axis, delta, p);
+	transform(axis, delta, p+3);
+}
 vector<pair<char,double>> tglobal;
 
 
 struct Model {
 	string id;
-	double x=0, y=0, scale=1;
+	double x=0, y=0, z=0, scale=1;
 	double roll=0, pitch=0, yaw=0;
 	vector<array<double,6>> lines;
 
 	void draw() const {
 		for (auto l : lines) {
 			// rotateline(l, roll, pitch, yaw);
-			transform('Y', yaw, &l[0]);
-			transform('Y', yaw, &l[3]);
-			// transform('s', scale, &l[0]);
-			// transform('s', scale, &l[3]);
-			// for (const auto& t : tglobal)
-			// 	transform(t.first, t.second, &l[0]),
-			// 	transform(t.first, t.second, &l[3]);
-			// gfx::drawline(SDL_GetVideoSurface(), l[0], l[1], l[2], l[3]);
-			gfx::drawline(SDL_GetVideoSurface(), 
-				x + l[0] * scale,
-				y + l[1] * scale,
-				x + l[3] * scale,
-				y + l[4] * scale );
+			// transform: scale, rotate, move (most predictable)
+			transformln('s', scale, &l[0]);
+			transformln('r', roll, &l[0]);
+			transformln('p', pitch, &l[0]);
+			transformln('Y', yaw, &l[0]);
+			transformln('x', x, &l[0]);
+			transformln('y', y, &l[0]);
+			transformln('z', z, &l[0]);
+			// apply global transforms
+			for (const auto& t : tglobal)
+				transformln(t.first, t.second, &l[0]);
+			gfx::drawline(SDL_GetVideoSurface(), l[0],l[1], l[3],l[4]);
+			// gfx::drawline(SDL_GetVideoSurface(), 
+			// 	x + l[0] * scale,
+			// 	y + l[1] * scale,
+			// 	x + l[3] * scale,
+			// 	y + l[4] * scale );
 		}
 	}
 };
@@ -68,17 +76,19 @@ int main(int argc, char** argv) {
 	SDL_Surface* scr = SDL_GetVideoSurface();
 
 	tglobal={
-		// {'x', 160},{'y',120},
-		// {'Y', 45},
-		// {'r', 30}
+		{'p',45},
+		{'Y',-45},
+		// {'r', 30},
+		{'x',160},{'y',120} // recenter origin (final)
 	};
 
 	Model m;
 	m.id="cube";
-	m.x=160, m.y=120;
-	m.scale=30;
-	m.roll=30;
-	m.pitch=30;
+	// m.x=160, m.y=120;
+	m.z=10;
+	m.scale=10;
+	// m.roll=30;
+	// m.pitch=30;
 	// m.yaw=30;
 	m.lines={
 		{{-1,-1,1, 1,-1,1}},
@@ -96,6 +106,7 @@ int main(int argc, char** argv) {
 	m = Model();
 	m.id="matrix";
 	m.scale=20;
+	m.x=-100, m.y=-100;
 	for (double i=0; i<=10; i+=1)
 		m.lines.push_back({{ i,0,0, i,10,0 }}),
 		m.lines.push_back({{ 0,i,0, 10,i,0 }});
@@ -108,7 +119,7 @@ int main(int argc, char** argv) {
 
 		for (const auto& m : models)
 			m.draw();
-		getmodel("cube").yaw += 2;
+		getmodel("cube").roll += 2;
 
 		gfx::scale2x(scr, scr);
 		gfx::flip();
