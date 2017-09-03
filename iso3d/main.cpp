@@ -14,21 +14,29 @@ inline void rotatepoint(double& ax1, double& ax2, double rot) {
 	yt = ax1*sin(th) + ax2*cos(th);
 	ax1=xt, ax2=yt;
 }
-inline void rotateline(array<double,6>& l, double roll, double pitch, double yaw) {
-	rotatepoint(l[0], l[1], roll);
-	rotatepoint(l[3], l[4], roll);
-	rotatepoint(l[1], l[2], pitch);
-	rotatepoint(l[4], l[5], pitch);
-	rotatepoint(l[0], l[2], yaw);
-	rotatepoint(l[3], l[5], yaw);
-}
-inline void rotate(char axis, double theta, double* p) {
+// inline void rotateline(array<double,6>& l, double roll, double pitch, double yaw) {
+// 	rotatepoint(l[0], l[1], roll);
+// 	rotatepoint(l[3], l[4], roll);
+// 	rotatepoint(l[1], l[2], pitch);
+// 	rotatepoint(l[4], l[5], pitch);
+// 	rotatepoint(l[0], l[2], yaw);
+// 	rotatepoint(l[3], l[5], yaw);
+// }
+void transform(char axis, double delta, double* p) {
 	switch(axis) {
-	case 'r':  rotatepoint(p[0], p[1], theta);  break;
-	case 'p':  rotatepoint(p[1], p[2], theta);  break;
-	case 'y':  rotatepoint(p[0], p[2], theta);  break;
+	case 'r':  rotatepoint(p[0], p[1], delta);  break;
+	case 'p':  rotatepoint(p[1], p[2], delta);  break;
+	case 'Y':  rotatepoint(p[0], p[2], delta);  break;
+	case 'x':  p[0] += delta;  break;
+	case 'y':  p[1] += delta;  break;
+	case 'z':  p[2] += delta;  break;
 	}
 }
+// global transform list
+// struct Transform {
+// 	char axis;
+// 	double delta;
+// };
 
 
 struct Model {
@@ -38,7 +46,12 @@ struct Model {
 
 	void draw() {
 		for (auto l : lines) {
-			rotateline(l, roll, pitch, yaw);
+			// rotateline(l, roll, pitch, yaw);
+			for (const auto& t : tglobal)
+				transform(t.first, t.second, &l[0]),
+				transform(t.first, t.second, &l[3]);
+			transform('Y', yaw, &l[0]);
+			transform('Y', yaw, &l[3]);
 			gfx::drawline(SDL_GetVideoSurface(), 
 				x + l[0] * scale,
 				y + l[1] * scale,
@@ -83,12 +96,19 @@ struct Model {
 		}
 	}
 };
+
+
+vector<pair<char,double>> tglobal;
 vector<Model> models;
 
 
 int main(int argc, char** argv) {
 	gfx::init(640, 480, "iso3d");
 	SDL_Surface* scr = SDL_GetVideoSurface();
+
+	tglobal={
+		{'r', 30}
+	};
 
 	Model m;
 	m.x=160, m.y=120;
