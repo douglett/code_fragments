@@ -34,11 +34,14 @@ vector<pair<char,double>> tglobal;
 
 struct Model {
 	string id;
-	double x=0, y=0, z=0, scale=1;
+	double x=0, y=0, z=0;
 	double roll=0, pitch=0, yaw=0;
+	double scale=1;
+	array<int,3> col={{255,255,255}};
 	vector<array<double,6>> lines;
 
 	void draw() const {
+		gfx::drawc(col[0], col[1], col[2]);
 		for (auto l : lines) {
 			// rotateline(l, roll, pitch, yaw);
 			// transform: scale, rotate, move (most predictable)
@@ -69,6 +72,9 @@ Model& getmodel(const string& id) {
 		if (m.id==id)  return m;
 	return tmp;
 }
+bool models_sort_z(const Model& l, const Model& r) {
+	return (l.z <= r.z);  // sort z index lowest first
+}
 
 
 int main(int argc, char** argv) {
@@ -76,17 +82,16 @@ int main(int argc, char** argv) {
 	SDL_Surface* scr = SDL_GetVideoSurface();
 
 	tglobal={
-		{'r',-45},
-		{'p',-45},
-		// {'r', 30},
+		{'r',45},
+		{'p',180-45},
 		{'x',160},{'y',120} // recenter origin (final)
 	};
 
 	Model m;
 	m.id="cube";
 	// m.x=160, m.y=120;
-	m.z=-10;
-	// m.x=10;
+	m.z=10;
+	m.x=10;
 	m.scale=10;
 	// m.roll=30;
 	// m.pitch=30;
@@ -106,6 +111,7 @@ int main(int argc, char** argv) {
 
 	m = Model();
 	m.id="matrix";
+	m.col={{50,50,50}};
 	m.scale=20;
 	m.x=-100, m.y=-100;
 	for (double i=0; i<=10; i+=1)
@@ -118,6 +124,8 @@ int main(int argc, char** argv) {
 		gfx::drawc(255,255,255);
 		// gfx::drawline(scr, 10, 10, 100, 100);
 
+		// draw all models
+		sort(models.begin(), models.end(), models_sort_z);  // force z-index order
 		for (const auto& m : models)
 			m.draw();
 		getmodel("cube").roll += 2;
