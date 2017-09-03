@@ -76,8 +76,8 @@ int main(int argc, char** argv) {
 	SDL_Surface* scr = SDL_GetVideoSurface();
 
 	tglobal={
-		{'p',45},
-		{'Y',-45},
+		{'r',-45},
+		{'p',-45},
 		// {'r', 30},
 		{'x',160},{'y',120} // recenter origin (final)
 	};
@@ -85,7 +85,8 @@ int main(int argc, char** argv) {
 	Model m;
 	m.id="cube";
 	// m.x=160, m.y=120;
-	m.z=10;
+	m.z=-10;
+	// m.x=10;
 	m.scale=10;
 	// m.roll=30;
 	// m.pitch=30;
