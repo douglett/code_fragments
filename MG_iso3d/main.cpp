@@ -14,14 +14,6 @@ inline void rotatepoint(double& ax1, double& ax2, double rot) {
 	yt = ax1*sin(th) + ax2*cos(th);
 	ax1=xt, ax2=yt;
 }
-// inline void rotateline(array<double,6>& l, double roll, double pitch, double yaw) {
-// 	rotatepoint(l[0], l[1], roll);
-// 	rotatepoint(l[3], l[4], roll);
-// 	rotatepoint(l[1], l[2], pitch);
-// 	rotatepoint(l[4], l[5], pitch);
-// 	rotatepoint(l[0], l[2], yaw);
-// 	rotatepoint(l[3], l[5], yaw);
-// }
 void transform(char axis, double delta, double* p) {
 	switch(axis) {
 	case 'r':  rotatepoint(p[0], p[1], delta);  break;
@@ -30,64 +22,29 @@ void transform(char axis, double delta, double* p) {
 	case 'x':  p[0] += delta;  break;
 	case 'y':  p[1] += delta;  break;
 	case 'z':  p[2] += delta;  break;
+	case 's':  p[0]*=delta, p[1]*=delta, p[2]*=delta;  break;
 	}
 }
-// global transform list
-// struct Transform {
-// 	char axis;
-// 	double delta;
-// };
+vector<pair<char,double>> tglobal;
 
 
 struct Model {
+	string id;
 	double x=0, y=0, scale=1;
 	double roll=0, pitch=0, yaw=0;
 	vector<array<double,6>> lines;
 
-	void draw() {
+	void draw() const {
 		for (auto l : lines) {
 			// rotateline(l, roll, pitch, yaw);
-			for (const auto& t : tglobal)
-				transform(t.first, t.second, &l[0]),
-				transform(t.first, t.second, &l[3]);
 			transform('Y', yaw, &l[0]);
 			transform('Y', yaw, &l[3]);
-			gfx::drawline(SDL_GetVideoSurface(), 
-				x + l[0] * scale,
-				y + l[1] * scale,
-				x + l[3] * scale,
-				y + l[4] * scale );
-		}
-	}
-	
-	void draw_old() {
-		double thr = M_PI/180 * roll;   // theta roll
-		double thp = M_PI/180 * pitch;  // theta pitch
-		double thy = M_PI/180 * yaw;    // theta yaw
-		for (auto l : lines) {
-			double xt, yt;
-			// translate yaw
-			xt = l[0]*cos(thy) - l[2]*sin(thy);
-			yt = l[0]*sin(thy) + l[2]*cos(thy);
-			l[0]=xt, l[2]=yt;
-			xt = l[3]*cos(thy) - l[5]*sin(thy);
-			yt = l[3]*sin(thy) + l[5]*cos(thy);
-			l[3]=xt, l[5]=yt;
-			// translate pitch
-			xt = l[1]*cos(thp) - l[2]*sin(thp);
-			yt = l[1]*sin(thp) + l[2]*cos(thp);
-			l[1]=xt, l[2]=yt;
-			xt = l[4]*cos(thp) - l[5]*sin(thp);
-			yt = l[4]*sin(thp) + l[5]*cos(thp);
-			l[4]=xt, l[5]=yt;
-			// translate roll
-			xt = l[0]*cos(thr) - l[1]*sin(thr);
-			yt = l[0]*sin(thr) + l[1]*cos(thr);
-			l[0]=xt, l[1]=yt;
-			xt = l[3]*cos(thr) - l[4]*sin(thr);
-			yt = l[3]*sin(thr) + l[4]*cos(thr);
-			l[3]=xt, l[4]=yt;
-			// draw
+			// transform('s', scale, &l[0]);
+			// transform('s', scale, &l[3]);
+			// for (const auto& t : tglobal)
+			// 	transform(t.first, t.second, &l[0]),
+			// 	transform(t.first, t.second, &l[3]);
+			// gfx::drawline(SDL_GetVideoSurface(), l[0], l[1], l[2], l[3]);
 			gfx::drawline(SDL_GetVideoSurface(), 
 				x + l[0] * scale,
 				y + l[1] * scale,
@@ -96,10 +53,14 @@ struct Model {
 		}
 	}
 };
-
-
-vector<pair<char,double>> tglobal;
 vector<Model> models;
+
+Model& getmodel(const string& id) {
+	static Model tmp;
+	for (auto& m : models)
+		if (m.id==id)  return m;
+	return tmp;
+}
 
 
 int main(int argc, char** argv) {
@@ -107,10 +68,13 @@ int main(int argc, char** argv) {
 	SDL_Surface* scr = SDL_GetVideoSurface();
 
 	tglobal={
-		{'r', 30}
+		// {'x', 160},{'y',120},
+		// {'Y', 45},
+		// {'r', 30}
 	};
 
 	Model m;
+	m.id="cube";
 	m.x=160, m.y=120;
 	m.scale=30;
 	m.roll=30;
@@ -127,14 +91,24 @@ int main(int argc, char** argv) {
 		{{1,1,-1,  -1,1,-1}},
 		{{-1,1,-1, -1,-1,-1}},
 	};
+	models.push_back(m);
+
+	m = Model();
+	m.id="matrix";
+	m.scale=20;
+	for (double i=0; i<=10; i+=1)
+		m.lines.push_back({{ i,0,0, i,10,0 }}),
+		m.lines.push_back({{ 0,i,0, 10,i,0 }});
+	models.push_back(m);
 
 	while (true) {
 		SDL_FillRect(scr, NULL, gfx::drawc(0,0,0));
 		gfx::drawc(255,255,255);
 		// gfx::drawline(scr, 10, 10, 100, 100);
 
-		m.draw();
-		m.yaw += 2;
+		for (const auto& m : models)
+			m.draw();
+		getmodel("cube").yaw += 2;
 
 		gfx::scale2x(scr, scr);
 		gfx::flip();
