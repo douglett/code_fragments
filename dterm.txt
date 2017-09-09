@@ -1,0 +1,8 @@
+locate 0 0
+printf "hello world\n"
+getline
+printf "you got a line\n"
+getch
+printf "you got a char\n"
+pollkeys
+printf "you got the keyboard state\n"
