@@ -6,3 +6,12 @@ getch
 printf "you got a char\n"
 pollkeys
 printf "you got the keyboard state\n"
+screeninfo
+printf "you got the screen width, height, termwidth, termheight\n"
+boxf 0xffffff 10 10 40 40
+box 0xff0000 10 10 40 40
+line 0x00ff00 10 10 40 40
+vidmem 1
+screensize 10 10
+box 0xffff00 0 0 10 10
+vidmem 0
