@@ -8,6 +8,7 @@ using namespace std;
 int curs::init() {
 	initscr();
 	noecho();
+	cbreak();
 	keypad(stdscr, true);
 	start_color();
 	use_default_colors();

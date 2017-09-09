@@ -18,13 +18,14 @@ int main(int argc, char** argv) {
 
 	int doloop=1;
 	while (doloop) {
-		int k = getch();
+		int e=0, k=getch();
+		if (k==27) { e=1; nodelay(stdscr,true); k=getch(); nodelay(stdscr,false); }
 		switch (k) {
-		case 27:  nodelay(stdscr,true);  k=getch();  nodelay(stdscr,false);  break;
+		// case 27:  nodelay(stdscr,true);  k=getch();  nodelay(stdscr,false);  break;
 		case 'q':  doloop=0;  break;
 		// case KEY_LEFT:  { int y,x; getyx(stdscr,y,x); move(y,x-1); }  break;
 		// case KEY_RIGHT: { int y,x; getyx(stdscr,y,x); move(y,x+1); }  break;
-		default:  mvprintw(1, 1, "key: %20s", keyname(k));  break;
+		default:  mvprintw(1, 1, "key: %d %03d %-20s", e, k, keyname(k));  break;
 		}
 	}
 
