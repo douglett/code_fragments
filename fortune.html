@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Card Fortunes</title>
+</head>
+<body onload="main()">
+
+<h2>Card Suits</h2>
+<table border=1>
+	<tr>
+		<td>Hearts</td><td>Water</td>
+		<td>Hearts mean happiness in all aspects of life including (but not only) in love. They mean good things especially if more hearts stand together which reinforces their meaning.</td>
+	</tr>
+	<tr>
+		<td>Clubs</td><td>Fire</td>
+		<td>Clubs are negative sign. Clubs mean separation, loss, injury, accident or bad luck of some kind. Fortune tellers do not see a club card as a card of death nor predict death of a person on the basis of a club card.</td>
+	</tr>
+	<tr>
+		<td>Diamonds</td><td>Earth</td>
+		<td>Diamonds have positive basic meaning. It could be interpreted as luck and blessing. When there are many diamond cards together it means wealth.</td>
+	</tr>
+	<tr>
+		<td>Spades</td><td>Air</td>
+		<td>Spades are often considered as a negative sign, but they suggest positive hope for good future, mutual trust and friendship.</td>
+	</tr>
+</table>
+
+<h2>Spread 1</h2>
+<table border=1>
+	<tr>
+		<td>past</td>
+		<td>present</td>
+		<td>future</td>
+	</tr>
+</table>
+
+<h2>Spread 2</h2>
+<table border=1>
+	<tr>
+		<td></td>
+		<td>about your thoughts</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>what you want to find out...</td>
+		<td>what is coming...</td>
+		<td>is this crucial?</td>
+	</tr>
+	<tr>
+		<td></td>
+		<td>what is hidden from you.</td>
+		<td></td>
+	</tr>
+</table>
+
+<h2>Cards</h2>
+<div>format: [num a23456789xjqk][suit hdsc] (space seperated) :: eg: kd xh 3h = (king of diamonds, 10 of hearts, 3 of hearts)</div>
+<input type="text" id="card_search"></body>
+<table border=1 id="card_table"></table>
+
+<style type="text/css">
+	h2 { font-size: large; margin: 0.1em; margin-top: 0.8em; }
+	table { border-collapse: collapse; }
+	td { padding: 0.1em 1em; }
+	.diamonds, .hearts { color: red; }
+</style>
+
+</body>
+</html>
+
+
+
+<script type="text/javascript">
+
+function main() {
+	// populate
+	console.log("populating cards...");
+	var ctable = document.querySelector("#card_table");
+	Object.keys(Cards).forEach(function(suit) {
+		// console.log(suit, Cards[suit]);
+		Cards[suit].forEach(function(v, i) {
+			var tr = document.createElement("tr");
+			var td = document.createElement("td");
+			tr.className = suit+" c"+i;
+			td.innerHTML = v;
+			tr.appendChild(td);
+			ctable.appendChild(tr);
+		});
+	});
+	// key events
+	console.log("adding cards picker events...");
+	var csearch = document.querySelector("#card_search");
+	csearch.onkeyup = function() {
+		var tr = ctable.querySelectorAll("tr");
+		for (var i=0; i<tr.length; i++) {
+			tr[i].style.display="none";
+		}
+		csearch.value.split(/\W/).forEach(function(v, k) {
+			if (!suitclass(v)) return;
+			console.log("["+suitclass(v)+"]");
+			ctable.querySelector(suitclass(v)).style.display="";
+		});
+	};
+}
+
+function suitclass(str) {
+	if (str.length!==2) return "";
+	var num  = str.substr(0,1).toLowerCase();
+	var suit = str.substr(1,1).toLowerCase();
+	switch (suit) {
+		case "h":  suit="hearts";    break;
+		case "d":  suit="diamonds";  break;
+		case "s":  suit="spades";    break;
+		case "c":  suit="clubs";     break;
+		default:   return "";
+	}
+	switch (num) {
+		case "a":  num=1;   break;
+		case "x":  num=10;  break;
+		case "j":  num=11;  break;
+		case "q":  num=12;  break;
+		case "k":  num=13;  break;
+		case "2": case "3": case "4": case "5":
+		case "6": case "7": case "8": case "9":  num=parseInt(num);  break;
+		default:  return "";
+	}
+	return "."+suit+".c"+(num-1);
+}
+
+
+var Cards = {
+"hearts": [
+	"Ace of Hearts Love and happiness. The home, a love letter. This card is a particularly favorable card that indicates troubles and problems lifting.",
+	"2 of Hearts A warm partnership or engagement. This is a very favorable card that indicates strength and support coming from a partner.",
+	"3 of Hearts Love and happiness when the entire spread is generally favorable. In a difficult spread, this can indicate emotional problems and an inability to decide who to love.",
+	"4 of Hearts Travel, change of home or business.",
+	"5 of Hearts Jealousy; some ill-will from people around you.",
+	"6 of Hearts A sudden wave of good luck. Someone takes care of you, takes warm interest in you.",
+	"7 of Hearts Someone whose interest in you is unreliable; someone with fickle affections for you. This card can indicate lovesickness.",
+	"8 of Hearts Unexpected gift or visit; an invitation to a party.",
+	"9 of Hearts The card of wishes. A wish/dream fulfilled. Look to the card just preceding this one to determine what the querent desires.",
+	"10 of Hearts Good luck, success. This is an important card that suggests good fortune after difficulty.",
+	"Jack of Hearts A warm-hearted friend. A fair-haired youth; or a young person with Water signs predominating in his or her chart. Often this points to a younger admirer.",
+	"Queen of Hearts A fair-haired woman with a good nature; or a woman with Water signs predominating in her chart. Kind advice. Affectionate, caring woman. Sometimes, this card can indicate the mother or a mother figure.",
+	"King of Hearts A fair-haired man with a good nature; or a man with Water signs predominating in his chart. Fair, helpful advice. Affectionate, caring man. This man helps you out without much talk. His actions reveal his kindness and concern.",
+],
+"clubs": [
+	"Ace of Clubs Wealth, prosperity, unexpected money/gain. However, in a difficult spread, this money may disappear almost as quickly as it appears.",
+	"2 of Clubs Obstacles to success; malicious gossip.",
+	"3 of Clubs Love and happiness; successful marriage; a favorable long-term proposition. A second chance, particularly in an economical sense.",
+	"4 of Clubs Beware of dishonesty or deceit; avoid blind acceptance of others at this time.",
+	"5 of Clubs New friendships, alliances are made.",
+	"6 of Clubs Financial aid or success.",
+	"7 of Clubs Business success, although there may be problems in love. A change in business that may have been expected or earned, such as a promotion.",
+	"8 of Clubs Work/business problems that may have to do with jealousy. This is generally thought to be quite unfavorable.",
+	"9 of Clubs Achievement; sometimes a wealthy marriage or a sudden windfall.",
+	"10 of Clubs Business success. Good luck with money. A trip taken now may result in a new friend or love interest.",
+	"Jack of Clubs A dark-haired or fiery youth. Popular youth who is good-hearted and playful. Can also indicate an admirer.",
+	"Queen of Clubs Dark-haired, confident woman; or a woman with Fire predominating in her chart. She may give you good advice.",
+	"King of Clubs Dark-haired, kind-hearted man; or a man with Fire predominating in his chart. A generous, spirited man.",
+],
+"diamonds": [
+	"Ace of Diamonds Change; a message, often about money, and usually good news.",
+	"2 of Diamonds A business partnership; a change in relationship; gossip.",
+	"3 of Diamonds A legal letter. Be tactful with others in order to avoid disputes.",
+	"4 of Diamonds Financial upswing; an older person may give good advice.",
+	"5 of Diamonds Happiness and success. A change for the better. A birth, or good news for a child. A good time to start new projects.",
+	"6 of Diamonds Relationship problems, arguments. Separation.",
+	"7 of Diamonds An argument concerning finances, or on the job. Generally expected to be resolved happily.",
+	"8 of Diamonds New job; change in job situation. The young or the old may find love on a trip.",
+	"9 of Diamonds A new business deal; travel; restlessness; a change of residence.",
+	"10 of Diamonds A change in financial status, often for the better.",
+	"Jack of Diamonds A youth, possibly in uniform. Or, a jealous person who may be unreliable. A person who brings news, generally negative, but relatively minor.",
+	"Queen of Diamonds Fair-haired woman; or a woman with Earth predominating in her chart. A gossip.",
+	"King of Diamonds Fair-haired or graying man, or a man with Earth predominating in his chart. A man of authority, status, or influence.",
+],
+"spades": [
+	"Ace of Spades Misfortune; sometimes associated with death or, more often, a difficult ending.",
+	"2 of Spades Breaks in relationships; deceit. A break in an important process in the querent’s life. If the question concerns a particular romantic interest, this is considered a warning card – infidelity or separation is quite likely.",
+	"3 of Spades Breaks in relationships. Sometimes indicates that a third person is breaking into a relationship somehow.",
+	"4 of Spades Small worries, problems. Financial difficulties, personal lows.",
+	"5 of Spades Opposition and obstacles that are temporary; a blessing in disguise. Sometimes indicates a negative or depressed person.",
+	"6 of Spades Small changes and improvements.",
+	"7 of Spades Advice that is best not taken; loss. There is some obstacle to success, and this indicates that obstacles may be coming from within the querent.",
+	"8 of Spades Temptation, misfortune, danger, upsets.",
+	"9 of Spades Illness, accident, bad luck. The querent is at his/her personal low.",
+	"10 of Spades Worry; bad news.",
+	"Jack of Spades A youth who is hostile or jealous.",
+	"Queen of Spades Widowed or divorced woman; or a woman with Air predominating in her chart.",
+	"King of Spades Dark-haired man; or a man with Air predominating in his chart. An ambitious man, perhaps self-serving.",
+]
+};
+
+</script>
