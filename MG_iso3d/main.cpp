@@ -58,7 +58,7 @@ struct Model {
 			// apply global transforms
 			for (const auto& t : tglobal)
 				transformln(t.first, t.second, &l[0]);
-			gfx::drawline(SDL_GetVideoSurface(), l[0],l[1], l[3],l[4]);
+			gfx::drawline(SDL_GetVideoSurface(), 160+l[0],120-l[1], 160+l[3],120-l[4]);
 			// gfx::drawline(SDL_GetVideoSurface(), 
 			// 	x + l[0] * scale,
 			// 	y + l[1] * scale,
@@ -75,17 +75,17 @@ Model& getmodel(const string& id) {
 	return tmp;
 }
 bool models_sort_z(const Model& l, const Model& r) {
-	return (l.z <= r.z);  // sort z index lowest first
+	return (l.y < r.y);  // sort y index lowest first
 }
 
 
 // events
+void setview(string viewid);
 int do_rot=0;
 int pollevents() {
 	static int last_key=0;
 	SDL_Event e;
 	int keydir;
-	last_key++;
 	while (SDL_PollEvent(&e))
 	switch (e.type) {
 		case SDL_QUIT:  return 1;
@@ -95,12 +95,78 @@ int pollevents() {
 			keydir=(e.type==SDL_KEYDOWN);
 			switch (e.key.keysym.sym) {
 				case SDLK_ESCAPE:  return 1;
-				case 'r':  if (keydir==1) { do_rot=!do_rot; if(!do_rot) tglobal[0].second=35; }  break;
+				case 'r':  if (keydir==1) do_rot=1;  break;
+				case 'x':  do_rot=0;  setview("x");  break;
+				case 'z':  do_rot=0;  setview("z");  break;
+				case 'i':  do_rot=0;  setview("iso1");  break;
 				default:  printf("key: %d\n", e.key.keysym.sym);
 			}
 	}
-	if (last_key>2*60)  do_rot=1;
 	return 0;
+}
+
+
+void makemodel(const string& id) {
+	Model m;
+	m.id=id;
+	if (id=="cube") {
+		m.y=10;
+		m.scale=10;
+		m.lines={
+			{{0,-1.5,0, 0,1.5,0}},
+
+			{{-1,-1,1, 1,-1,1}},
+			{{1,-1,1,  1,1,1}},
+			{{1,1,1,  -1,1,1}},
+			{{-1,1,1, -1,-1,1}},
+
+			{{-1,-1,-1, 1,-1,-1}},
+			{{1,-1,-1,  1,1,-1}},
+			{{1,1,-1,  -1,1,-1}},
+			{{-1,1,-1, -1,-1,-1}},
+		};
+		models.push_back(m);
+	}
+	else if (id=="matrix") {
+		m.col={{50,50,50}};
+		m.scale=20;
+		m.x=-100, m.z=-100;
+		for (double i=0; i<=10; i+=1)
+			m.lines.push_back({{ i,0,0, i,0,10 }}),
+			m.lines.push_back({{ 0,0,i, 10,0,i }});
+		models.push_back(m);
+	}
+	else if (id=="king") {
+		m.scale=20;
+		m.lines={
+			{{-1,0,-1, 1,0,-1}},
+			{{-1,0,-1, -0.7,0,1 }},
+			{{-0.7,0,1, -0.35,0,}}
+		};
+		models.push_back(m);
+	}
+}
+
+void setview(string viewid) {
+	if (viewid=="" || viewid=="default")  viewid="x";
+	if (viewid=="x") {
+		tglobal={
+			{'Y',0}
+			// {'x',160},{'y',120}
+		};
+	}
+	else if (viewid=="z") {
+		tglobal={
+			{'Y',0},
+			{'p',90}
+		};
+	}
+	else if (viewid=="iso1") {
+		tglobal={
+			{'Y',0},
+			{'p',20}
+		};
+	}
 }
 
 
@@ -108,43 +174,11 @@ int main(int argc, char** argv) {
 	gfx::init(640, 480, "iso3d");
 	SDL_Surface* scr = SDL_GetVideoSurface();
 
-	tglobal={
-		{'r',35},
-		{'p',180-45},
-		{'x',160},{'y',120} // recenter origin (final)
-	};
-
-	Model m;
-	m.id="cube";
-	// m.x=160, m.y=120;
-	m.z=10;
-	m.x=10;
-	m.scale=10;
-	// m.roll=30;
-	// m.pitch=30;
-	// m.yaw=30;
-	m.lines={
-		{{-1,-1,1, 1,-1,1}},
-		{{1,-1,1,  1,1,1}},
-		{{1,1,1,  -1,1,1}},
-		{{-1,1,1, -1,-1,1}},
-
-		{{-1,-1,-1, 1,-1,-1}},
-		{{1,-1,-1,  1,1,-1}},
-		{{1,1,-1,  -1,1,-1}},
-		{{-1,1,-1, -1,-1,-1}},
-	};
-	models.push_back(m);
-
-	m = Model();
-	m.id="matrix";
-	m.col={{50,50,50}};
-	m.scale=20;
-	m.x=-100, m.y=-100;
-	for (double i=0; i<=10; i+=1)
-		m.lines.push_back({{ i,0,0, i,10,0 }}),
-		m.lines.push_back({{ 0,i,0, 10,i,0 }});
-	models.push_back(m);
+	setview("default");
+	setview("iso1");
+	makemodel("cube");
+	makemodel("matrix");
+	// makemodel("king");
 
 	while (true) {
 		SDL_FillRect(scr, NULL, gfx::drawc(0,0,0));
@@ -155,7 +189,7 @@ int main(int argc, char** argv) {
 		sort(models.begin(), models.end(), models_sort_z);  // force z-index order
 		for (const auto& m : models)
 			m.draw();
-		getmodel("cube").roll += 2;
+		getmodel("cube").yaw += 2;
 		if (do_rot)
 			tglobal[0].second += 0.5;
 
