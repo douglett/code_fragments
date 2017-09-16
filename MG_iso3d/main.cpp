@@ -8,6 +8,10 @@
 using namespace std;
 
 
+// predef
+void setview(string viewid);
+
+
 // transform
 inline void rotatepoint(double& ax1, double& ax2, double rot) {
 	static double xt, yt, th;
@@ -80,7 +84,6 @@ bool models_sort_z(const Model& l, const Model& r) {
 
 
 // events
-void setview(string viewid);
 int do_rot=0;
 int pollevents() {
 	static int last_key=0;
@@ -137,11 +140,15 @@ void makemodel(const string& id) {
 		models.push_back(m);
 	}
 	else if (id=="king") {
-		m.scale=20;
+		m.scale=10;
 		m.lines={
-			{{-1,0,-1, 1,0,-1}},
-			{{-1,0,-1, -0.7,0,1 }},
-			{{-0.7,0,1, -0.35,0,}}
+			{{-1,-1,0,  1,-1,0}},
+			{{-1,-1,0,  -0.70,1,0}},
+			{{-0.70,1,0,  -0.35,0,0}},
+			{{-0.35,0,0,  0,1,0}},
+			{{0,1,0,  0.35,0,0}},
+			{{0.35,0,0,  0.70,1,0}},
+			{{0.70,1,0,  1,-1,0}}
 		};
 		models.push_back(m);
 	}
@@ -176,9 +183,9 @@ int main(int argc, char** argv) {
 
 	setview("default");
 	setview("iso1");
-	makemodel("cube");
+	// makemodel("cube");
 	makemodel("matrix");
-	// makemodel("king");
+	makemodel("king");
 
 	while (true) {
 		SDL_FillRect(scr, NULL, gfx::drawc(0,0,0));
