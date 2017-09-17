@@ -141,6 +141,16 @@ void makemodel(const string& id) {
 		};
 		models.push_back(m);
 	}
+	else if (id=="pyramid") {
+		m.y=10;
+		m.scale=10;
+		m.lines=linebuilder({
+				-1,-1,-1,  -1,-1,1,  1,-1,-1,  1,-1,1,  0,1,0
+			},{
+				0,1, 0,2, 2,3, 1,3, 4,0, 4,1, 4,2, 4,3
+		});
+		models.push_back(m);
+	}
 	else if (id=="matrix") {
 		m.col={{50,50,50}};
 		m.scale=20;
@@ -212,7 +222,8 @@ int main(int argc, char** argv) {
 	setview("iso1");
 	// makemodel("cube");
 	makemodel("matrix");
-	makemodel("king");
+	// makemodel("king");
+	makemodel("pyramid");
 
 	while (true) {
 		SDL_FillRect(scr, NULL, gfx::drawc(0,0,0));
