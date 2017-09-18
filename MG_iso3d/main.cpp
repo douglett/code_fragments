@@ -102,6 +102,11 @@ int pollevents() {
 				case 'x':  do_rot=0;  setview("x");  break;
 				case 'z':  do_rot=0;  setview("z");  break;
 				case 'i':  do_rot=0;  setview("iso1");  break;
+				case 'o':  do_rot=0;  setview("iso2");  break;
+				case SDLK_DOWN:  if (keydir) getmodel("pyramid-1").z+=20;  break;
+				case SDLK_UP:  if (keydir) getmodel("pyramid-1").z-=20;  break;
+				case SDLK_LEFT:  if (keydir) getmodel("pyramid-1").x-=20;  break;
+				case SDLK_RIGHT:  if (keydir) getmodel("pyramid-1").x+=20;  break;
 				default:  printf("key: %d\n", e.key.keysym.sym);
 			}
 	}
@@ -120,10 +125,10 @@ vector<array<double,6>> linebuilder(vector<double> points, vector<int> join) {
 }
 
 
-void makemodel(const string& id) {
+void makemodel(const string& type, const string& id) {
 	Model m;
-	m.id=id;
-	if (id=="cube") {
+	m.id=type+"-"+id;
+	if (type=="cube") {
 		m.y=10;
 		m.scale=10;
 		m.lines={
@@ -141,9 +146,9 @@ void makemodel(const string& id) {
 		};
 		models.push_back(m);
 	}
-	else if (id=="pyramid") {
+	else if (type=="pyramid") {
 		m.y=10;
-		m.scale=10;
+		m.scale=8;
 		m.lines=linebuilder({
 				-1,-1,-1,  -1,-1,1,  1,-1,-1,  1,-1,1,  0,1,0
 			},{
@@ -151,7 +156,7 @@ void makemodel(const string& id) {
 		});
 		models.push_back(m);
 	}
-	else if (id=="matrix") {
+	else if (type=="matrix") {
 		m.col={{50,50,50}};
 		m.scale=20;
 		m.x=-100, m.z=-100;
@@ -160,7 +165,7 @@ void makemodel(const string& id) {
 			m.lines.push_back({{ 0,0,i, 10,0,i }});
 		models.push_back(m);
 	}
-	else if (id=="king") {
+	else if (type=="king") {
 		m.scale=10;
 		m.y=10;
 		// m.lines={
@@ -211,19 +216,31 @@ void setview(string viewid) {
 			{'p',20}
 		};
 	}
+	else if (viewid=="iso2") {
+		tglobal={
+			{'Y',-20},
+			{'p',35}
+		};
+	}
 }
 
 
 int main(int argc, char** argv) {
 	gfx::init(640, 480, "iso3d");
 	SDL_Surface* scr = SDL_GetVideoSurface();
+	gfx::handleEvents = 0;
 
 	setview("default");
 	setview("iso1");
 	// makemodel("cube");
-	makemodel("matrix");
-	// makemodel("king");
-	makemodel("pyramid");
+	makemodel("matrix", "1");
+	// makemodel("king", "1");
+	for (int i=0; i<10; i++) {
+		makemodel("pyramid", to_string(i+1));
+		string id="pyramid-"+to_string(i+1);
+		getmodel(id).z = 10 - 100;
+		getmodel(id).x = 10 + i*20 - 100;
+	}
 
 	while (true) {
 		SDL_FillRect(scr, NULL, gfx::drawc(0,0,0));
@@ -234,7 +251,7 @@ int main(int argc, char** argv) {
 		sort(models.begin(), models.end(), models_sort_z);  // force z-index order
 		for (const auto& m : models)
 			m.draw();
-		getmodel("cube").yaw += 2;
+		getmodel("pyramid-1").yaw += 2;
 		if (do_rot)
 			tglobal[0].second += 0.5;
 
