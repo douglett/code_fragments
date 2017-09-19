@@ -1,3 +1,4 @@
+#include "globals.h"
 #include "graphics/graphics.h"
 #include <iostream>
 #include <vector>
@@ -10,31 +11,7 @@ using namespace std;
 
 // predef
 void setview(string viewid);
-
-
-// transform
-inline void rotatepoint(double& ax1, double& ax2, double rot) {
-	static double xt, yt, th;
-	th = M_PI/180 * rot;
-	xt = ax1*cos(th) - ax2*sin(th);
-	yt = ax1*sin(th) + ax2*cos(th);
-	ax1=xt, ax2=yt;
-}
-void transform(char axis, double delta, double* p) {
-	switch(axis) {
-	case 'r':  rotatepoint(p[0], p[1], delta);  break;
-	case 'p':  rotatepoint(p[1], p[2], delta);  break;
-	case 'Y':  rotatepoint(p[0], p[2], delta);  break;
-	case 'x':  p[0] += delta;  break;
-	case 'y':  p[1] += delta;  break;
-	case 'z':  p[2] += delta;  break;
-	case 's':  p[0]*=delta, p[1]*=delta, p[2]*=delta;  break;
-	}
-}
-inline void transformln(char axis, double delta, double* p) {
-	transform(axis, delta, p);
-	transform(axis, delta, p+3);
-}
+// globals
 vector<pair<char,double>> tglobal;
 
 
@@ -62,7 +39,7 @@ struct Model {
 			// apply global transforms
 			for (const auto& t : tglobal)
 				transformln(t.first, t.second, &l[0]);
-			gfx::drawline(SDL_GetVideoSurface(), 160+l[0],120-l[1], 160+l[3],120-l[4]);
+			gfx::drawline(SDL_GetVideoSurface(), 160+l[0], 120-l[1], 160+l[3], 120-l[4]);
 			// gfx::drawline(SDL_GetVideoSurface(), 
 			// 	x + l[0] * scale,
 			// 	y + l[1] * scale,
@@ -150,9 +127,11 @@ void makemodel(const string& type, const string& id) {
 		m.y=10;
 		m.scale=8;
 		m.lines=linebuilder({
-				-1,-1,-1,  -1,-1,1,  1,-1,-1,  1,-1,1,  0,1,0
+				-1,-1,-1,  -1,-1,1,  1,-1,-1,  1,-1,1,  0,1,0,
+				0,-1,-1,  0,1,-1
 			},{
-				0,1, 0,2, 2,3, 1,3, 4,0, 4,1, 4,2, 4,3
+				0,1, 0,2, 2,3, 1,3, 4,0, 4,1, 4,2, 4,3,
+				5,6
 		});
 		models.push_back(m);
 	}
@@ -168,29 +147,20 @@ void makemodel(const string& type, const string& id) {
 	else if (type=="king") {
 		m.scale=10;
 		m.y=10;
-		// m.lines={
-		// 	{{-1,-1,0,  1,-1,0}},
-		// 	{{-1,-1,0,  -0.70,1,0}},
-		// 	{{-0.70,1,0,  -0.35,0,0}},
-		// 	{{-0.35,0,0,  0,1,0}},
-		// 	{{0,1,0,  0.35,0,0}},
-		// 	{{0.35,0,0,  0.70,1,0}},
-		// 	{{0.70,1,0,  1,-1,0}}
-		// };
 		m.lines=linebuilder({
 				-1,-1,0,  -1,0,0,  -0.70,1,0.5,  -0.55,0,1,  -0.55,-1,1,  // crown 1
 				1,-1,0,  1,0,0,  0.70,1,0.5,  0.55,0,1,  0.55,-1,1,  // crown 2
 				0,1,1,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  // crown 3
 				-0.70,1,-0.5,  -0.55,0,-1,  -0.55,-1,-1,  0,0,0,  0,0,0,  // crown b1
 				0.70,1,-0.5,  0.55,0,-1,  0.55,-1,-1,  0,0,0,  0,0,0,  // crown b2
-				0,1,-1
+				0,1,-1  // crown b3
 			},{
 				0,1, 1,2, 2,3, 3,4, 4,0,  // crown 1
 				5,6, 6,7, 7,8, 8,9, 9,5,  // crown 2
 				8,10, 3,10, 4,9,  // crown 3
 				1,15, 15,16, 16,17, 17,0,  // crown b1
 				6,20, 20,21, 21,22,  22,5,  // crown b2
-				25,21, 25,16, 17,22
+				25,21, 25,16, 17,22  // crown b3
 			});
 		models.push_back(m);
 	}
