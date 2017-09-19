@@ -10,7 +10,7 @@ using namespace std;
 
 
 // predef
-void setview(string viewid);
+int do_rot=0;
 // globals
 vector<Model> models;
 
@@ -24,10 +24,16 @@ Model& getmodel(const string& id) {
 bool models_sort_z(const Model& l, const Model& r) {
 	return (l.y < r.y);  // sort y index lowest first
 }
+void setview(string viewid) {
+	if (viewid=="" || viewid=="default")  viewid="x";
+	if      (viewid=="x")  Model::tglobal={ {'Y',0} };
+	else if (viewid=="z")  Model::tglobal={ {'Y',0}, {'p',90} };
+	else if (viewid=="iso1")  Model::tglobal={ {'Y',0}, {'p',20} };
+	else if (viewid=="iso2")  Model::tglobal={ {'Y',-20}, {'p',35} };
+}
 
 
 // events
-int do_rot=0;
 int pollevents() {
 	static int last_key=0;
 	SDL_Event e;
@@ -54,15 +60,6 @@ int pollevents() {
 			}
 	}
 	return 0;
-}
-
-
-void setview(string viewid) {
-	if (viewid=="" || viewid=="default")  viewid="x";
-	if      (viewid=="x")  Model::tglobal={ {'Y',0} };
-	else if (viewid=="z")  Model::tglobal={ {'Y',0}, {'p',90} };
-	else if (viewid=="iso1")  Model::tglobal={ {'Y',0}, {'p',20} };
-	else if (viewid=="iso2")  Model::tglobal={ {'Y',-20}, {'p',35} };
 }
 
 
