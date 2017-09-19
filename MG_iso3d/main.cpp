@@ -12,43 +12,34 @@ using namespace std;
 // predef
 void setview(string viewid);
 // globals
-vector<pair<char,double>> tglobal;
+vector<Model> models;
 
 
 // models
-struct Model {
-	string id;
-	double x=0, y=0, z=0;
-	double roll=0, pitch=0, yaw=0;
-	double scale=1;
-	array<int,3> col={{255,255,255}};
-	vector<array<double,6>> lines;
-
-	void draw() const {
-		gfx::drawc(col[0], col[1], col[2]);
-		for (auto l : lines) {
-			// rotateline(l, roll, pitch, yaw);
-			// transform: scale, rotate, move (most predictable)
-			transformln('s', scale, &l[0]);
-			transformln('r', roll, &l[0]);
-			transformln('p', pitch, &l[0]);
-			transformln('Y', yaw, &l[0]);
-			transformln('x', x, &l[0]);
-			transformln('y', y, &l[0]);
-			transformln('z', z, &l[0]);
-			// apply global transforms
-			for (const auto& t : tglobal)
-				transformln(t.first, t.second, &l[0]);
-			gfx::drawline(SDL_GetVideoSurface(), 160+l[0], 120-l[1], 160+l[3], 120-l[4]);
-			// gfx::drawline(SDL_GetVideoSurface(), 
-			// 	x + l[0] * scale,
-			// 	y + l[1] * scale,
-			// 	x + l[3] * scale,
-			// 	y + l[4] * scale );
-		}
+std::vector<std::pair<char,double>> Model::tglobal={ {'Y',0} };
+void Model::draw() const {
+	gfx::drawc(col[0], col[1], col[2]);
+	for (auto l : lines) {
+		// rotateline(l, roll, pitch, yaw);
+		// transform: scale, rotate, move (most predictable)
+		transformln('s', scale, &l[0]);
+		transformln('r', roll, &l[0]);
+		transformln('p', pitch, &l[0]);
+		transformln('Y', yaw, &l[0]);
+		transformln('x', x, &l[0]);
+		transformln('y', y, &l[0]);
+		transformln('z', z, &l[0]);
+		// apply global transforms
+		for (const auto& t : tglobal)
+			transformln(t.first, t.second, &l[0]);
+		gfx::drawline(SDL_GetVideoSurface(), 160+l[0], 120-l[1], 160+l[3], 120-l[4]);
+		// gfx::drawline(SDL_GetVideoSurface(), 
+		// 	x + l[0] * scale,
+		// 	y + l[1] * scale,
+		// 	x + l[3] * scale,
+		// 	y + l[4] * scale );
 	}
-};
-vector<Model> models;
+}
 Model& getmodel(const string& id) {
 	static Model tmp;
 	for (auto& m : models)
@@ -101,6 +92,43 @@ vector<array<double,6>> linebuilder(vector<double> points, vector<int> join) {
 	return lines;
 }
 
+static const lines_t 
+MOD_cube={
+	{{0,-1.5,0, 0,1.5,0}},
+
+	{{-1,-1,1, 1,-1,1}},
+	{{1,-1,1,  1,1,1}},
+	{{1,1,1,  -1,1,1}},
+	{{-1,1,1, -1,-1,1}},
+
+	{{-1,-1,-1, 1,-1,-1}},
+	{{1,-1,-1,  1,1,-1}},
+	{{1,1,-1,  -1,1,-1}},
+	{{-1,1,-1, -1,-1,-1}},
+},
+MOD_pyramid=linebuilder({
+		-1,-1,-1,  -1,-1,1,  1,-1,-1,  1,-1,1,  0,1,0,
+		0,-1,-1,  0,1,-1
+	},{
+		0,1, 0,2, 2,3, 1,3, 4,0, 4,1, 4,2, 4,3,
+		5,6
+}),
+MOD_king1=linebuilder({
+	-1,-1,0,  -1,0,0,  -0.70,1,0.5,  -0.55,0,1,  -0.55,-1,1,  // crown 1
+	1,-1,0,  1,0,0,  0.70,1,0.5,  0.55,0,1,  0.55,-1,1,  // crown 2
+	0,1,1,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  // crown 3
+	-0.70,1,-0.5,  -0.55,0,-1,  -0.55,-1,-1,  0,0,0,  0,0,0,  // crown b1
+	0.70,1,-0.5,  0.55,0,-1,  0.55,-1,-1,  0,0,0,  0,0,0,  // crown b2
+	0,1,-1  // crown b3
+},{
+	0,1, 1,2, 2,3, 3,4, 4,0,  // crown 1
+	5,6, 6,7, 7,8, 8,9, 9,5,  // crown 2
+	8,10, 3,10, 4,9,  // crown 3
+	1,15, 15,16, 16,17, 17,0,  // crown b1
+	6,20, 20,21, 21,22,  22,5,  // crown b2
+	25,21, 25,16, 17,22  // crown b3
+});
+
 
 void makemodel(const string& type, const string& id) {
 	Model m;
@@ -108,31 +136,13 @@ void makemodel(const string& type, const string& id) {
 	if (type=="cube") {
 		m.y=10;
 		m.scale=10;
-		m.lines={
-			{{0,-1.5,0, 0,1.5,0}},
-
-			{{-1,-1,1, 1,-1,1}},
-			{{1,-1,1,  1,1,1}},
-			{{1,1,1,  -1,1,1}},
-			{{-1,1,1, -1,-1,1}},
-
-			{{-1,-1,-1, 1,-1,-1}},
-			{{1,-1,-1,  1,1,-1}},
-			{{1,1,-1,  -1,1,-1}},
-			{{-1,1,-1, -1,-1,-1}},
-		};
+		m.lines=MOD_cube;
 		models.push_back(m);
 	}
 	else if (type=="pyramid") {
 		m.y=10;
 		m.scale=8;
-		m.lines=linebuilder({
-				-1,-1,-1,  -1,-1,1,  1,-1,-1,  1,-1,1,  0,1,0,
-				0,-1,-1,  0,1,-1
-			},{
-				0,1, 0,2, 2,3, 1,3, 4,0, 4,1, 4,2, 4,3,
-				5,6
-		});
+		m.lines=MOD_pyramid;
 		models.push_back(m);
 	}
 	else if (type=="matrix") {
@@ -145,53 +155,19 @@ void makemodel(const string& type, const string& id) {
 		models.push_back(m);
 	}
 	else if (type=="king") {
-		m.scale=10;
+		m.scale=8;
 		m.y=10;
-		m.lines=linebuilder({
-				-1,-1,0,  -1,0,0,  -0.70,1,0.5,  -0.55,0,1,  -0.55,-1,1,  // crown 1
-				1,-1,0,  1,0,0,  0.70,1,0.5,  0.55,0,1,  0.55,-1,1,  // crown 2
-				0,1,1,  0,0,0, 0,0,0, 0,0,0, 0,0,0,  // crown 3
-				-0.70,1,-0.5,  -0.55,0,-1,  -0.55,-1,-1,  0,0,0,  0,0,0,  // crown b1
-				0.70,1,-0.5,  0.55,0,-1,  0.55,-1,-1,  0,0,0,  0,0,0,  // crown b2
-				0,1,-1  // crown b3
-			},{
-				0,1, 1,2, 2,3, 3,4, 4,0,  // crown 1
-				5,6, 6,7, 7,8, 8,9, 9,5,  // crown 2
-				8,10, 3,10, 4,9,  // crown 3
-				1,15, 15,16, 16,17, 17,0,  // crown b1
-				6,20, 20,21, 21,22,  22,5,  // crown b2
-				25,21, 25,16, 17,22  // crown b3
-			});
+		m.lines=MOD_king1;
 		models.push_back(m);
 	}
 }
 
 void setview(string viewid) {
 	if (viewid=="" || viewid=="default")  viewid="x";
-	if (viewid=="x") {
-		tglobal={
-			{'Y',0}
-			// {'x',160},{'y',120}
-		};
-	}
-	else if (viewid=="z") {
-		tglobal={
-			{'Y',0},
-			{'p',90}
-		};
-	}
-	else if (viewid=="iso1") {
-		tglobal={
-			{'Y',0},
-			{'p',20}
-		};
-	}
-	else if (viewid=="iso2") {
-		tglobal={
-			{'Y',-20},
-			{'p',35}
-		};
-	}
+	if      (viewid=="x")  Model::tglobal={ {'Y',0} };
+	else if (viewid=="z")  Model::tglobal={ {'Y',0}, {'p',90} };
+	else if (viewid=="iso1")  Model::tglobal={ {'Y',0}, {'p',20} };
+	else if (viewid=="iso2")  Model::tglobal={ {'Y',-20}, {'p',35} };
 }
 
 
@@ -223,7 +199,7 @@ int main(int argc, char** argv) {
 			m.draw();
 		getmodel("pyramid-1").yaw += 2;
 		if (do_rot)
-			tglobal[0].second += 0.5;
+			Model::tglobal[0].second += 0.5;
 
 		gfx::scale2x(scr, scr);
 		gfx::flip();
