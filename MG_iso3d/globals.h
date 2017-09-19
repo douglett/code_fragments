@@ -21,3 +21,4 @@ struct Model {
 	// methods
 	void draw() const;
 };
+Model makemodel(const std::string& type, const std::string& id);
