@@ -34,7 +34,7 @@ void Model::draw() const {
 // build helper
 static lines_t linebuilder(vector<double> points, vector<int> join) {
 	vector<array<double,6>> lines;
-	for (int i=0; i<join.size()-1; i+=2) {
+	for (int i=0; i<(int)join.size()-1; i+=2) {
 		double* p = &points[ join[i]   * 3 ];
 		double* q = &points[ join[i+1] * 3 ];
 		lines.push_back({{ p[0], p[1], p[2], q[0], q[1], q[2] }});
@@ -83,6 +83,24 @@ MOD_heart_r=linebuilder({
 	0,0.6,0,  0.3,1,0,  0.7,1,0,  1,0.6,0,   1,0,0,   0,-1,0
 },{
 	0,1, 1,2, 2,3, 3,4, 4,5
+}),
+MOD_spade_r=linebuilder({
+	0,1,0,  1,0.3,0,  1,-0.4,0,  0.4,-0.6,0,  0.15,-0.2,0,  
+	0.25,-0.7,0,  0.4,-1,0,  0,-1,0
+},{
+	0,1, 1,2, 2,3, 3,4, 4,5, 5,6, 6,7
+}),
+MOD_diamond_r=linebuilder({
+	0,1,0,  1,0,0,  0,-1,0
+},{
+	0,1, 1,2
+}),
+MOD_club_r=linebuilder({
+	0,1,0,  0.5,0.6,0,  0.2,0.1,0,
+	0.6,0.3,0,  1,-0.1,0,  0.6,-0.5,0,  0.15,-0.2,0,
+	0.25,-0.7,0,  0.4,-1,0,  0,-1,0
+},{
+	0,1, 1,2, 2,3, 3,4, 4,5, 5,6, 6,7, 7,8, 8,9
 });
 
 
@@ -113,12 +131,15 @@ Model makemodel(const string& type, const string& id) {
 		m.y=10;
 		m.lines=MOD_king1;
 	}
-	else if (type=="heart") {
+	else if (type=="heart" || type=="spade" || type=="diamond" || type=="club") {
 		m.scale=8;
 		m.y=10;
-		m.lines=MOD_heart_r;
+		if      (type=="heart") m.lines=MOD_heart_r, m.col={{255,0,0}};
+		else if (type=="spade") m.lines=MOD_spade_r, m.col={{50,50,255}};
+		else if (type=="diamond") m.lines=MOD_diamond_r, m.col={{255,0,0}};
+		else if (type=="club") m.lines=MOD_club_r, m.col={{50,50,255}};
 		// left side
-		lines_t test=MOD_heart_r;
+		lines_t test=m.lines;
 		for (auto& l : test)
 			l[0]*=-1, l[3]*=-1;
 		m.lines.insert(m.lines.end(), test.begin(), test.end());

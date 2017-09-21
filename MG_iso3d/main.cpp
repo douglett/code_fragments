@@ -86,6 +86,21 @@ int main(int argc, char** argv) {
 		break;
 	case 2:
 		models.push_back( makemodel("heart", "1") );
+		models.push_back( makemodel("spade", "1") );
+		models.push_back( makemodel("diamond", "1") );
+		models.push_back( makemodel("club", "1") );
+		getmodel("heart-1").z = 10-100;
+		getmodel("heart-1").x = 10-100 + 0*20;
+		// getmodel("heart-1").scale=30;
+		getmodel("spade-1").z = 10-100;
+		getmodel("spade-1").x = 10-100 + 1*20;
+		// getmodel("spade-1").scale=30;
+		getmodel("diamond-1").z = 10-100;
+		getmodel("diamond-1").x = 10-100 + 2*20;
+		// getmodel("diamond-1").scale=30;
+		getmodel("club-1").z = 10-100;
+		getmodel("club-1").x = 10-100 + 3*20;
+		// getmodel("club-1").scale=30;
 		break;
 	}
 
