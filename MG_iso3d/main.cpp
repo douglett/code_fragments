@@ -70,14 +70,23 @@ int main(int argc, char** argv) {
 
 	setview("default");
 	setview("iso1");
-	// makemodel("cube");
+
+	int scene=2;
 	models.push_back( makemodel("matrix", "1") );
-	// makemodel("king", "1");
-	for (int i=0; i<10; i++) {
-		models.push_back( makemodel("pyramid", to_string(i+1)) );
-		string id="pyramid-"+to_string(i+1);
-		getmodel(id).z = 10 - 100;
-		getmodel(id).x = 10 + i*20 - 100;
+	switch (scene) {
+	case 1:
+		// makemodel("cube");
+		// makemodel("king", "1");
+		for (int i=0; i<10; i++) {
+			models.push_back( makemodel("pyramid", to_string(i+1)) );
+			string id="pyramid-"+to_string(i+1);
+			getmodel(id).z = 10 - 100;
+			getmodel(id).x = 10 + i*20 - 100;
+		}
+		break;
+	case 2:
+		models.push_back( makemodel("heart", "1") );
+		break;
 	}
 
 	while (true) {

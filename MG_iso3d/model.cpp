@@ -78,6 +78,11 @@ MOD_king1=linebuilder({
 	1,15, 15,16, 16,17, 17,0,  // crown b1
 	6,20, 20,21, 21,22,  22,5,  // crown b2
 	25,21, 25,16, 17,22  // crown b3
+}),
+MOD_heart_r=linebuilder({
+	0,0.6,0,  0.3,1,0,  0.7,1,0,  1,0.6,0,   1,0,0,   0,-1,0
+},{
+	0,1, 1,2, 2,3, 3,4, 4,5
 });
 
 
@@ -107,6 +112,22 @@ Model makemodel(const string& type, const string& id) {
 		m.scale=8;
 		m.y=10;
 		m.lines=MOD_king1;
+	}
+	else if (type=="heart") {
+		m.scale=8;
+		m.y=10;
+		m.lines=MOD_heart_r;
+		// left side
+		lines_t test=MOD_heart_r;
+		for (auto& l : test)
+			l[0]*=-1, l[3]*=-1;
+		m.lines.insert(m.lines.end(), test.begin(), test.end());
+		// 3d effect
+		// test=m.lines;
+		// for (int i=0; i<m.lines.size(); i++)
+		// 	m.lines[i][2] = m.lines[i][5] = 0.5,
+		// 	test[i][2 ]= test[i][5] = -0.5;
+		// m.lines.insert(m.lines.end(), test.begin(), test.end());
 	}
 	return m;
 }
