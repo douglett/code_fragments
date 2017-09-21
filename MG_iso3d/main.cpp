@@ -101,6 +101,9 @@ int main(int argc, char** argv) {
 		getmodel("club-1").z = 10-100;
 		getmodel("club-1").x = 10-100 + 3*20;
 		// getmodel("club-1").scale=30;
+		models.push_back( makemodel("pyramid", "1") );
+		getmodel("pyramid-1").z = 10-100 + 2*20;
+		getmodel("pyramid-1").x = 10-100 + 2*20;
 		break;
 	}
 
