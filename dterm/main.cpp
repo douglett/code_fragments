@@ -19,6 +19,12 @@ void PIPE_2(std::list<std::string>& ls) {
 }
 
 
+int getchk=0;
+int termw=39, termh=29, termx=0, termy=0;
+list<string> response;
+SDL_Surface* scr=NULL;
+
+
 vector<string> split(const string& ln) {
 	vector<string> vs={""};
 	for (int i=0; i<ln.length(); i++) {
@@ -35,8 +41,45 @@ vector<string> split(const string& ln) {
 	return vs;
 }
 
+vector<string> nextcmd() {
+	vector<string> vs;
+	if (PIPE_1().size()==0) return vs;
+	vs=split( PIPE_1().front() );
+	vs.insert(vs.begin(), PIPE_1().front());
+	PIPE_1().pop_front();
+	return vs;
+}
 
-list<string> response;
+int handlecmd() {
+	static vector<string> cmd;
+	while (true) {
+		// get command from buffer or pipe
+		if (cmd.size()<2) cmd=nextcmd();
+		if (cmd.size()<2) break;
+		// handle command
+		if (cmd[1]=="error") break;
+		else if (cmd[1]=="locate" && cmd.size()==4) {
+			termx = max(min((int)stol(cmd[2]), termw), 0);
+			termy = max(min((int)stol(cmd[3]), termh), 0);
+			printf("locate: %d %d\n", termx, termy);
+		}
+		else if (cmd[1]=="printf" && cmd.size()>=3) {
+			gfx::drawstr(scr, 4+termx*8, 4+termy*10, cmd[2]);
+		}
+		else if (cmd[1]=="getch") {
+			if (getchk<1) break;
+			response.push_back("getch "+to_string(getchk));
+			printf("getch: %d\n", getchk);
+		}
+		else {
+			fprintf(stderr, "error: %s\n", cmd[0].c_str());
+			cmd={"error", "error"};
+			break;
+		}
+		cmd={};
+	}
+	return 0;
+}
 
 
 int getch() {
@@ -59,45 +102,20 @@ int main(int argc, char** argv) {
 
 	gfx::init(640, 480, "win");
 	gfx::handleEvents=0;
-	SDL_Surface* scr = gfx::mksprite(320, 240);
+	scr = gfx::mksprite(320, 240);
 	SDL_FillRect(scr, NULL, 0x000000ff);
 
-	int termw=39, termh=29, termx=0, termy=0;
-
-	int err=0, getchk=0, shown=1;
-	while (err==0 && getchk!=-1) {
-		auto& inp = PIPE_1();  // get input from the master pipe
-		while (inp.size()) {
-			auto vs=split( inp.front() );
-			if (!shown) {
-				for (auto& s : vs) printf("  [%s]\n", s.c_str());
-				shown=1;
-			}
-			if      (vs.size()==0)  continue;
-			else if (vs[0]=="locate" && vs.size()==3) {
-				termx = max(min((int)stol(vs[1]), termw), 0);
-				termy = max(min((int)stol(vs[2]), termh), 0);
-				printf("locate: %d %d\n", termx, termy);
-			}
-			else if (vs[0]=="printf" && vs.size()>=2) {
-				gfx::drawstr(scr, 4+termx*8, 4+termy*10, vs[1]);
-			}
-			else if (vs[0]=="getch") {
-				if (!getchk) break;
-				printf("getch: %d\n", getchk);
-				response.push_back("getch "+to_string(getchk));
-			}
-			else {
-				fprintf(stderr, "error: %s\n", inp.front().c_str());
-				err=1;  break;
-			}
-			inp.pop_front();
-			shown=0;
-		}
+	int err=0;
+	while (err==0) {
+		// handle input commands
+		handlecmd();
+		// send any pending commands
+		PIPE_2(response);
 		// paint
 		SDL_FillRect(SDL_GetVideoSurface(), NULL, 0x000000ff);
 		gfx::scale2x(scr, SDL_GetVideoSurface());
 		getchk=getch();
+		if (getchk==-1) err=1;
 		gfx::flip();
 	}
 
