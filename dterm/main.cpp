@@ -2,6 +2,7 @@
 #include <vector>
 #include <list>
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -39,7 +40,10 @@ int main(int argc, char** argv) {
 
 	gfx::init(640, 480, "win");
 	// gfx::handleEvents=0;
-	SDL_FillRect(SDL_GetVideoSurface(), NULL, 0x000000ff);
+	SDL_Surface* scr = gfx::mksprite(320, 240);
+	SDL_FillRect(scr, NULL, 0x000000ff);
+
+	int termw=39, termh=29, termx=0, termy=0;
 
 	int loop=1, err=0;
 	while (loop && !err) {
@@ -49,11 +53,12 @@ int main(int argc, char** argv) {
 			for (auto& s : vs) printf("  [%s]\n", s.c_str());
 			if      (vs.size()==0)  continue;
 			else if (vs[0]=="locate" && vs.size()==3) {
-				int x=stol(vs[1]), y=stol(vs[2]);
-				printf("locate: %d %d\n", x, y);
+				termx = max(min((int)stol(vs[1]), termw), 0);
+				termy = max(min((int)stol(vs[2]), termh), 0);
+				printf("locate: %d %d\n", termx, termy);
 			}
 			else if (vs[0]=="printf" && vs.size()>=2) {
-				gfx::drawstr(SDL_GetVideoSurface(), 0, 0, vs[1]);
+				gfx::drawstr(scr, 4+termx*8, 4+termy*10, vs[1]);
 			}
 			else {
 				fprintf(stderr, "error: %s\n", inp.front().c_str());
@@ -62,8 +67,8 @@ int main(int argc, char** argv) {
 			inp.pop_front();
 		}
 		// paint
-		// SDL_FillRect(SDL_GetVideoSurface(), NULL, 0x000000ff);
-		// gfx::scale2x(SDL_GetVideoSurface(), SDL_GetVideoSurface());
+		SDL_FillRect(SDL_GetVideoSurface(), NULL, 0x000000ff);
+		gfx::scale2x(scr, SDL_GetVideoSurface());
 		if (gfx::flip())  break;
 	}
 
