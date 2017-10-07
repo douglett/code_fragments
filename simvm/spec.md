@@ -23,8 +23,8 @@ if an error is encountered, the program dies. an error code is put in register w
 - cmp (a, 1) (b, 2) - (comparison based on register val: q = query, r = result)
 	- q :: ![0] =[1] >=[2] >[3] <=[4] <[5] fail[...]
 - if (a, 1) (b, 2) - (runs next line if equal - next line must be jump)
-// - push (a, 1) - (put value on stack)
-// - pop a - (pop stack value)
+	- (removed) push (a, 1) - (put value on stack)
+	- (removed) pop a - (pop stack value)
 - pushstate - (push entire state onto stack (32 ints): [a-z(26), pc(27), pad-0]. error: stack-overflow)
 - popstate  - (pop state from stack, re-setting each value as above. this will move pc. error: stack-underflow)
 - load a - (load from external memory. TBD)
