@@ -21,7 +21,7 @@ if an error is encountered, the program dies. an error code is put in register w
 - jump mylabel - (set pc to label - value only, hardcoded. error: out-of-range)
 - :mylabel - (label)
 - cmp (a, 1) (b, 2) - (comparison based on register val: q = query, r = result)
-	-- q :: ![0] =[1] >=[2] >[3] <=[4] <[5] fail[...]
+	- q :: ![0] =[1] >=[2] >[3] <=[4] <[5] fail[...]
 - if (a, 1) (b, 2) - (runs next line if equal - next line must be jump)
 // - push (a, 1) - (put value on stack)
 // - pop a - (pop stack value)
