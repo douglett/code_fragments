@@ -39,6 +39,6 @@ the following basic segments are guaranteed to exist.
 - 2 :: stderr - as above
 - 3 :: stdin - as above. contains raw keyboard input
 - 4 :: scratch - 0x1000 (4k) ints or basic data. can save small amounts of generic program data here without allocating.
-- 5 :: screenbuffer - raw pixel data
+- 5 :: screenbuffer - raw pixel data for standard screen. 320x240?
 - 6-9 :: (reserved)
 - 10+ :: (memory requested from the OS goes here)
