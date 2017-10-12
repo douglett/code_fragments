@@ -21,7 +21,7 @@ if an error is encountered, the program dies. an error code is put in register [
 - jump mylabel - (set pc to label - value only, hardcoded. error: out-of-range)
 - :mylabel - (label)
 - cmp a (b, 2) - (comparison based on register val: x = query, y = result)
-	- q :: ![0] =[1] >=[2] >[3] <=[4] <[5] fail[...]
+	- x :: ![0] =[1] >=[2] >[3] <=[4] <[5] fail[...]
 - if a (b, 2) - (runs next line if equal - next line must be jump)
 - pushstate - (push entire state onto stack (32 ints): [a-v(22), pc(27), pad-0]. error: stack-overflow)
 - popstate  - (pop state from stack, re-setting each value as above. this will move pc. error: stack-underflow)
@@ -40,5 +40,5 @@ the following basic segments are guaranteed to exist.
 - 3 :: stdin - as above. contains raw keyboard input
 - 4 :: scratch - 0x1000 (4k) ints or basic data. can save small amounts of generic program data here without allocating.
 - 5 :: screenbuffer - raw pixel data
-- 6-9 :: reserved
-- 10 :: system memory starts here
+- 6-9 :: (reserved)
+- 10+ :: (memory requested from the OS goes here)
