@@ -9,6 +9,7 @@ the program can be interpreted from a string, or compiled. if the latter, progra
 - reg a-z (26 - int32)
 - pc (int32 - constrained 0-0x9999)
 - sp (int32 - constrained 0-0x999)
+- bp (int32 - constrained 0-0x999) (base pointer to bottom of frame stack)
 - external (all variables, arrays, screen. TBD)
 
 commands:
