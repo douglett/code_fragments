@@ -1,8 +1,10 @@
 #include "graphics/graphics.h"
+#include "helpers/helpers.h"
 #include <iostream>
 #include <vector>
 
 using namespace std;
+using namespace helpers;
 
 
 namespace screentxt {
@@ -18,8 +20,8 @@ namespace screentxt {
 			vs.push_back(s);
 		}
 		lines.insert(lines.end(), vs.begin(), vs.end());
-		if (lines.size() > maxw)
-			lines.erase(lines.begin(), lines.begin() + (lines.size() - maxw));
+		if (lines.size() > maxh)
+			lines.erase(lines.begin(), lines.begin() + (lines.size() - maxh));
 		dopaint = 1;
 	}
 
@@ -48,6 +50,8 @@ int main(int argc, char** argv) {
 	screentxt::log("hello world!");
 	screentxt::log("I am doug.");
 	screentxt::log("bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon ");
+	for (int i=0; i<=24; i++)
+		screentxt::log(strfmt("%d", i));
 	
 	while (true) {
 		// SDL_Rect r = {0};
