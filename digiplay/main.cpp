@@ -11,6 +11,17 @@ namespace screentxt {
 	const int maxw = 39, maxh = 29, offx = 4, offy = 4;
 	int dopaint = 1;
 	vector<string> lines;
+	string inputstr;
+
+	int handlekey(int key, int val) {
+		// printf("key: %d %d\n", key, val);
+		if      (val == 0) { }
+		else if (key == SDLK_ESCAPE) { return 1; }
+		else if (key >= ' ' && key <= '~') { inputstr += char(key);  dopaint = 1; }
+		else if (key == SDLK_BACKSPACE) { if (inputstr.size()) inputstr.pop_back();  dopaint = 1; }
+		else if (key == SDLK_RETURN) { inputstr = "";  dopaint = 1; }
+		return 0;
+	}
 	
 	void log(const string& s) {
 		vector<string> vs = { s };
@@ -29,8 +40,9 @@ namespace screentxt {
 		if (!dopaint)  return;
 		SDL_FillRect(buf, NULL, gfx::drawc(0,0,0));
 		gfx::drawc(255,255,255);
-		for (int i=0; i<lines.size(); i++)
+		for (int i=0; i<lines.size()-1; i++)
 			gfx::drawstr(buf, offx, offy + i*8, lines[i]);
+		gfx::drawstr(buf, offx, offy + (maxh-1)*8, lines.back() + ' ' + inputstr + char(2));
 		dopaint = 0;
 	}
 } // end screentxt
@@ -38,6 +50,7 @@ namespace screentxt {
 
 int main(int argc, char** argv) {
 	gfx::init(640, 480, "blah");
+	gfx::handlekey = screentxt::handlekey;
 	SDL_Surface* screen = SDL_GetVideoSurface();
 	SDL_Surface* buftxt = gfx::mksprite(320, 240);
 	SDL_Surface* bufgfx = gfx::mksprite(320, 240);
