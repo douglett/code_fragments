@@ -7,11 +7,16 @@ using namespace std;
 using namespace helpers;
 
 
+SDL_Surface *screen, *buftxt, *bufgfx; 
+
+
 namespace screentxt {
+	int parseline(const string& ln);
 	void log(const string& s);
+	void prompt();
 	// 
 	const int maxw = 39, maxh = 29, offx = 4, offy = 4;
-	int dopaint = 1;
+	int view = 2, dopaint = 1;
 	vector<string> lines;
 	string inputstr;
 
@@ -19,15 +24,58 @@ namespace screentxt {
 		// printf("key: %d %d\n", key, val);
 		if      (val == 0) { }
 		else if (key == SDLK_ESCAPE) { return 1; }
+		else if (key == SDLK_F1) { view = 1; }
+		else if (key == SDLK_F2) { view = 2; }
 		else if (key == SDLK_BACKSPACE) { if (inputstr.size()) inputstr.pop_back();  dopaint = 1; }
 		else if (key == SDLK_RETURN) {
 			string s = lines.back() + inputstr;
-			inputstr = "";
 			lines.pop_back();
-			log(s), log("");
+			log(s);
+			parseline(inputstr);
+			prompt();
 		}
 		else if (key >= ' ' && key <= '~') { inputstr += char(key);  dopaint = 1; }
+		// else    { printf("key: %d\n", key); }
 		return 0;
+	}
+
+	int parseline(const string& ln) {
+		auto vs = splitws(ln);
+		if (vs.size()==0) { return 0; }
+		// printf("here\n");
+		if ((vs[0]=="line" || vs[0]=="box" || vs[0]=="boxf") && vs.size() == 5) {
+			int x1 = stoi(vs[1], 0, 0);
+			int y1 = stoi(vs[2], 0, 0);
+			int x2 = stoi(vs[3], 0, 0);
+			int y2 = stoi(vs[4], 0, 0);
+			// printf("here 2  %d %d %d %d\n", x1, y1, x2, y2);
+			if      (vs[0]=="line") { gfx::drawline(bufgfx, x1, y1, x2, y2); }
+			else if (vs[0]=="box" ) { gfx::drawbox(bufgfx, x1, y1, x2, y2); }
+			else if (vs[0]=="boxf") { gfx::drawboxf(bufgfx, x1, y1, x2, y2); }
+			return 0;
+		}
+		else if (vs[0]=="color" && vs.size() == 2) {
+			if      (vs[1] == "white"  )  gfx::drawc(255,255,255);
+			else if (vs[1] == "black"  )  gfx::drawc(0,0,0);
+			else if (vs[1] == "red"    )  gfx::drawc(255,0,0);
+			else if (vs[1] == "green"  )  gfx::drawc(0,255,0);
+			else if (vs[1] == "blue"   )  gfx::drawc(0,0,255);
+			else if (vs[1] == "yellow" )  gfx::drawc(255,255,0);
+			else if (vs[1] == "purple" )  gfx::drawc(255,0,255);
+			else if (vs[1] == "cyan"   )  gfx::drawc(0,255,255);
+			else    { log("unknown color");  return 1; }
+			return 0;
+		}
+		else if (vs[0]=="colorcode" && vs.size() == 4) {
+			int r = stoi(vs[1], 0, 0);
+			int g = stoi(vs[2], 0, 0);
+			int b = stoi(vs[3], 0, 0);
+			gfx::drawc(r, g, b);
+			return 0;
+		}
+		// unknown
+		log("unknown command");
+		return 1;
 	}
 	
 	void log(const string& s) {
@@ -43,13 +91,21 @@ namespace screentxt {
 		dopaint = 1;
 	}
 
-	void paint(SDL_Surface* buf) {
+	void prompt() {
+		log("> ");
+		inputstr = "";
+		dopaint = 1;
+	}
+
+	void repaint() {
 		if (!dopaint)  return;
-		SDL_FillRect(buf, NULL, gfx::drawc(0,0,0));
-		gfx::drawc(255,255,255);
+		auto col = gfx::drawc();
+		SDL_FillRect(buftxt, NULL, gfx::drawc(0,0,0));
+		// gfx::drawc(255,255,255);
 		for (int i=0; i<lines.size()-1; i++)
-			gfx::drawstr(buf, offx, offy + i*8, lines[i]);
-		gfx::drawstr(buf, offx, offy + (maxh-1)*8, lines.back() + inputstr + char(2));
+			gfx::drawstr(buftxt, offx, offy + i*8, lines[i]);
+		gfx::drawstr(buftxt, offx, offy + (maxh-1)*8, lines.back() + inputstr + char(2));
+		gfx::drawc(col);
 		dopaint = 0;
 	}
 } // end screentxt
@@ -58,13 +114,13 @@ namespace screentxt {
 int main(int argc, char** argv) {
 	gfx::init(640, 480, "blah");
 	gfx::handlekey = screentxt::handlekey;
-	SDL_Surface* screen = SDL_GetVideoSurface();
-	SDL_Surface* buftxt = gfx::mksprite(320, 240);
-	SDL_Surface* bufgfx = gfx::mksprite(320, 240);
+	screen = SDL_GetVideoSurface();
+	buftxt = gfx::mksprite(320, 240);
+	bufgfx = gfx::mksprite(320, 240);
 	// init buffers
 	SDL_Rect scrrect = { 0, 0, 320, 240 };
 	SDL_FillRect(bufgfx, &scrrect, gfx::drawc(255,0,255));
-	// gfx::drawc(255,255,255);
+	gfx::drawc(255,255,255);
 	// for (int i=0; i<29; i++)
 	// 	gfx::drawstr(buftxt, 4, 4+i*8, string(39, 'X'));
 	screentxt::log("hello world!");
@@ -72,12 +128,14 @@ int main(int argc, char** argv) {
 	screentxt::log("bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon ");
 	for (int i=0; i<=24; i++)
 		screentxt::log(strfmt("%d", i));
+	screentxt::prompt();
 	
 	while (true) {
 		// SDL_Rect r = {0};
-		screentxt::paint(buftxt);
+		printf("color: %x\n", gfx::drawc());
+		screentxt::repaint();
 		SDL_BlitSurface(buftxt, &scrrect, screen, &scrrect);
-		SDL_BlitSurface(bufgfx, &scrrect, screen, &scrrect);
+		if (screentxt::view == 2)  SDL_BlitSurface(bufgfx, &scrrect, screen, &scrrect);
 		gfx::scale2x(screen, screen);
 		if (gfx::flip())  break;
 	}
