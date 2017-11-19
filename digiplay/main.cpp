@@ -16,17 +16,27 @@ namespace screentxt {
 	void prompt();
 	// 
 	const int maxw = 39, maxh = 29, offx = 4, offy = 4;
-	int view = 2, dopaint = 1;
+	int view = 2, curpos = 0, kalt = 0, dopaint = 1;
 	vector<string> lines;
 	string inputstr;
 
 	int handlekey(int key, int val) {
 		// printf("key: %d %d\n", key, val);
+		// held keys
+		if      (key == SDLK_LALT  || key == SDLK_RALT  ) { kalt = val; }
+		else if (key == SDLK_LCTRL || key == SDLK_RCTRL ) { kalt = val; }
+		// pressed keys
 		if      (val == 0) { }
 		else if (key == SDLK_ESCAPE) { return 1; }
 		else if (key == SDLK_F1) { view = 1; }
 		else if (key == SDLK_F2) { view = 2; }
-		else if (key == SDLK_BACKSPACE) { if (inputstr.size()) inputstr.pop_back();  dopaint = 1; }
+		else if (key == SDLK_BACKSPACE) { 
+			if (curpos > int(-inputstr.size())) { 
+				inputstr.erase(inputstr.end()-1 + curpos);
+				dopaint = 1; }
+		}
+		else if (key == SDLK_LEFT)  { curpos = max( curpos-1, int(-inputstr.size()) ); dopaint = 1; }
+		else if (key == SDLK_RIGHT) { curpos = min( curpos+1, 0 ); dopaint = 1; }
 		else if (key == SDLK_RETURN) {
 			string s = lines.back() + inputstr;
 			lines.pop_back();
@@ -34,7 +44,12 @@ namespace screentxt {
 			parseline(inputstr);
 			prompt();
 		}
-		else if (key >= ' ' && key <= '~') { inputstr += char(key);  dopaint = 1; }
+		else if (key >= ' ' && key <= '~') {
+			string s1 = inputstr.substr(0, inputstr.size()+curpos);
+			string s2 = inputstr.substr(inputstr.size()+curpos);
+			inputstr = s1 + char(key) + s2;
+			// inputstr += char(key);  
+			dopaint = 1; }
 		// else    { printf("key: %d\n", key); }
 		return 0;
 	}
@@ -104,7 +119,10 @@ namespace screentxt {
 		// gfx::drawc(255,255,255);
 		for (int i=0; i<lines.size()-1; i++)
 			gfx::drawstr(buftxt, offx, offy + i*8, lines[i]);
-		gfx::drawstr(buftxt, offx, offy + (maxh-1)*8, lines.back() + inputstr + char(2));
+		string inputstrf = inputstr + " ";
+		inputstrf[inputstr.size()+curpos] = char(2);
+		// gfx::drawstr(buftxt, offx, offy + (maxh-1)*8, lines.back() + inputstr + char(2));
+		gfx::drawstr(buftxt, offx, offy + (maxh-1)*8, lines.back() + inputstrf);
 		gfx::drawc(col);
 		dopaint = 0;
 	}
@@ -132,7 +150,7 @@ int main(int argc, char** argv) {
 	
 	while (true) {
 		// SDL_Rect r = {0};
-		printf("color: %x\n", gfx::drawc());
+		// printf("color: %x\n", gfx::drawc());
 		screentxt::repaint();
 		SDL_BlitSurface(buftxt, &scrrect, screen, &scrrect);
 		if (screentxt::view == 2)  SDL_BlitSurface(bufgfx, &scrrect, screen, &scrrect);
