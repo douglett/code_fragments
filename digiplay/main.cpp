@@ -1,6 +1,7 @@
 #include "graphics/graphics.h"
 #include "helpers/helpers.h"
 #include <iostream>
+#include <fstream>
 #include <vector>
 
 using namespace std;
@@ -58,18 +59,24 @@ namespace screentxt {
 		auto vs = splitws(ln);
 		if (vs.size()==0) { return 0; }
 		// printf("here\n");
-		if ((vs[0]=="line" || vs[0]=="box" || vs[0]=="boxf") && vs.size() == 5) {
-			int x1 = stoi(vs[1], 0, 0);
-			int y1 = stoi(vs[2], 0, 0);
-			int x2 = stoi(vs[3], 0, 0);
-			int y2 = stoi(vs[4], 0, 0);
+		if ((vs[0]=="line" || vs[0]=="box" || vs[0]=="boxf") && vs.size()==5) {
+			int x1 = strtonum(vs[1]);
+			int y1 = strtonum(vs[2]);
+			int x2 = strtonum(vs[3]);
+			int y2 = strtonum(vs[4]);
 			// printf("here 2  %d %d %d %d\n", x1, y1, x2, y2);
 			if      (vs[0]=="line") { gfx::drawline(bufgfx, x1, y1, x2, y2); }
 			else if (vs[0]=="box" ) { gfx::drawbox(bufgfx, x1, y1, x2, y2); }
 			else if (vs[0]=="boxf") { gfx::drawboxf(bufgfx, x1, y1, x2, y2); }
 			return 0;
 		}
-		else if (vs[0]=="color" && vs.size() == 2) {
+		else if (vs[0]=="cls" && vs.size()==1) {
+			auto col = gfx::drawc();
+			SDL_FillRect(bufgfx, NULL, gfx::drawc(255,0,255));
+			gfx::drawc(col);
+			return 0;
+		}
+		else if (vs[0]=="color" && vs.size()==2) {
 			if      (vs[1] == "white"  )  gfx::drawc(255,255,255);
 			else if (vs[1] == "black"  )  gfx::drawc(0,0,0);
 			else if (vs[1] == "red"    )  gfx::drawc(255,0,0);
@@ -81,11 +88,20 @@ namespace screentxt {
 			else    { log("unknown color");  return 1; }
 			return 0;
 		}
-		else if (vs[0]=="colorcode" && vs.size() == 4) {
-			int r = stoi(vs[1], 0, 0);
-			int g = stoi(vs[2], 0, 0);
-			int b = stoi(vs[3], 0, 0);
+		else if (vs[0]=="colorcode" && vs.size()==4) {
+			int r = strtonum(vs[1]);
+			int g = strtonum(vs[2]);
+			int b = strtonum(vs[3]);
 			gfx::drawc(r, g, b);
+			return 0;
+		}
+		else if (vs[0]=="load" && vs.size()==2) {
+			fstream fs(vs[1], fstream::in);
+			if (!fs.is_open()) {
+				log("missing file");  return 1; }
+			string s;
+			while (getline(fs, s)) {
+				if (parseline(s)) return 1; }
 			return 0;
 		}
 		// unknown
