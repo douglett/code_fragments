@@ -32,11 +32,10 @@ namespace screentxt {
 		else if (key == SDLK_F1) { view = 1; }
 		else if (key == SDLK_F2) { view = 2; }
 		else if (key == SDLK_BACKSPACE) { 
-			if (curpos > int(-inputstr.size())) { 
-				inputstr.erase(inputstr.end()-1 + curpos);
-				dopaint = 1; }}
-		else if (key == SDLK_LEFT)  { curpos = max( curpos-1, int(-inputstr.size()) ); dopaint = 1; }
-		else if (key == SDLK_RIGHT) { curpos = min( curpos+1, 0 ); dopaint = 1; }
+			if (curpos > 0)
+				{ inputstr.erase(inputstr.begin() + curpos-1);  curpos--;  dopaint = 1; }}
+		else if (key == SDLK_LEFT)  { curpos = max(0, curpos-1);  dopaint = 1; }
+		else if (key == SDLK_RIGHT) { curpos = min((int)inputstr.length(), curpos+1);  dopaint = 1; }
 		else if (key == SDLK_RETURN) {
 			string s = lines.back() + inputstr;
 			lines.pop_back();
@@ -44,10 +43,10 @@ namespace screentxt {
 			parseline(inputstr);
 			prompt(); }
 		else if (key >= ' ' && key <= '~') {
-			string s1 = inputstr.substr(0, inputstr.size()+curpos);
-			string s2 = inputstr.substr(inputstr.size()+curpos);
+			string s1 = inputstr.substr(0, curpos);
+			string s2 = inputstr.substr(curpos);
 			inputstr = s1 + char(key) + s2;
-			// inputstr += char(key);  
+			curpos++;
 			dopaint = 1; }
 		// else    { printf("key: %d\n", key); }
 		return 0;
@@ -125,6 +124,7 @@ namespace screentxt {
 	void prompt() {
 		log("> ");
 		inputstr = "";
+		curpos = 0;
 		dopaint = 1;
 	}
 
@@ -136,9 +136,9 @@ namespace screentxt {
 		for (int i=0; i<lines.size()-1; i++)
 			gfx::drawstr(buftxt, offx, offy + i*8, lines[i]);
 		string inputstrf = inputstr + " ";
-		inputstrf[inputstr.size()+curpos] = char(2);
-		// gfx::drawstr(buftxt, offx, offy + (maxh-1)*8, lines.back() + inputstr + char(2));
-		gfx::drawstr(buftxt, offx, offy + (maxh-1)*8, lines.back() + inputstrf);
+		inputstrf[curpos] = char(2);
+		gfx::drawstr(buftxt, offx, offy + (maxh-1)*8, lines.back() + inputstr);
+		gfx::drawstr(buftxt, offx + (lines.back().size() + curpos)*8, offy + (maxh-1)*8 + 2, "_");
 		gfx::drawc(col);
 		dopaint = 0;
 	}
