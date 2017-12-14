@@ -18,8 +18,7 @@ namespace screentxt {
 	// 
 	const int maxw = 39, maxh = 29, offx = 4, offy = 4;
 	int view = 2, curpos = 0, kalt = 0, dopaint = 1;
-	vector<string> lines;
-	vector<string> history;
+	vector<string> lines, history;
 	string inputstr;
 
 	int handlekey(int key, int val) {
@@ -37,6 +36,8 @@ namespace screentxt {
 				{ inputstr.erase(inputstr.begin() + curpos-1);  curpos--;  dopaint = 1; }}
 		else if (key == SDLK_LEFT)  { curpos = max(0, curpos-1);  dopaint = 1; }
 		else if (key == SDLK_RIGHT) { curpos = min((int)inputstr.length(), curpos+1);  dopaint = 1; }
+		else if (key == SDLK_UP)    { inputstr = history.back();  curpos = inputstr.size();  dopaint = 1; }
+		else if (key == SDLK_DOWN)  { inputstr = "";  curpos = inputstr.size();  dopaint = 1; }
 		else if (key == SDLK_RETURN) {
 			history.push_back(inputstr);
 			if (history.size() > 20)  history.erase(history.begin());
