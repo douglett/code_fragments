@@ -34,8 +34,7 @@ namespace screentxt {
 		else if (key == SDLK_BACKSPACE) { 
 			if (curpos > int(-inputstr.size())) { 
 				inputstr.erase(inputstr.end()-1 + curpos);
-				dopaint = 1; }
-		}
+				dopaint = 1; }}
 		else if (key == SDLK_LEFT)  { curpos = max( curpos-1, int(-inputstr.size()) ); dopaint = 1; }
 		else if (key == SDLK_RIGHT) { curpos = min( curpos+1, 0 ); dopaint = 1; }
 		else if (key == SDLK_RETURN) {
@@ -43,8 +42,7 @@ namespace screentxt {
 			lines.pop_back();
 			log(s);
 			parseline(inputstr);
-			prompt();
-		}
+			prompt(); }
 		else if (key >= ' ' && key <= '~') {
 			string s1 = inputstr.substr(0, inputstr.size()+curpos);
 			string s2 = inputstr.substr(inputstr.size()+curpos);

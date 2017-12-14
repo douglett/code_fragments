@@ -1,5 +1,10 @@
 color white
-boxf 0 0 320 240
+boxf 0 0 320 190
 color red
 box 10 10 100 100
 line 10 10 110 110
+
+#colorcode 255 0 255
+#boxf 0 200 320 50
+
+color red
