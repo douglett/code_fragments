@@ -56,6 +56,7 @@ namespace screentxt {
 	int parseline(const string& ln) {
 		auto vs = splitws(ln);
 		if (vs.size()==0) { return 0; }
+		if (vs[0].substr(0, 1) == "#") { return 0; }
 		// printf("here\n");
 		if ((vs[0]=="line" || vs[0]=="box" || vs[0]=="boxf") && vs.size()==5) {
 			int x1 = strtonum(vs[1]);
@@ -96,14 +97,15 @@ namespace screentxt {
 		else if (vs[0]=="load" && vs.size()==2) {
 			fstream fs(vs[1], fstream::in);
 			if (!fs.is_open()) {
-				log("missing file");  return 1; }
+				log("loading ["+vs[1]+"]: missing file");  return 1; }
+			log("loading ["+vs[1]+"]: OK. running...");
 			string s;
 			while (getline(fs, s)) {
 				if (parseline(s)) return 1; }
 			return 0;
 		}
 		// unknown
-		log("unknown command");
+		log("unknown command: "+ln);
 		return 1;
 	}
 	
@@ -153,13 +155,16 @@ int main(int argc, char** argv) {
 	SDL_Rect scrrect = { 0, 0, 320, 240 };
 	SDL_FillRect(bufgfx, &scrrect, gfx::drawc(255,0,255));
 	gfx::drawc(255,255,255);
-	// for (int i=0; i<29; i++)
-	// 	gfx::drawstr(buftxt, 4, 4+i*8, string(39, 'X'));
-	screentxt::log("hello world!");
-	screentxt::log("I am doug.");
-	screentxt::log("bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon ");
-	for (int i=0; i<=24; i++)
-		screentxt::log(strfmt("%d", i));
+	// // for (int i=0; i<29; i++)
+	// // 	gfx::drawstr(buftxt, 4, 4+i*8, string(39, 'X'));
+	// screentxt::log("hello world!");
+	// screentxt::log("I am doug.");
+	// screentxt::log("bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon bacon ");
+	// for (int i=0; i<=24; i++)
+	// 	screentxt::log(strfmt("%d", i));
+	// first load
+	screentxt::log("loading default file: init.scr");
+	screentxt::parseline("load init.scr");
 	screentxt::prompt();
 	
 	while (true) {
