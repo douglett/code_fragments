@@ -1,3 +1,5 @@
+"use strict";
+
 function main() {
 	console.log("load");
 	game.load();
@@ -18,7 +20,7 @@ var game = {
 		canvas.height = 240;
 		var ctx = this.ctx = canvas.getContext("2d");
 
-		this.qbfont = document.querySelector("img[src='qbfont.png'");
+		this.qbfont = document.querySelector("img[src='qbfont.png']");
 		this.ship = this.makeShip();
 		this.meteor = this.makeMeteor();
 		this.meteors.push({
