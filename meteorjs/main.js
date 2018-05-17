@@ -9,6 +9,8 @@ var game = {
 	canvas: null,
 	ctx: null,
 	dpad: { },
+	level: 0,
+	score: 0,
 	rot: 0,
 	rotspeed: 3,
 	firespeed: 15,
@@ -18,19 +20,15 @@ var game = {
 		var canvas = this.canvas = document.getElementById("mycanvas");
 		canvas.width = 320;
 		canvas.height = 240;
+		this.shipx = canvas.width/2|0;
+		this.shipy = canvas.height/2|0;
 		var ctx = this.ctx = canvas.getContext("2d");
-
 		this.qbfont = document.querySelector("img[src='qbfont.png']");
 		this.ship = this.makeShip();
 		this.meteor = this.makeMeteor();
-		this.meteors.push({
-			x: 100,
-			y: 100,
-			rot: 10,
-			vel: 0.5
-		});
 		window.onkeydown = this.onkey.bind(this);
 		window.onkeyup   = this.onkey.bind(this);
+		this.nextlevel();
 		this.frame();
 	},
 	frame: function() {
@@ -40,7 +38,9 @@ var game = {
 		ctx.strokeStyle = "white";
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		// ctx.drawImage(this.qbfont, 0, 0);
-		this.drawText("bacon on toast", 10, 10)
+		this.drawText("meteor 0.1!", 10, 10);
+		this.drawText("by doug!", 10, 20);
+		this.drawText("score: "+this.score, 220, 10);
 		//-- calculate
 		this.rot += this.rotspeed * (this.dpad.xaxis||0);
 		this.firett--;
@@ -65,6 +65,8 @@ var game = {
 			if (m.dead)  return false;
 			return true;
 		});
+		//-- next level
+		if (this.meteors.length === 0)  this.nextlevel();
 		//-- move bullets
 		this.bullets = this.bullets.filter(b => {
 			b.x += Math.sin(b.rot * Math.PI/180) * b.vel;
@@ -73,16 +75,28 @@ var game = {
 			return ( b.x>=0 && b.y>=0 && b.x<this.canvas.width && b.y<this.canvas.height );
 		});
 		//-- collide
-		this.bullets.forEach(function(b) {
-			this.meteors.forEach(function(m) {
+		var pdead = 0;
+		this.meteors.forEach(function(m) {
+			if (pdead || this.cintersect(m.x, m.y, this.meteor.width, this.meteor.height, this.shipx, this.shipy, this.ship.width, this.ship.height)) {
+				pdead = 1;
+				return;
+			}
+			this.bullets.forEach(function(b) {
 				if (this.cintersect(b.x, b.y, 2, 2, m.x, m.y, this.meteor.width, this.meteor.height)) {
 					b.dead = m.dead = true;
+					this.score += 10*this.level/2|0;
 				}
 			}.bind(this));
 		}.bind(this));
+		if (pdead) {
+			this.bullets = [];
+			this.meteors = [];
+			this.level = 0;
+			this.score = 0;
+		}
 		//-- paint
 		ctx.save();
-			ctx.translate(canvas.width/2|0, canvas.height/2|0);
+			ctx.translate(this.shipx, this.shipy);
 			ctx.fillStyle = "red";
 			ctx.rotate(this.rot * Math.PI/180);
 			// ctx.fillRect(-50, -50, 100, 100);
@@ -149,6 +163,23 @@ var game = {
 		if (cx1 - w1/2 > cx2 + w2/2 || cx1 + w1/2 < cx2 - w2/2)  return false;
 		if (cy1 - h1/2 > cy2 + h2/2 || cy1 + h1/2 < cy2 - h2/2)  return false;
 		return true;
+	},
+	nextlevel: function() {
+		this.level++;
+		while (this.meteors.length < this.level) {
+			var m = {
+				x: Math.random()*this.canvas.width|0,
+				y: Math.random()*this.canvas.height|0,
+				rot: Math.random()*360|0,
+				vel: 0.5
+			};
+			if (!this.cintersect(
+				this.shipx, this.shipy, this.ship.width, this.ship.height, 
+				m.x, m.y, this.meteor.width, this.meteor.height
+			)) {
+				this.meteors.push(m);
+			}
+		}
 	},
 	onkey: function(e) {
 		// console.log(arguments)
