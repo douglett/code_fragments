@@ -1,0 +1,51 @@
+<html>
+<head>
+	<title>chat</title>
+</head>
+<body onload="main()">
+
+<div id="textcontent"></div>
+<input type="text" id="textinput"></input>
+<button id="buttonsend" onclick="game.sendbtn()">send</button>
+
+<style type="text/css">
+body, body * {
+	font: 12px monospace;
+}
+#textcontent {
+	border: 1px solid black;
+	overflow: scroll;
+	padding: 5px;
+	height: 90%;
+	margin-bottom: 10px;
+}
+#textinput {
+	display: inline-block;
+	width: 90%;
+	/*font: 12px monospace;*/
+}
+#buttonsend {
+	width: 9%;
+}
+.row {
+	/*font: 12px monospace;*/
+}
+	.row:nth-child(even) {
+		background: #eee;
+	}
+.timestamp {
+	/*display: inline-block;*/
+	/*width: 8em;*/
+	color: grey;
+}
+.user {
+	/*display: inline-block;*/
+	color: blue;
+}
+.message { }
+</style>
+
+<script type="text/javascript" src="chat.js"></script>
+
+</body>
+</html>
