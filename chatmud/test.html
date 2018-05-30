@@ -4,21 +4,46 @@
 </head>
 <body onload="main()">
 
-<div id="textcontent"></div>
-<input type="text" id="textinput"></input>
-<button id="buttonsend" onclick="game.sendbtn()">send</button>
+<div class="maincontainer">
+	<div id="textcontent"></div>
+	<div>
+		<input type="text" id="textinput"></input>
+		<button id="buttonsend" onclick="game.sendbtn()">send</button>
+	</div>
+	<div>
+		<div id="indicator_room">room</div>
+	</div>
+</div>
+
 
 <style type="text/css">
 body, body * {
 	font: 12px monospace;
 }
+.maincontainer {
+	height: 100%;
+	box-sizing: border-box;
+}
 #textcontent {
 	border: 1px solid black;
-	overflow: scroll;
+	/*overflow-x: wrap;*/
+	overflow-y: scroll;
 	padding: 5px;
-	height: 90%;
+	height: calc(100% - 80px);
 	margin-bottom: 10px;
 }
+	.row {
+	}
+		.row:nth-child(even) {
+			background: #eee;
+		}
+	.timestamp {
+		color: grey;
+	}
+	.user {
+		color: blue;
+	}
+	.message { }
 #textinput {
 	display: inline-block;
 	width: 90%;
@@ -27,23 +52,15 @@ body, body * {
 #buttonsend {
 	width: 9%;
 }
-.row {
-	/*font: 12px monospace;*/
+#indicator_room {
+	display: inline-block;
+	border: 1px solid black;
+	margin-top: 8px;
+	padding: 4px;
+	color: red;
 }
-	.row:nth-child(even) {
-		background: #eee;
-	}
-.timestamp {
-	/*display: inline-block;*/
-	/*width: 8em;*/
-	color: grey;
-}
-.user {
-	/*display: inline-block;*/
-	color: blue;
-}
-.message { }
 </style>
+
 
 <script type="text/javascript" src="chat.js"></script>
 
