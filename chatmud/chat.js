@@ -126,7 +126,7 @@ game.displaydata = function(data) {
 		if (m.substr(0,6) === "exits:") {
 			var dirs = m.substr(7).split(", ");
 			dirs.push('l');
-			console.log(dirs);
+			// console.log(dirs);
 			this.ctrlMoveEnable(dirs);
 		}
 		game.addlog(m);
