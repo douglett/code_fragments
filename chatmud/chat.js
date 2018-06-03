@@ -1,5 +1,6 @@
 function main() {
 	console.log("main");
+	game.ctrlMoveEnable([]);
 	game.addlog("Please enter a username to log in:")
 	var input = document.getElementById("textinput");
 	input.onkeydown = function(e) {
@@ -15,10 +16,14 @@ var game = {
 
 //-- dom manip
 game.sendbtn = function() {
+	// input
+	let txt = this.getinput();
+	if (!txt)  return;
+	// send
 	if (this.user === null)
-		this.sendlogin();
+		this.sendlogin(txt);
 	else
-		this.sendmessage();
+		this.sendmessage(txt);
 }
 game.getinput = function() {
 	var input = document.getElementById("textinput");
@@ -63,19 +68,18 @@ game.sendhelper = function(path, postobj) {
 		return d;
 	});
 }
-game.sendlogin = async function() {
-	// input
-	let txt = this.getinput();
-	if (!txt)  return;
+game.sendlogin = async function(txt) {
 	this.addlog("logging in...");
 	// request
 	let data = await game.sendhelper("login", {
 		user: txt
 	});
 	this.addlog("user OK...");
+	data.sysmessage.forEach(m => this.addlog(m));
 	this.user = data;
-	await this.sendping();
-	this.addlog("ready!");
+	// await this.sendping();
+	await this.sendmessage("/look");
+	// this.addlog("ready!");
 	setInterval(this.sendping.bind(this), 1000);
 }
 game.sendgetlog = async function() {
@@ -92,10 +96,7 @@ game.sendping = async function() {
 	});
 	this.displaydata(data);
 }
-game.sendmessage = async function() {
-	// input
-	let txt = this.getinput();
-	if (!txt)  return;
+game.sendmessage = async function(txt) {
 	// request
 	let data = await this.sendhelper("message", {
 		// user: this.user.user,
@@ -120,15 +121,25 @@ game.displaydata = function(data) {
 	var content = document.querySelector("#textcontent");
 	var space = document.createElement("span");
 		space.textContent = " ";
-	// system messages
-	data.sysmessage.forEach(m => game.addlog(m));
+	// parse system messages
+	data.sysmessage.forEach(m => {
+		if (m.substr(0,6) === "exits:") {
+			var dirs = m.substr(7).split(", ");
+			dirs.push('l');
+			console.log(dirs);
+			this.ctrlMoveEnable(dirs);
+		}
+		game.addlog(m);
+	});
 	// update log
 	data.log.forEach(d => {
 		var row = document.createElement("div");
 			row.className = "row";
 		var ts = row.appendChild( document.createElement("span") );
 			ts.className = "timestamp";
-			ts.textContent = d.timestamp;
+			// ts.textContent = d.timestamp;
+			let tt = new Date(d.timestamp);
+			ts.textContent = (tt.getHours()<10?"0":"")+tt.getHours()+":"+(tt.getMinutes()<10?"0":"")+tt.getMinutes();
 		row.appendChild( space.cloneNode(true) );
 		var user = row.appendChild( document.createElement("span") );
 			user.className = "user";
@@ -143,4 +154,17 @@ game.displaydata = function(data) {
 	// update indicators
 	let room = document.querySelector("#indicator_room");
 	room.textContent = this.user.room;
+}
+
+//-- game controls
+game.ctrlMove = function(dir) {
+	console.log(dir);
+	if (!this.user)  return;
+	else if (dir === 'l')  this.sendmessage("/look");
+	else  this.sendmessage("/walk "+dir);
+}
+game.ctrlMoveEnable = function(dirs) {
+	document.querySelectorAll("#control_directions button").forEach(btn => {
+		btn.disabled = (dirs.indexOf(btn.textContent) > -1 ? false : true);
+	});
 }

@@ -6,13 +6,18 @@
 
 <div class="maincontainer">
 	<div id="textcontent"></div>
-	<div>
-		<input type="text" id="textinput"></input>
-		<button id="buttonsend" onclick="game.sendbtn()">send</button>
+	<div id="sidebar">
+		<div id="control_directions">
+			<button onclick="game.ctrlMove('nw')">nw</button><button onclick="game.ctrlMove('n')">n</button><button onclick="game.ctrlMove('ne')">ne</button><br/>
+			<button onclick="game.ctrlMove('w')">w</button><button onclick="game.ctrlMove('l')">l</button><button onclick="game.ctrlMove('e')">e</button><br/>
+			<button onclick="game.ctrlMove('sw')">sw</button><button onclick="game.ctrlMove('s')">s</button><button onclick="game.ctrlMove('se')">se</button>
+		</div>
+		<div id="indicator_room">[room]</div>
 	</div>
-	<div>
-		<div id="indicator_room">room</div>
-	</div>
+</div>
+<div>
+	<input type="text" id="textinput"></input>
+	<button id="buttonsend" onclick="game.sendbtn()">send</button>
 </div>
 
 
@@ -21,16 +26,26 @@ body, body * {
 	font: 12px monospace;
 }
 .maincontainer {
+	position: relative;
 	height: 100%;
 	box-sizing: border-box;
+	height: calc(100% - 80px);
+	margin-bottom: 10px;
 }
+
+
+/*** text log ***/
 #textcontent {
+	box-sizing: border-box;
+	position: relative;
 	border: 1px solid black;
 	/*overflow-x: wrap;*/
 	overflow-y: scroll;
 	padding: 5px;
-	height: calc(100% - 80px);
-	margin-bottom: 10px;
+	/*height: calc(100% - 80px);*/
+	/*margin-bottom: 10px;*/
+	height: 100%;
+	width: calc(100% - 160px);
 }
 	.row {
 	}
@@ -44,21 +59,48 @@ body, body * {
 		color: blue;
 	}
 	.message { }
+
+
+/*** controls ***/
+#sidebar {
+	position: absolute;
+	box-sizing: border-box;
+	border: 1px solid black;
+	width: 150px;
+	padding: 5px;
+	/*height: calc(100% - 80px);*/
+	top: 0;
+	right: 0;
+}
+	#indicator_room {
+		display: inline-block;
+		border: 1px solid black;
+		/*margin-top: 8px;*/
+		padding: 4px;
+		color: red;
+	}
+	#control_directions {
+		margin-bottom: 10px;
+	}
+		#control_directions button {
+			width: 28px;
+			font-weight: bold;
+		}
+		#control_directions button:disabled {
+			font-weight: normal;
+			color: #bbb;
+		}
+
+
+/*** text input ***/
 #textinput {
 	display: inline-block;
 	width: 90%;
 	/*font: 12px monospace;*/
 }
-#buttonsend {
-	width: 9%;
-}
-#indicator_room {
-	display: inline-block;
-	border: 1px solid black;
-	margin-top: 8px;
-	padding: 4px;
-	color: red;
-}
+	#buttonsend {
+		width: 9%;
+	}
 </style>
 
 
