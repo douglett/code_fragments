@@ -104,5 +104,18 @@ module.exports = {
 			case "nw":  return "north-west";
 			default:    return "widdershins";
 		}
+	},
+	directionOpposite: function(dir) {
+		switch (dir) {
+			case "n" :  return "s";
+			case "ne":  return "sw";
+			case "e":   return "w";
+			case "se":  return "nw";
+			case "s":   return "n";
+			case "sw":  return "ne";
+			case "w":   return "w";
+			case "nw":  return "se";
+			default:    return "widdershins";
+		}
 	}
 };
