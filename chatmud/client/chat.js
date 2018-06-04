@@ -71,9 +71,14 @@ game.sendhelper = function(path, postobj) {
 game.sendlogin = async function(txt) {
 	this.addlog("logging in...");
 	// request
-	let data = await game.sendhelper("login", {
-		user: txt
-	});
+	let data;
+	try {
+		data = await game.sendhelper("login", { user: txt });
+	}
+	catch (e) {
+		this.addlog("error! username may be invalid.");
+		return;
+	}
 	this.addlog("user OK...");
 	data.sysmessage.forEach(m => this.addlog(m));
 	this.user = data;
