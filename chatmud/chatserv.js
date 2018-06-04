@@ -13,26 +13,35 @@ function reload_modules() {
 reload_modules(); // first load
 
 // user and chatlog data
-var users = [];
-var chat;
-try {
-	chat = fs.readFileSync("chatlog.json");
-	chat = JSON.parse(chat);
-}
-catch(e) {
-	chat = {
+var gamedata = {
+	users: [],
+	chat: {
 		log: []
-	};
-}
-function chatlog(user, message) {
-	chat.log.push({
-		user: user.user,
-		timestamp: Date.now(),
-		room: user.room,
-		message: message
-	});
-	fs.writeFileSync("chatlog.json", JSON.stringify(chat)+"\n");
-}
+	},
+	load: function() {
+		let chat;
+		try {
+			let data = fs.readFileSync("chatlog.json");
+			this.chat = JSON.parse(data);
+		}
+		catch(e) { }
+	},
+	chatlog: function(user, message) {
+		this.chat.log.push({
+			user: user.user,
+			timestamp: Date.now(),
+			room: user.room,
+			message: message
+		});
+		fs.writeFileSync("chatlog.json", JSON.stringify(this.chat)+"\n");
+	},
+	inroom: function(roomname) {
+		let data = [];
+		this.users.forEach(u => { if (u.room === roomname) data.push(u.user); });
+		return data;
+	}
+};
+gamedata.load();
 
 // basic object serving
 function serve200(res, obj) {
@@ -48,7 +57,7 @@ function serveObj(code, res, obj) {
 		'Access-Control-Allow-Origin': '*'
 	});
 	obj = obj || {};
-	obj.timestamp = Date.now();
+	obj.timestamp = obj.timestamp || Date.now();
 	res.write(JSON.stringify(obj));
 	return res.end();
 }
@@ -59,7 +68,7 @@ function serveuser(res, username) {
 		'Content-Type': 'text/plain',
 		'Access-Control-Allow-Origin': '*'
 	});
-	let user = users.find(u => u.user === username);
+	let user = gamedata.users.find(u => u.user === username);
 	let obj = {
 		user: user.user,
 		uniqueid: user.uniqueid,
@@ -82,13 +91,13 @@ function servechatlog(res) {
 }
 function servechatroom(res, username, sysmessage) {
 	// get user
-	let user = users.find(u => u.user === username);
+	let user = gamedata.users.find(u => u.user === username);
 	// serve chat logs since last check-in
 	let log = [];
-	for (let i = chat.log.length-1; i >= 0; i--) {
-		if (chat.log[i].timestamp < user.timestamp) break;
-		if (chat.log[i].room !== user.room) continue;
-		log.push(chat.log[i]);
+	for (let i = gamedata.chat.log.length-1; i >= 0; i--) {
+		if (gamedata.chat.log[i].timestamp < user.timestamp) break;
+		if (gamedata.chat.log[i].room !== user.room) continue;
+		log.push(gamedata.chat.log[i]);
 	}
 	// update check-in time
 	user.timestamp = Date.now();
@@ -118,7 +127,7 @@ function handlemessage(user, message) {
 	// normal chat message - add to chat log
 	if (cmd[0].substr(0, 1) !== "/" || cmd[0] === "/say") {
 		console.log("[/say] ["+user.user+"] "+message.substr(0, 25));
-		chatlog(user, message);
+		gamedata.chatlog(user, message);
 	}
 	else if (cmd[0] === "/ping") {
 		// noop - just update
@@ -132,9 +141,9 @@ function handlemessage(user, message) {
 		else {
 			let roomid = warp.join(".");
 			console.log("[/warp] ["+cmd[1]+"] ["+roomid+"]");
-			chatlog(user, "<warped to "+cmd[1]+">");  // room 1
+			gamedata.chatlog(user, "<warped to "+cmd[1]+">");  // room 1
 			user.room = roomid;
-			chatlog(user, "<warped in>");  // room 2
+			gamedata.chatlog(user, "<warped in>");  // room 2
 			sysmessage.push("you warped to room ["+cmd[1]+"]");
 		}
 	}
@@ -142,6 +151,9 @@ function handlemessage(user, message) {
 		// console.log("looking");
 		let msg = rooms.look(user.room);
 		msg.forEach(m => sysmessage.push(m));
+		let inroom = gamedata.inroom(user.room);
+		if (inroom.indexOf(user.user))  inroom.splice(inroom.indexOf(user.user), 1);
+		if (inroom.length > 0)  sysmessage.push("here: " + inroom.join(", "));
 	}
 	else if (cmd[0] === "/walk") {
 		let roomid = rooms.walk(user.room, cmd[1]);
@@ -180,18 +192,18 @@ http.createServer(function (req, res) {
 				return serve404(res);
 			}
 			// log out duplicates (temp)
-			users = users.filter(u => u.user !== username);
+			gamedata.users = gamedata.users.filter(u => u.user !== username);
 			// add user
-			users.push({
+			gamedata.users.push({
 				user: username,
 				uniqueid: Math.random()*100000|0,
 				timestamp: Date.now(),
 				room: ""
 			});
-			let user = users.find(u => u.user === username);
+			let user = gamedata.users.find(u => u.user === username);
 			console.log("{/login} user ["+username+"]");
 			handlemessage(user, "/warp hut");
-			chatlog(user, "<"+username+" awakens>");
+			gamedata.chatlog(user, "<"+username+" awakens>");
 			// return user credentials
 			serveuser(res, data.user);
 		});
@@ -203,7 +215,7 @@ http.createServer(function (req, res) {
 		req.on('end', e => {
 			let data = JSON.parse(body);
 			// validate user
-			let user = users.find(u => u.user === data.user && u.uniqueid === data.uniqueid);
+			let user = gamedata.users.find(u => u.user === data.user && u.uniqueid === data.uniqueid);
 			if (!user) {
 				console.log("{/message} user credentials invalid - " + data.user);
 				return serve404(res, { error: "username invalid - "+data.user });
