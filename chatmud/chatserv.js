@@ -1,9 +1,18 @@
 var http = require('http');
 var fs = require('fs');
 var url = require('url');
-var rooms = require('./rooms');
+// user modules
+var rooms;
 
-// get saved chat log
+// set up live reload of user modules
+function reload_modules() {
+	['./rooms'].forEach(m => 
+		delete require.cache[require.resolve(m)] );
+	rooms = require('./rooms');
+}
+reload_modules(); // first load
+
+// user and chatlog data
 var users = [];
 var chat;
 try {
@@ -15,17 +24,36 @@ catch(e) {
 		log: []
 	};
 }
+function chatlog(user, message) {
+	chat.log.push({
+		user: user.user,
+		timestamp: Date.now(),
+		room: user.room,
+		message: message
+	});
+	fs.writeFileSync("chatlog.json", JSON.stringify(chat)+"\n");
+}
 
-function serve404(res, errobj) {
-	res.writeHead(404, {
+// basic object serving
+function serve200(res, obj) {
+	return serveObj(200, res, obj);
+}
+function serve404(res, obj) {
+	return serveObj(404, res, obj);
+}
+function serveObj(code, res, obj) {
+	code |= 0;
+	res.writeHead(code, {
 		'Content-Type': 'text/plain',
 		'Access-Control-Allow-Origin': '*'
 	});
-	errobj = errobj || {};
-	errobj.timestamp = Date.now();
-	res.write(JSON.stringify(errobj));
+	obj = obj || {};
+	obj.timestamp = Date.now();
+	res.write(JSON.stringify(obj));
 	return res.end();
 }
+
+// serve data
 function serveuser(res, username) {
 	res.writeHead(200, {
 		'Content-Type': 'text/plain',
@@ -79,16 +107,6 @@ function servechatroom(res, username, sysmessage) {
 	});
 	res.write(JSON.stringify(obj));
 	return res.end();
-}
-
-function chatlog(user, message) {
-	chat.log.push({
-		user: user.user,
-		timestamp: Date.now(),
-		room: user.room,
-		message: message
-	});
-	fs.writeFileSync("chatlog.json", JSON.stringify(chat)+"\n");
 }
 
 // handle client messages
@@ -197,6 +215,11 @@ http.createServer(function (req, res) {
 	else if (q.pathname === "/getlog") {
 		console.log("{/getlog}");
 		servechatlog(res);
+	}
+	else if (q.pathname === "/reload") {
+		console.log("{/reload}");
+		reload_modules();
+		serve200(res, { sysmessage: "module reload completed" });
 	}
 	else {
 		console.log("{/?} unknown: "+q.pathname);

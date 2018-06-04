@@ -13,6 +13,7 @@
 			<button onclick="game.ctrlMove('sw')">sw</button><button onclick="game.ctrlMove('s')">s</button><button onclick="game.ctrlMove('se')">se</button>
 		</div>
 		<div id="indicator_room">[room]</div>
+		<button id="button_reloadmod" onclick="game.ctrlReloadMod()">[reloadmod]</button>
 	</div>
 </div>
 <div>
@@ -29,7 +30,7 @@ body, body * {
 	position: relative;
 	height: 100%;
 	box-sizing: border-box;
-	height: calc(100% - 80px);
+	height: calc(100% - 40px);
 	margin-bottom: 10px;
 }
 
@@ -71,7 +72,11 @@ body, body * {
 	/*height: calc(100% - 80px);*/
 	top: 0;
 	right: 0;
+	text-align: right;
 }
+	#sidebar > * {
+		margin-bottom: 10px;
+	}
 	#indicator_room {
 		display: inline-block;
 		border: 1px solid black;
@@ -80,7 +85,7 @@ body, body * {
 		color: red;
 	}
 	#control_directions {
-		margin-bottom: 10px;
+		/*margin-bottom: 10px;*/
 	}
 		#control_directions button {
 			width: 28px;

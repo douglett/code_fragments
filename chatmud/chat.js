@@ -168,3 +168,7 @@ game.ctrlMoveEnable = function(dirs) {
 		btn.disabled = (dirs.indexOf(btn.textContent) > -1 ? false : true);
 	});
 }
+game.ctrlReloadMod = async function() {
+	let data = await game.sendhelper("reload");
+	console.log("reload:", data);
+}
