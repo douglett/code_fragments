@@ -31,12 +31,16 @@ function handlemessage(user, message) {
 		}
 	}
 	else if (cmd[0] === "/look") {
-		// console.log("looking");
+		console.log("[look]");
 		let msg = rooms.look(user.room);
 		msg.forEach(m => sysmessage.push(m));
-		let inroom = gamedata.inroom(user.room);
+		// get users in room
+		let inroom = gamedata.inRoom(user.room);
 		if (inroom.indexOf(user.user) > -1)  inroom.splice(inroom.indexOf(user.user), 1);
 		if (inroom.length > 0)  sysmessage.push("here: " + inroom.join(", "));
+		// get items in room
+		let items = gamedata.inRoomItems(user.room);
+		if (items.length > 0)  sysmessage.push("items: " + items.join(", "));
 	}
 	else if (cmd[0] === "/walk") {
 		let roomid = rooms.walk(user.room, cmd[1]);
@@ -48,9 +52,22 @@ function handlemessage(user, message) {
 			user.room = roomid;
 			gamedata.chatlog(user, "<enters "+ rooms.directionName(rooms.directionOpposite(cmd[1])) +">");
 			// sysmessage.push("you walked "+rooms.directionName(cmd[1]));
-			var msg = handlemessage(user, "/look");
+			let msg = handlemessage(user, "/look");
 			msg.forEach(m => sysmessage.push(m));
 		}
+	}
+	else if (cmd[0] === "/inv") {
+		sysmessage.push("items in inventory:");
+		user.inv.forEach(i => sysmessage.push("..[1] " + i));
+	}
+	else if (cmd[0] === "/drop") {
+		let i = (cmd[1]|0) - 1;
+		let msg = gamedata.dropItem(user, i);
+		msg.forEach(m => sysmessage.push(m));
+	}
+	else if (cmd[0] === "/get") {
+		let msg = gamedata.getItem(user, cmd[1]);
+		msg.forEach(m => sysmessage.push(m));
 	}
 	else {
 		sysmessage.push("unknown command: "+cmd[0]);

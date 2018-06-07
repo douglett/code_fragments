@@ -177,3 +177,7 @@ game.ctrlReloadMod = async function() {
 	let data = await game.sendhelper("reload");
 	console.log("reload:", data);
 }
+game.ctrlInv = function() {
+	if (!this.user)  return;
+	this.sendmessage("/inv");
+}

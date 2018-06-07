@@ -7,7 +7,7 @@ let command;
 
 // set up live reload of user modules
 function reload_modules() {
-	['./rooms', './command'].forEach(m => 
+	['./rooms', './command'].forEach(m =>
 		delete require.cache[require.resolve(m)] );
 	rooms = require('./rooms');
 	command = require('./command');
@@ -109,13 +109,7 @@ http.createServer(function (req, res) {
 			// log out duplicates (temp)
 			gamedata.users = gamedata.users.filter(u => u.user !== username);
 			// add user
-			gamedata.users.push({
-				user: username,
-				uniqueid: Math.random()*100000|0,
-				timestamp: Date.now(),
-				room: ""
-			});
-			let user = gamedata.users.find(u => u.user === username);
+			let user = gamedata.createUser(username);
 			console.log("{/login} user ["+username+"]");
 			command.cmd(user, "/warp hut");
 			gamedata.chatlog(user, "<"+username+" awakens>");
