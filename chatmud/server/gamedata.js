@@ -20,7 +20,7 @@ var gamedata = {
 			uniqueid: Math.random()*100000|0,
 			timestamp: Date.now(),
 			room: "",
-			inv: ["a_rock"]
+			inv: [{ name: "rock" }]
 		});
 		return this.users[this.users.length-1];
 	},
@@ -43,19 +43,17 @@ var gamedata = {
 		this.items.forEach(i => { if (i.room === roomname) data.push(i.name); });
 		return data;
 	},
-	dropItem: function(user, index) {
+	dropItem: function(user, itemname) {
 		let msg = [];
-		if (index < 0 || index >= user.inv.length) {
-			msg.push("no item at index "+index);
+		let item = user.inv.find(it => it.name === itemname);
+		if (!item) {
+			msg.push("no item in inv: "+itemname);
 			return msg;
 		}
-		let item = user.inv[index];
-		this.items.push({
-			name: item,
-			room: user.room
-		});
-		user.inv.splice(index, 1);
-		msg.push("you dropped " + item);
+		item.room = user.room;  // set location
+		this.items.push(item);
+		user.inv.splice(user.inv.indexOf(item));
+		// msg.push("you dropped " + item.name);
 		return msg;
 	},
 	getItem: function(user, itemname) {
@@ -66,8 +64,9 @@ var gamedata = {
 			return msg;
 		}
 		this.items.splice(this.items.indexOf(item), 1);
-		user.inv.push(item.name);
-		msg.push("you picked up "+item.name);
+		delete item.room;  // unset location
+		user.inv.push(item);
+		// msg.push("you picked up "+item.name);
 		return msg;
 	}
 };

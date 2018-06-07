@@ -58,16 +58,17 @@ function handlemessage(user, message) {
 	}
 	else if (cmd[0] === "/inv") {
 		sysmessage.push("items in inventory:");
-		user.inv.forEach(i => sysmessage.push("..[1] " + i));
+		user.inv.forEach(it => sysmessage.push("... " + it.name));
 	}
 	else if (cmd[0] === "/drop") {
-		let i = (cmd[1]|0) - 1;
-		let msg = gamedata.dropItem(user, i);
+		let msg = gamedata.dropItem(user, cmd[1]);
 		msg.forEach(m => sysmessage.push(m));
+		if (msg.length === 0)  gamedata.chatlog(user, "<drops "+cmd[1]+">");
 	}
 	else if (cmd[0] === "/get") {
 		let msg = gamedata.getItem(user, cmd[1]);
 		msg.forEach(m => sysmessage.push(m));
+		if (msg.length === 0)  gamedata.chatlog(user, "<picks-up "+cmd[1]+">");
 	}
 	else {
 		sysmessage.push("unknown command: "+cmd[0]);

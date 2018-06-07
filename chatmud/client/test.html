@@ -12,7 +12,11 @@
 			<button onclick="game.ctrlMove('w')">w</button><button onclick="game.ctrlMove('l')">l</button><button onclick="game.ctrlMove('e')">e</button><br/>
 			<button onclick="game.ctrlMove('sw')">sw</button><button onclick="game.ctrlMove('s')">s</button><button onclick="game.ctrlMove('se')">se</button>
 		</div>
-		<button id="control_inv" onclick="game.ctrlInv()">inventory</button><br/>
+		<div class="nospace">
+			<button onclick="game.ctrlInv()">[inv]</button>
+			<button disabled=true>[drop]</button>
+			<button disabled=true>[get]</button>
+		</div>
 		<div id="indicator_room">[room]</div><br/>
 		<button id="button_reloadmod" onclick="game.ctrlReloadMod()">[reloadmod]</button>
 	</div>
@@ -77,6 +81,9 @@ body, body * {
 }
 	#sidebar > * {
 		margin-bottom: 10px;
+	}
+	.nospace {
+		display: table;
 	}
 	#indicator_room {
 		display: inline-block;
