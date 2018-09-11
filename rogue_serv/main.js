@@ -1,6 +1,6 @@
 const http = require('http');
 const URL = require('url');
-// const fs = require('fs');
+const fs = require('fs');
 const st = require('st');
 
 const port = 9001;
@@ -34,7 +34,11 @@ function serve(request, response) {
 
 	switch (url.pathname) {
 	case "/":
-		// break;
+		fs.readFile("./static/index.html", function(err, html) {
+			response.writeHead(200, {"Content-Type": "text/html"});
+			response.end(html);
+		});
+		break;
 	case "/favicon.ico":
 		send404(response);
 		break;
