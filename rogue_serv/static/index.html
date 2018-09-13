@@ -1,1 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>game map</title>
+</head>
+<body onload="main()">
+
 hello world
+<pre>
+{{map}}
+</pre>
+
+
+<style type="text/css">
+pre {
+	background: lightgray;
+	padding: 0.5em;
+}
+</style>
+
+
+<script type="text/javascript">
+function main() {
+	fetch(`/action.json?walk=s`).then(d => d.json()).then(d => {
+		console.log(d);
+		let pre = document.querySelector("pre");
+		d.map.data.forEach(v => pre.innerHTML += v + "\n");
+		// pre.innerHTML = JSON.stringify(d.map);
+	});
+}	
+</script>
+
+
+</body>
+</html>
