@@ -41,7 +41,9 @@ function serve(request, response) {
 		break;
 	case "/action.json": {
 		// get initial player data
-		let pdata = gameplayers[0];
+		// let pdata = gameplayers[0];
+		let pdata = gameplayers.find(p => url.query.playerid === p.id);
+		if (!pdata)  throw `missing player: ${url.query.playerid}`;
 		// do action
 		console.log(url.query);
 		if (url.query.walk) {
@@ -80,6 +82,10 @@ let gameplayers = [{
 	id: "player1",
 	x: 2,
 	y: 2
+},{
+	id: 'player2',
+	x: 2,
+	y: 2
 }];
 let gamemap = {
 	gamemap: [
@@ -106,7 +112,12 @@ let gamemap = {
 			camy: 0,
 			data: JSON.parse(JSON.stringify(this.gamemap))
 		};
-		// add player
+		// add players
+		gameplayers.forEach(p => {
+			let r = map.data[p.y];	
+			map.data[p.y] = r.substr(0, p.x) + 'a' + r.substr(p.x+1);
+		})
+		// add current player
 		let r = map.data[pdata.y];
 		map.data[pdata.y] = r.substr(0, pdata.x) + '@' + r.substr(pdata.x+1);
 		// update camera info

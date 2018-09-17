@@ -5,7 +5,8 @@
 </head>
 <body onload="main()">
 
-hello world
+<p>player ID: <input type="text" id="id-box" value="player1" /></p>
+
 <pre>
 {{map}}
 </pre>
@@ -30,12 +31,14 @@ function movekey(e) {
 	case "ArrowDown":   action("walk=s");  break;
 	case "ArrowLeft":   action("walk=w");  break;
 	case "ArrowRight":  action("walk=e");  break;
+	case " ":           action("wait");    break;
 	default:  console.log(e.key);
 	}
 }
 function action(actionstr) {
 	actionstr = ( actionstr || "" ) + "";
-	fetch(`/action.json?${actionstr}`).then(d => d.json()).then(d => {
+	let id = document.querySelector("#id-box").value;
+	fetch(`/action.json?playerid=${id}&${actionstr}`).then(d => d.json()).then(d => {
 		console.log(d);
 		let pre = document.querySelector("pre");
 		pre.innerHTML = "";
