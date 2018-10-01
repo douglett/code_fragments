@@ -5,17 +5,37 @@
 </head>
 <body onload="main()">
 
-<p>player ID: <input type="text" id="id-box" value="player1" /></p>
+<p>
+	player ID: <input type="text" id="id-box" value="player1" />
+	<label for="ping_check">Auto-update</label><input type="checkbox" id="ping_check" checked />
+</p>
 
 <pre>
 {{map}}
 </pre>
+
+<textarea id="textbox_output" readonly>Welcome to the dungeon...</textarea>
+<input id="textbox_input" type="text" />
 
 
 <style type="text/css">
 pre {
 	background: lightgray;
 	padding: 0.5em;
+}
+#textbox_output {
+	--w: 800px;
+	--h: 300px;
+	display: block;
+	min-width: var(--w);
+	max-width: var(--w);
+	min-height: var(--h);
+	max-height: var(--h);
+}
+#textbox_input {
+	width: 800px;
+	margin: 1em 0;
+	padding: 0.5em 0;
 }
 </style>
 
@@ -24,6 +44,20 @@ pre {
 function main() {
 	window.onkeydown = movekey;
 	action();
+	// auto-update
+	setInterval(() => {
+		if (document.querySelector("#ping_check").checked)
+			action();
+	}, 1000);
+	// input box
+	let input = document.querySelector("#textbox_input");
+	input.onkeydown = (e) => {
+		if (e.key === "Enter") {
+			action("say="+input.value);
+			input.value = "";
+		}
+		e.stopPropagation();
+	};
 }
 function movekey(e) {
 	switch (e.key) {
@@ -31,7 +65,7 @@ function movekey(e) {
 	case "ArrowDown":   action("walk=s");  break;
 	case "ArrowLeft":   action("walk=w");  break;
 	case "ArrowRight":  action("walk=e");  break;
-	case " ":           action("wait");    break;
+	case " ":           action("wait");    break;  
 	default:  console.log(e.key);
 	}
 }
@@ -40,10 +74,14 @@ function action(actionstr) {
 	let id = document.querySelector("#id-box").value;
 	fetch(`/action.json?playerid=${id}&${actionstr}`).then(d => d.json()).then(d => {
 		console.log(d);
+		// show map
 		let pre = document.querySelector("pre");
 		pre.innerHTML = "";
 		d.map.data.forEach(v => pre.innerHTML += v + "\n");
-		// pre.innerHTML = JSON.stringify(d.map);
+		// show chat
+		let chat = document.querySelector("#textbox_output");
+		chat.value = "";
+		d.chat.forEach(l => chat.value += l.text + "\n");
 	});
 }
 </script>

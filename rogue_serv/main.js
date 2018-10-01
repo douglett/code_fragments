@@ -3,7 +3,7 @@ const URL = require('url');
 const fs = require('fs');
 const st = require('st');
 
-const port = 9001;
+const port = 9005;
 const mount = st({ path: "./static", url: "/static" });
 
 const server = http.createServer((request, response) => {
@@ -54,11 +54,16 @@ function serve(request, response) {
 			case 'w':  if (!gamemap.checkMapCollision(pdata.x-1, pdata.y))  pdata.x--;  break;
 			}
 		}
-		// draw map into response
-		pdata.map = gamemap.getMapData(pdata);
+		if (url.query.say) {
+			gamechat.chat.push({ text: url.query.say });
+		}
 		// return player object and position
 		response.writeHead(200, {"Content-Type": "text/json"});
-		response.write(JSON.stringify(pdata));
+		response.write(JSON.stringify({
+			pdata: pdata,  // current player data
+			map: gamemap.getMapData(pdata),  // draw map into response
+			chat: gamechat.chat  // current chat data
+		}));
 		response.end();
 		} break;
 	case "/favicon.ico":
@@ -87,6 +92,12 @@ let gameplayers = [{
 	x: 2,
 	y: 2
 }];
+let gamechat = {
+	chat: [
+		{ text: "hello world" },
+		{ text: "some chat text" }
+	]
+};
 let gamemap = {
 	gamemap: [
 		"##########             ",
