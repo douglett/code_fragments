@@ -47,7 +47,7 @@ function main() {
 	// auto-update
 	setInterval(() => {
 		if (document.querySelector("#ping_check").checked)
-			action();
+			action("wait");
 	}, 1000);
 	// input box
 	let input = document.querySelector("#textbox_input");
@@ -81,7 +81,7 @@ function action(actionstr) {
 		// show chat
 		let chat = document.querySelector("#textbox_output");
 		chat.value = "";
-		d.chat.forEach(l => chat.value += l.text + "\n");
+		d.chat.forEach(l => chat.value += `[${l.from}] ${l.text}\n`);
 	});
 }
 </script>

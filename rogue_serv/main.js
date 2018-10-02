@@ -30,7 +30,8 @@ const server = http.createServer((request, response) => {
 function serve(request, response) {
 	// handle the request url
 	let url = URL.parse(request.url, true);
-	console.log(url.pathname);
+	// console.log(url.pathname);
+	console.log(request.url);
 
 	switch (url.pathname) {
 	case "/":
@@ -45,8 +46,7 @@ function serve(request, response) {
 		let pdata = gameplayers.find(p => url.query.playerid === p.id);
 		if (!pdata)  throw `missing player: ${url.query.playerid}`;
 		// do action
-		console.log(url.query);
-		if (url.query.walk) {
+		if ("wait" in url.query) {
 			switch (url.query.walk) {
 			case 'n':  if (!gamemap.checkMapCollision(pdata.x, pdata.y-1))  pdata.y--;  break;
 			case 's':  if (!gamemap.checkMapCollision(pdata.x, pdata.y+1))  pdata.y++;  break;
@@ -54,8 +54,14 @@ function serve(request, response) {
 			case 'w':  if (!gamemap.checkMapCollision(pdata.x-1, pdata.y))  pdata.x--;  break;
 			}
 		}
-		if (url.query.say) {
-			gamechat.chat.push({ text: url.query.say });
+		else if ("say" in url.query) {
+			gamechat.chat.push({ from: pdata.id, text: url.query.say });
+		}
+		else if ("wait" in url.query) {
+			// noop
+		}
+		else {
+			console.log("unknown:", url.query);
 		}
 		// return player object and position
 		response.writeHead(200, {"Content-Type": "text/json"});
@@ -94,8 +100,8 @@ let gameplayers = [{
 }];
 let gamechat = {
 	chat: [
-		{ text: "hello world" },
-		{ text: "some chat text" }
+		{ from: "sys", text: "hello world" },
+		{ from: "sys", text: "some chat text" }
 	]
 };
 let gamemap = {
